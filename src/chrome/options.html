@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<!--
+ * @file        gobbledygook.html
+ * @brief       HTML layout for Gobbledygook
+ *
+ * @author      Manjul Apratim (manjul.apratim@gmail.com)
+ * @date        Dec 08, 2014
+ *
+ * @license     GNU General Public License v3 or Later
+ * @copyright   Manjul Apratim, 2014, 2015
+-->
+<head>
+    <title>gobbledygook Options</title>
+    <style>
+    body {
+        background-color    : LightGoldenRodYellow;
+    }
+
+    header {
+        background-color    : black;
+        font-family         : "Comic Sans", "Comic Sans MS", cursive;
+        color               : white;
+        text-align          : center;
+        padding             : 2px;
+    }
+
+    footer {
+        background-color    : black;
+        color               : white;
+        text-align          : center;
+        padding             : 5px;
+    }
+
+    label {
+        width               : 200px;
+    }
+    .inputLabel {
+        font-family         : Palatino, serif;
+        font-style          : normal;
+        font-variant        : small-caps;
+        font-weight         : bold;
+    }
+    .attributesLabel {
+        font-family         : cursive, sans-serif;
+        font-style          : italic;
+    }
+    .actionLabel {
+        width               : 50px;
+        font-family         : cursive, sans-serif;
+        font-style          : italic;
+    }
+    .outputLabel {
+        width               : 20px;
+        font-family         : sans-serif;
+        font-style          : normal;
+        font-weight         : bold;
+    }
+
+    input[type=number],
+    input[type=password],
+    input[type=text] {
+        height              : 20px;
+        display             : block;
+    }
+    .textBox {
+        width               : 320px;
+        border              : 3px double #CCCCCC;
+    }
+    .numberBox {
+        width               : 100px;
+    }
+
+    .theButton {
+        font-family         : "Comic Sans", "Comic Sans MS", cursive;
+        font-weight         : bold;
+    }
+    </style>
+</head>
+<body>
+    <header>
+        <h2>gobbledygook Options</h2>
+    </header>
+    <br/>
+    <label for="saltKey" class="inputLabel">
+        Salt Key
+    </label>
+    <input type="text" name="saltKey" id="saltKey" class="textBox"
+    title="A 'key' to generate the salt from the domain name"/>
+
+    <br/>
+    <button type="button" name="generateKeyButton" id="generateKeyButton"
+    title="Generate the 'key' for creating the salt from the domain name"
+    class="theButton">
+        Generate Key
+    </button>
+
+    <br/>
+    <br/>
+    <label for="defaultIterations" class="inputLabel">
+        Default Iterations
+    </label>
+    <input type="number" name="defaultIterations" id="defaultIterations"
+    min="1" class="numberBox"
+    title="The default 'work factor'"/>
+
+    <br/>
+    <label for="siteAttributesList" class="inputLabel">
+        Custom Website Attributes
+    </label>
+    <input type="text" name="siteAttributesList" id="siteAttributesList"
+    class="textBox"
+    title="Overridden website attributes (Use sparingly!)"/>
+
+    <br/>
+    <button type="button" name="saveButton" id="saveButton"
+    title="Save options" class="theButton">
+        Save Defaults
+    </button>
+    <label id="optionsSaveSuccessLabel" for="saveButton" class=""></label>
+
+    <br/>
+    <footer>
+    </footer>
+
+    <script src="keygen.js"></script>
+    <script src="options.js"></script>
+    <script src="sjcl/sjcl.js"></script>
+</body>
+</html>

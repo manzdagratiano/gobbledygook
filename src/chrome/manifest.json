@@ -1,0 +1,34 @@
+{
+    "manifest_version"  : 2,
+    "name"              : "gobbledygook",
+    "version"           : "1.0.0",
+
+    "description"       : "Annihilate password fatigue!",
+
+    "icons"             : {
+        "16"            : "icon/icon-16.png",
+        "32"            : "icon/icon-32.png",
+        "48"            : "icon/icon-48.png",
+        "64"            : "icon/icon-64.png",
+        "128"           : "icon/icon-128.png"
+    },
+
+    "permissions"       : [
+        "clipboardWrite",
+        "storage",
+        "tabs"
+    ],
+
+    "browser_action"    : {
+        "default_title" : "gobbledygook",
+        "default_icon"  : {
+            "19"        : "icon/icon-19.png",
+            "38"        : "icon/icon-38.png"
+        },
+        "default_popup" : "gobbledygook.html"
+    },
+
+    "options_page"      : "options.html",
+
+    "homepage_url"      : "https://github.com/manzdagratiano/gobbledygook"
+}
