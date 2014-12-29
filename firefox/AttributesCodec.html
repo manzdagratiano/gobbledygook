@@ -1,0 +1,1865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Namespace: AttributesCodec</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Namespace: AttributesCodec</h1>
+
+    
+
+
+
+<section>
+
+<header>
+    <h2>
+    AttributesCodec
+    </h2>
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+
+    
+        
+
+        
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="workhorsefunctions.js.html">data/workhorsefunctions.js</a>, <a href="workhorsefunctions.js.html#line138">line 138</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
+<dt>
+    <h4 class="name" id="getDecodedAttributes"><span class="type-signature">(static) </span>getDecodedAttributes<span class="signature">(encodedAttributes)</span><span class="type-signature"> &rarr; {<a href="Attributes.html">Attributes</a>}</span></h4>
+
+    
+    <p class="summary">A function to parse the attributes string for a domain
+         into an object of the Attributes class.</p>
+    
+</dt>
+<dd>
+
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>encodedAttributes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The encoded attribute string,
+         of the form <salt|iterations|truncation>,
+         where any number of the three may be empty.
+         This format is chosen to eliminate storing redundant
+         information for a domain when a cetain attribute is
+         identical to the one produced by the default algorithm.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="workhorsefunctions.js.html">data/workhorsefunctions.js</a>, <a href="workhorsefunctions.js.html#line195">line 195</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The decoded object.
+         If decoding fails,
+         a default initialized object is returned.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="Attributes.html">Attributes</a></span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getDecodedAttributesList"><span class="type-signature">(static) </span>getDecodedAttributesList<span class="signature">(encodedAttributesList)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+    <p class="summary">A function to parse the string representing
+         the list of site attributes stored in the browser
+         preferences system.</p>
+    
+</dt>
+<dd>
+
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>encodedAttributesList</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The encoded string
+         containing a stringified version
+         of the JSON object representing
+         the (domain, encoded Attributes) pair.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="workhorsefunctions.js.html">data/workhorsefunctions.js</a>, <a href="workhorsefunctions.js.html#line160">line 160</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    A JSON of key-value pairs with site domain as key
+         and site attributes (in compact string form) as value.
+         Values are of the form <salt|iterations|truncation>,
+         where at most two of those may be empty.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getEncodedAttributes"><span class="type-signature">(static) </span>getEncodedAttributes<span class="signature">(savedAttributes, proposedAttributes, attributes)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+    <p class="summary">A function to encode an "Attributes" object to the form
+         <domain|iterations|truncation> for storage in the browser
+         preferences system. Attributes that are reproducible by the
+         default algorithm will be skipped for efficient storage
+         (since sync space is precious). However, if a previously
+         overridden attribute is reset to the default value, it
+         will still be saved, since this module can only compare
+         differences and does not know about defaults.</p>
+    
+</dt>
+<dd>
+
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>savedAttributes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Attributes.html">Attributes</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The existing
+         saved attributes for a domain (default if none existed).</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>proposedAttributes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Attributes.html">Attributes</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The proposed attributes
+         following the application of the algorithm
+         on the saved/default attributes.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>attributes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Attributes.html">Attributes</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The actual attributes
+         that were captured from the UI
+         when the user hit "Generate",
+         which will encompass any custom changes the user made.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="workhorsefunctions.js.html">data/workhorsefunctions.js</a>, <a href="workhorsefunctions.js.html#line266">line 266</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The encoded attributes to save, if asked so.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getEncodedAttributesList"><span class="type-signature">(static) </span>getEncodedAttributesList<span class="signature">(domain, siteAttributesList)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+    <p class="summary">A function to encode the JSON (domain, encodedAttributes)
+         object to the string used for storage in the browser
+         preference system. The format is just the
+         JSON stringification of the object.</p>
+    
+</dt>
+<dd>
+
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>domain</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The site domain.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>siteAttributesList</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A JSON
+         (domain, encodedAttributes)
+         representing existing saved attributes
+         in the browser's preference system.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="workhorsefunctions.js.html">data/workhorsefunctions.js</a>, <a href="workhorsefunctions.js.html#line328">line 328</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The encoded list of attributes.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getSavedAttributes"><span class="type-signature">(static) </span>getSavedAttributes<span class="signature">(domain, savedAttributesList)</span><span class="type-signature"> &rarr; {<a href="Attributes.html">Attributes</a>}</span></h4>
+
+    
+    <p class="summary">A function to obtain the saved "Attributes" object
+         corresonding to a site domain.</p>
+    
+</dt>
+<dd>
+
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>domain</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The site domain to obtain
+         the saved attributes for.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>savedAttributesList</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The JSON object containing
+         (domain, encoded Attributes) pairs.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="workhorsefunctions.js.html">data/workhorsefunctions.js</a>, <a href="workhorsefunctions.js.html#line239">line 239</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The saved attributes. If no saved attributes
+         exist, a default initialized object is returned.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="Attributes.html">Attributes</a></span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+        </dl>
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+
+
+<section>
+
+<header>
+    <h2>
+    AttributesCodec
+    </h2>
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+
+    
+        
+
+        
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="keygen.js.html">data/keygen.js</a>, <a href="keygen.js.html#line32">line 32</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
+<dt>
+    <h4 class="name" id="getDecodedAttributes"><span class="type-signature">(static) </span>getDecodedAttributes<span class="signature">(encodedAttributes)</span><span class="type-signature"> &rarr; {<a href="Attributes.html">Attributes</a>}</span></h4>
+
+    
+    <p class="summary">A function to parse the attributes string for a domain
+         into an object of the Attributes class.</p>
+    
+</dt>
+<dd>
+
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>encodedAttributes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The encoded attribute string,
+         of the form <salt|iterations|truncation>,
+         where any number of the three may be empty.
+         This format is chosen to eliminate storing redundant
+         information for a domain when a cetain attribute is
+         identical to the one produced by the default algorithm.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="workhorsefunctions.js.html">data/workhorsefunctions.js</a>, <a href="workhorsefunctions.js.html#line195">line 195</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The decoded object.
+         If decoding fails,
+         a default initialized object is returned.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="Attributes.html">Attributes</a></span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getDecodedAttributesList"><span class="type-signature">(static) </span>getDecodedAttributesList<span class="signature">(encodedAttributesList)</span><span class="type-signature"> &rarr; {object}</span></h4>
+
+    
+    <p class="summary">A function to parse the string representing
+         the list of site attributes stored in the browser
+         preferences system.</p>
+    
+</dt>
+<dd>
+
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>encodedAttributesList</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The encoded string
+         containing a stringified version
+         of the JSON object representing
+         the (domain, encoded Attributes) pair.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="workhorsefunctions.js.html">data/workhorsefunctions.js</a>, <a href="workhorsefunctions.js.html#line160">line 160</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    A JSON of key-value pairs with site domain as key
+         and site attributes (in compact string form) as value.
+         Values are of the form <salt|iterations|truncation>,
+         where at most two of those may be empty.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getEncodedAttributes"><span class="type-signature">(static) </span>getEncodedAttributes<span class="signature">(savedAttributes, proposedAttributes, attributes)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+    <p class="summary">A function to encode an "Attributes" object to the form
+         <domain|iterations|truncation> for storage in the browser
+         preferences system. Attributes that are reproducible by the
+         default algorithm will be skipped for efficient storage
+         (since sync space is precious). However, if a previously
+         overridden attribute is reset to the default value, it
+         will still be saved, since this module can only compare
+         differences and does not know about defaults.</p>
+    
+</dt>
+<dd>
+
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>savedAttributes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Attributes.html">Attributes</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The existing
+         saved attributes for a domain (default if none existed).</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>proposedAttributes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Attributes.html">Attributes</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The proposed attributes
+         following the application of the algorithm
+         on the saved/default attributes.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>attributes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Attributes.html">Attributes</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The actual attributes
+         that were captured from the UI
+         when the user hit "Generate",
+         which will encompass any custom changes the user made.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="workhorsefunctions.js.html">data/workhorsefunctions.js</a>, <a href="workhorsefunctions.js.html#line266">line 266</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The encoded attributes to save, if asked so.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getEncodedAttributesList"><span class="type-signature">(static) </span>getEncodedAttributesList<span class="signature">(domain, siteAttributesList)</span><span class="type-signature"> &rarr; {string}</span></h4>
+
+    
+    <p class="summary">A function to encode the JSON (domain, encodedAttributes)
+         object to the string used for storage in the browser
+         preference system. The format is just the
+         JSON stringification of the object.</p>
+    
+</dt>
+<dd>
+
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>domain</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The site domain.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>siteAttributesList</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">A JSON
+         (domain, encodedAttributes)
+         representing existing saved attributes
+         in the browser's preference system.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="workhorsefunctions.js.html">data/workhorsefunctions.js</a>, <a href="workhorsefunctions.js.html#line328">line 328</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The encoded list of attributes.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+        
+            
+<dt>
+    <h4 class="name" id="getSavedAttributes"><span class="type-signature">(static) </span>getSavedAttributes<span class="signature">(domain, savedAttributesList)</span><span class="type-signature"> &rarr; {<a href="Attributes.html">Attributes</a>}</span></h4>
+
+    
+    <p class="summary">A function to obtain the saved "Attributes" object
+         corresonding to a site domain.</p>
+    
+</dt>
+<dd>
+
+    
+
+    
+
+    
+
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>domain</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The site domain to obtain
+         the saved attributes for.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>savedAttributesList</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">The JSON object containing
+         (domain, encoded Attributes) pairs.</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="workhorsefunctions.js.html">data/workhorsefunctions.js</a>, <a href="workhorsefunctions.js.html#line239">line 239</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    The saved attributes. If no saved attributes
+         exist, a default initialized object is returned.
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="Attributes.html">Attributes</a></span>
+
+
+    </dd>
+</dl>
+
+        
+
+    
+</dd>
+
+        </dl>
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Attributes.html">Attributes</a></li><li><a href="Hasher.html">Hasher</a></li></ul><h3>Namespaces</h3><ul><li><a href="AttributesCodec.html">AttributesCodec</a></li><li><a href="AUX_ENV.html">AUX_ENV</a></li><li><a href="DOM.html">DOM</a></li><li><a href="DOM.listeners.html">listeners</a></li><li><a href="DOM.togglers.html">togglers</a></li><li><a href="ENV.html">ENV</a></li><li><a href="HASHER_ENV.html">HASHER_ENV</a></li><li><a href="KEYGEN_ENV.html">KEYGEN_ENV</a></li><li><a href="WORKHORSE_ENV.html">WORKHORSE_ENV</a></li></ul><h3>Global</h3><ul><li><a href="global.html#button">button</a></li><li><a href="global.html#finalize">finalize</a></li><li><a href="global.html#handleChange">handleChange</a></li><li><a href="global.html#handleHide">handleHide</a></li><li><a href="global.html#onGenerateSaltKey">onGenerateSaltKey</a></li><li><a href="global.html#panel">panel</a></li><li><a href="global.html#Workhorse">Workhorse</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Mon Dec 29 2014 02:15:18 GMT-0500 (EST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

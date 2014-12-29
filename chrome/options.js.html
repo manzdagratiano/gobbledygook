@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: options.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: options.js</h1>
+
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module      options
+ * @overview    A set of functions to save/restore user default options
+ *              to/from the browser's preference system.
+ *
+ * @author      Manjul Apratim (manjul.apratim@gmail.com)
+ * @date        Dec 08, 2014
+ *
+ * @license     GNU General Public License v3 or Later
+ * @copyright   Manjul Apratim, 2014, 2015
+ */
+
+"use strict";
+
+// ========================================================================
+// GLOBAL CONSTANTS
+
+/**
+ * @namespace
+ * @summary A global namespace for miscellaneous "environment" variables.
+ */
+var OPTIONS_ENV             = {
+
+    /**
+     * @summary The default number of iterations of PBKDF2 (when unset).
+     */
+    defaultIterations       : 10000,
+
+    /**
+     * @summary The actionable events that could be triggered when
+     *          interacting with the UI.
+     * @enum    {string}
+     */
+    events                  : {
+        DOM_CONTENT_LOADED  : "DOMContentLoaded",
+        CLICK               : "click"
+    },
+
+    /**
+     * @summary A "category" to log with, to identify which component
+     *          the log is coming from.
+     */
+    logCategory             : "OPTIONS: ",
+
+    /**
+     * @summary The UTF-8 code used to identify "success" or "failure"
+     *          when communicating back to the user (in this case when
+     *          saving site attributes).
+     *          SUCCESS would show up as a "check mark", and
+     *          FAILURE would show up as a "cross".
+     * @enum    {string}
+     */
+    successString           : {
+        SUCCESS             : "\u2713",
+        FAILURE             : "\u2717"
+    },
+
+    /**
+     * @summary Types referenced for the "typeof" command.
+     * @enum    {string}
+     */
+    types                   : {
+        OBJECT              : "object",
+        UNDEFINED           : "undefined"
+    }
+
+};  // end namepace OPTIONS_ENV
+
+/**
+ * @namespace
+ * @summary A namespace for elements of the DOM of the Options page.
+ */
+var OPTIONS_DOM             = {
+    defaultIterations       : "defaultIterations",
+    saltKey                 : "saltKey",
+    generateKeyButton       : "generateKeyButton",
+    optionsSaveSuccessLabel : "optionsSaveSuccessLabel",
+    siteAttributesList      : "siteAttributesList",
+    saveButton              : "saveButton"
+};
+
+// ========================================================================
+// FUNCTIONS
+
+/**
+ * @summary Function to generate the 'key' for creating salts from domains.
+ * @return  {undefined}
+ */
+function generateKey() {
+    console.info(OPTIONS_ENV.logCategory +
+                 "Generating salt 'key'...");
+    // Empty out the "optionsSaveSuccessLabel", if set.
+    document.getElementById(
+                OPTIONS_DOM.optionsSaveSuccessLabel).textContent = "";
+    var saltBox = document.getElementById(OPTIONS_DOM.saltKey);
+    saltBox.value = "&lt;Generating...>";
+
+    var keyGenerated = false;
+    if (OPTIONS_ENV.types.OBJECT === typeof(Keygen)) {
+        var key = Keygen.generate();
+        if (OPTIONS_ENV.types.UNDEFINED !== typeof(key)) {
+            keyGenerated = true;
+        }
+    } else {
+        console.error(OPTIONS_ENV.logCategory +
+                      "ERROR: 'Keygen' undefined");
+    }
+
+    saltBox.value = keyGenerated ? key : "ERROR generating key!";
+}
+
+/**
+ * @summary Function to save user default attributes to
+ *          the browser preference system.
+ * @return  {undefined}
+ */
+function saveOptions() {
+    console.info(OPTIONS_ENV.logCategory +
+                 "Saving default options...");
+    chrome.storage.sync.set({
+        saltKey             : document.getElementById(
+                                OPTIONS_DOM.saltKey).value,
+        defaultIterations   : parseInt(document.getElementById(
+                                OPTIONS_DOM.defaultIterations).value),
+        siteAttributesList  : document.getElementById(
+                                OPTIONS_DOM.siteAttributesList).value,
+    }, function() {
+        // Check if the options were successfully saved
+        if (chrome.runtime.lastError) {
+            console.error(OPTIONS_ENV.logCategory +
+                          "ERROR saving options" +
+                          ", errorMsg=" + chrome.runtime.lastError);
+            document.getElementById(
+                        OPTIONS_DOM.optionsSaveSuccessLabel).textContent =
+                OPTIONS_ENV.successString.FAILURE;
+            return;
+        }
+
+        console.info(OPTIONS_ENV.logCategory + "Options saved");
+        document.getElementById(
+                    OPTIONS_DOM.optionsSaveSuccessLabel).textContent =
+            OPTIONS_ENV.successString.SUCCESS;
+    });
+}
+
+/**
+ * @summary Function to restore user default attributes to the options
+ *          page from th browser's preference system.
+ * @return  {undefined}
+ */
+function restoreOptions() {
+    console.info(OPTIONS_ENV.logCategory +
+                 "Loading default options...");
+    chrome.storage.sync.get({
+        saltKey             : "",
+        defaultIterations   : OPTIONS_ENV.defaultIterations,
+        siteAttributesList  : ""
+    }, function(items) {
+        if (chrome.runtime.lastError) {
+            console.info(OPTIONS_ENV.logCategory +
+                         "ERROR loading options" +
+                         ", errorMsg=" + chrome.runtime.lastError);
+            // No need to return; defaults will be set.
+            // The user can choose not to proceed susbequently.
+        }
+
+        console.info(OPTIONS_ENV.logCategory + "Default options loaded");
+        document.getElementById(OPTIONS_DOM.saltKey).value =
+            items.saltKey;
+        document.getElementById(OPTIONS_DOM.defaultIterations).value =
+            items.defaultIterations;
+        document.getElementById(OPTIONS_DOM.siteAttributesList).value =
+            items.siteAttributesList;
+    });
+}
+
+// ========================================================================
+// EVENT HANDLERS
+
+// Restore options on loading the "Options" page
+document.addEventListener(OPTIONS_ENV.events.DOM_CONTENT_LOADED,
+                          restoreOptions);
+
+// Generate a key when the "Generate Key" button is clicked
+document.getElementById(
+            OPTIONS_DOM.generateKeyButton).addEventListener(
+                                                OPTIONS_ENV.events.CLICK,
+                                                generateKey);
+
+// Save options when the "Save" button is clicked
+document.getElementById(
+            OPTIONS_DOM.saveButton).addEventListener(
+                                        OPTIONS_ENV.events.CLICK,
+                                        saveOptions);
+
+// Configure "optionsSaveSuccessLabel"
+document.getElementById(
+            OPTIONS_DOM.optionsSaveSuccessLabel).textContent = "";
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Attributes.html">Attributes</a></li><li><a href="Hasher.html">Hasher</a></li></ul><h3>Namespaces</h3><ul><li><a href="AttributesCodec.html">AttributesCodec</a></li><li><a href="AUX_ENV.html">AUX_ENV</a></li><li><a href="DOM.html">DOM</a></li><li><a href="DOM.listeners.html">listeners</a></li><li><a href="DOM.togglers.html">togglers</a></li><li><a href="ENV.html">ENV</a></li><li><a href="HASHER_ENV.html">HASHER_ENV</a></li><li><a href="HTML.html">HTML</a></li><li><a href="KEYGEN_ENV.html">KEYGEN_ENV</a></li><li><a href="OPTIONS_DOM.html">OPTIONS_DOM</a></li><li><a href="OPTIONS_ENV.html">OPTIONS_ENV</a></li></ul><h3>Global</h3><ul><li><a href="global.html#finalize">finalize</a></li><li><a href="global.html#generateKey">generateKey</a></li><li><a href="global.html#restoreOptions">restoreOptions</a></li><li><a href="global.html#saveOptions">saveOptions</a></li><li><a href="global.html#Workhorse">Workhorse</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Mon Dec 29 2014 02:22:44 GMT-0500 (EST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

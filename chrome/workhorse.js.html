@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: workhorse.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: workhorse.js</h1>
+
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module      workhorse
+ * @overview    The main "workhorse" responsible for the generation of
+ *              the proxy password.
+ *
+ * @author      Manjul Apratim (manjul.apratim@gmail.com)
+ * @date        Nov 15, 2014
+ *
+ * @license     GNU General Public License v3 or Later
+ * @copyright   Manjul Apratim, 2014, 2015
+ */
+
+"use strict";
+
+// ========================================================================
+// GLOBAL CONSTANTS
+
+/**
+ * @namespace
+ * @summary A global namespace for miscellaneous "environment" variables.
+ */
+var ENV                     = {
+
+    /**
+     * @summary The default number of iterations of PBKDF2 (when unset).
+     */
+    defaultIterations       : 10000,
+
+    /**
+     * @summary The actionable events that could be triggered when
+     *          interacting with the UI.
+     * @enum    {string}
+     */
+    events                  : {
+        DOM_CONTENT_LOADED  : "DOMContentLoaded"
+    },
+
+    /**
+     * @summary The indentation for "pretty-printing" JSON objects.
+     */
+    indentation             : 4,
+
+    /**
+     * @summary A "category" to log with, to identify which component
+     *          the log is coming from.
+     */
+    logCategory             : "MAIN: ",
+
+    /**
+     * @summary Types referenced for the "typeof" command.
+     * @enum    {string}
+     */
+    types                   : {
+        OBJECT              : "object",
+        UNDEFINED           : "undefined"
+    }
+
+};
+
+/**
+ * @namespace
+ * @summary A namespace for environment variables related to DOM/HTML.
+ */
+var HTML                    = {
+
+    /**
+     * @summary The commands that could be fired on the "document".
+     * @enum    {string}
+     */
+    commands                : {
+        COPY                : "Copy",
+    },
+
+    /**
+     * @summary The event message types the document could listen to.
+     * @enum    {string}
+     */
+    messages                : {
+        COPY                : "copy"
+    },
+
+    /**
+     * @summary The mime types understood by the system clipboard.
+     * @enum    {string}
+     */
+    mimeTypes               : {
+        TEXT                : "text/plain"
+    }
+};
+
+// ========================================================================
+// EVENT HANDLERS
+
+/**
+ * @summary The main "entry" function into the algorithm,
+ *          It will obtain the current url, load the user default
+ *          as well as site-specific attributes from the browser's
+ *          preference system, and call into the algorithm.
+ * @return  {undefined}
+ */
+document.addEventListener(ENV.events.DOM_CONTENT_LOADED,
+                          function() {
+    console.info(ENV.logCategory +
+                 "Configuring elements...");
+    var tabs = chrome.tabs.query({
+        active          : true,
+        currentWindow   : true
+    }, function(arrayOfTabs) {
+        // Get the current URL
+        var activeTab = arrayOfTabs[0];
+        var url = activeTab.url;
+        console.info(ENV.logCategory + "url=" + url);
+
+        chrome.storage.sync.get({
+            saltKey             : "",
+            defaultIterations   : ENV.defaultIterations,
+            siteAttributesList  : ""
+        }, function(items) {
+            if (chrome.runtime.lastError) {
+                console.error(ENV.logCategory +
+                              "ERROR loading default options" +
+                              ", errorMsg=" + chrome.runtime.lastError);
+                // No need to return; defaults will be set.
+                // The user can choose not to proceed.
+            }
+
+            var persistentOptions           = {};
+            var params                      = {
+                url                         : url,
+                saltKey                     : items.saltKey,
+                defaultIterations           : items.defaultIterations,
+                encodedAttributesList       : items.siteAttributesList
+            };
+
+            if (ENV.types.OBJECT === typeof(DOM)) {
+                DOM.configure(persistentOptions, params);
+            }
+        });
+    });
+});
+
+// ========================================================================
+// AUXILIARY FUNCTIONS
+
+/**
+ * @summary A function to "finalize" the algorithm.
+ *          It has two primary responsibilities:
+ *          a) Copy the generated proxy password to the system clipboard
+ *          for readily pasting into the target password field,
+ *          b) Save overridden attributes, if any,
+ *          into the browser's preference system.
+ * @param   {object} doneData - The final payload.
+ *          It has the following properties:
+ *          @prop   {string} doneData.password - The generated
+ *                  proxy password.
+ *          @prop   {string} doneData.attributesListString - The encoded
+ *                  list of attributes for all urls (modified with data
+ *                  from the current url if asked to save).
+ *                  If this is empty, the existing attributes list string
+ *                  in the browser's preference system is left untouched.
+ * @return  {undefined}
+ */
+function finalize(doneData) {
+    console.debug(ENV.logCategory + "Received 'done'..., doneData=" +
+                  JSON.stringify(doneData, null, ENV.indentation));
+
+    /**
+     * @summary A function to copy the generated proxy password
+     *          to the system clipboard.
+     * @param   {string} password - The generated proxy password.
+     * @return  {function}
+     */
+    var copyPasswordToClipboard = function(password) {
+        document.addEventListener(HTML.messages.COPY,
+                                  function copyPassword(e) {
+            document.removeEventListener(HTML.messages.COPY,
+                                         copyPassword,
+                                         false);
+            e.clipboardData.setData(HTML.mimeTypes.TEXT, password);
+            // Prevent random selections from interfering with our data
+            e.preventDefault();
+        });
+        document.execCommand(HTML.commands.COPY, false, null);
+    }
+
+    console.info(ENV.logCategory + "Copying to clipboard...");
+    // Copy the generated password to clipboard.
+    copyPasswordToClipboard(doneData.password);
+
+    // Save the attributes list string, if non-empty, to sync.
+    if ("" !== doneData.attributesListString) {
+        console.info(ENV.logCategory + "Saving site attributes...");
+        chrome.storage.sync.set({
+            siteAttributesList  : doneData.attributesListString,
+        }, function() {
+            // Check if the options were successfully saved.
+            var success = false;
+            if (chrome.runtime.lastError) {
+                console.error(ENV.logCategory +
+                              "ERROR saving attributes" +
+                              ", errorMsg=" + chrome.runtime.lastError);
+            } else {
+                console.info(ENV.logCategory +
+                             "Attributes saved successfully");
+                success = true;
+            }
+
+            if (ENV.types.OBJECT === typeof(DOM)) {
+                DOM.togglers.toggleAttributesSaveSuccess(success);
+            }
+        });
+    }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Attributes.html">Attributes</a></li><li><a href="Hasher.html">Hasher</a></li></ul><h3>Namespaces</h3><ul><li><a href="AttributesCodec.html">AttributesCodec</a></li><li><a href="AUX_ENV.html">AUX_ENV</a></li><li><a href="DOM.html">DOM</a></li><li><a href="DOM.listeners.html">listeners</a></li><li><a href="DOM.togglers.html">togglers</a></li><li><a href="ENV.html">ENV</a></li><li><a href="HASHER_ENV.html">HASHER_ENV</a></li><li><a href="HTML.html">HTML</a></li><li><a href="KEYGEN_ENV.html">KEYGEN_ENV</a></li><li><a href="OPTIONS_DOM.html">OPTIONS_DOM</a></li><li><a href="OPTIONS_ENV.html">OPTIONS_ENV</a></li></ul><h3>Global</h3><ul><li><a href="global.html#finalize">finalize</a></li><li><a href="global.html#generateKey">generateKey</a></li><li><a href="global.html#restoreOptions">restoreOptions</a></li><li><a href="global.html#saveOptions">saveOptions</a></li><li><a href="global.html#Workhorse">Workhorse</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha9</a> on Mon Dec 29 2014 02:22:44 GMT-0500 (EST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
