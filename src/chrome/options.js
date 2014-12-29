@@ -89,6 +89,9 @@ var OPTIONS_DOM             = {
 function generateKey() {
     console.info(OPTIONS_ENV.logCategory +
                  "Generating salt 'key'...");
+    // Empty out the "optionsSaveSuccessLabel", if set.
+    document.getElementById(
+                OPTIONS_DOM.optionsSaveSuccessLabel).textContent = "";
     var saltBox = document.getElementById(OPTIONS_DOM.saltKey);
     saltBox.value = "<Generating...>";
 
@@ -128,14 +131,14 @@ function saveOptions() {
                           "ERROR saving options" +
                           ", errorMsg=" + chrome.runtime.lastError);
             document.getElementById(
-                        OPTIONS_DOM.optionsSaveSuccessLabel).innerHTML =
+                        OPTIONS_DOM.optionsSaveSuccessLabel).textContent =
                 OPTIONS_ENV.successString.FAILURE;
             return;
         }
 
         console.info(OPTIONS_ENV.logCategory + "Options saved");
         document.getElementById(
-                    OPTIONS_DOM.optionsSaveSuccessLabel).innerHTML =
+                    OPTIONS_DOM.optionsSaveSuccessLabel).textContent =
             OPTIONS_ENV.successString.SUCCESS;
     });
 }
@@ -192,4 +195,4 @@ document.getElementById(
 
 // Configure "optionsSaveSuccessLabel"
 document.getElementById(
-            OPTIONS_DOM.optionsSaveSuccessLabel).innerHTML = "";
+            OPTIONS_DOM.optionsSaveSuccessLabel).textContent = "";

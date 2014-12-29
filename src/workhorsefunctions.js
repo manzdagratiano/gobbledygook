@@ -518,7 +518,7 @@ var DOM                             = {
          */
         toggleAttributesSaveSuccess : function(success) {
             document.getElementById(
-                DOM.elements.attributesSaveSuccessLabel).innerHTML =
+                DOM.elements.attributesSaveSuccessLabel).textContent =
                 (success ?  AUX_ENV.successString.SUCCESS :
                             AUX_ENV.successString.FAILURE);
         }
@@ -688,7 +688,7 @@ var DOM                             = {
             document.getElementById(
                 DOM.elements.saveAttributes).checked = false;
             document.getElementById(
-                DOM.elements.attributesSaveSuccessLabel).innerHTML = "";
+                DOM.elements.attributesSaveSuccessLabel).textContent = "";
         };
 
         /**
@@ -839,7 +839,7 @@ var Workhorse           = {
         document.getElementById(DOM.elements.password).value = "";
         // Clear the attributesSaveSuccessLabel (in case set)
         document.getElementById(
-                DOM.elements.attributesSaveSuccessLabel).innerHTML = "";
+                DOM.elements.attributesSaveSuccessLabel).textContent = "";
         // Toggle the "show" checkbox
         document.getElementById(DOM.elements.showHash).checked = false;
         DOM.togglers.toggleHashField(AUX_ENV.events.GENERATE, "");

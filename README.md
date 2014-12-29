@@ -84,7 +84,7 @@ This is what `gobbledygook` exists for! Simply override the **work factor** for 
 
 ## Building
 
-`gobbledygook` will be distributed through the official browser channels - for Firefox, this is <https://addons.mozilla.org>, while for Chrome/Chromium, this is the [Chrome Web Store](https://chrome.google.com/webstore/category/extensions). For development and testing, on Unix-like systems, `gobbledygook` may be built for Firefox/Chrome by issuing the following in the project root directory.
+`gobbledygook` will be distributed through the official browser channels - for Firefox, this is <https://addons.mozilla.org/en-US/firefox/addon/gobbledygook>, while for Chrome/Chromium, this is the [Chrome Web Store](https://chrome.google.com/webstore/category/extensions). For development and testing, on Unix-like systems, `gobbledygook` may be built for Firefox/Chrome by issuing the following in the project root directory.
 
 - `make firefox`
 - `make chrome`
