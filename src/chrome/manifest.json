@@ -1,7 +1,8 @@
 {
     "manifest_version"  : 2,
     "name"              : "gobbledygook",
-    "version"           : "1.0.0",
+    "short_name"        : "gobbledygook",
+    "version"           : "1.0.1",
 
     "description"       : "Annihilate password fatigue!",
 
