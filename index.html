@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="gobbledygook : Annihilate Password Fatigue!">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>gobbledygook</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/manzdagratiano/gobbledygook">View on GitHub</a>
+
+          <h1 id="project_title">gobbledygook</h1>
+          <h2 id="project_tagline">Annihilate Password Fatigue!</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/manzdagratiano/gobbledygook/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/manzdagratiano/gobbledygook/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="gobbledygook" class="anchor" href="#gobbledygook" aria-hidden="true"><span class="octicon octicon-link"></span></a>gobbledygook</h1>
+
+<p>Annihilate Password Fatigue!</p>
+
+<h2>
+<a id="houston-we-have-a-problem" class="anchor" href="#houston-we-have-a-problem" aria-hidden="true"><span class="octicon octicon-link"></span></a>Houston, We have a Problem!</h2>
+
+<p>Ever enter a password on a website and have it emailed back to you in cleartext? Suddenly, your precious password has been compromised (i.e. the "secret" is not a secret anymore)! If you were using this password on any other website, you suddenly find yourself in a frenzy to rush and change it everywhere! Life is suddenly topsy-turvy for a few minutes.</p>
+
+<p>&lt;<strong>soapbox</strong>&gt;
+The future is <strong>here</strong> - we are living in it. The dystopian scenarious of <strong>Orwell</strong> and <strong>Dick</strong> do not appear to be so far-fetched anymore - <strong>Big Brother</strong> is indeed watching us, and <strong>Androids</strong> do dream of Electric Sheep. <strong>Cyberpunk</strong> is very much a reality. Your interaction with the World Wide Web can and is being exploited in ways you could not have imagined! Security on the web is therefore, paramount. And this security inevitably revolves around your password.
+&lt;<strong>/soapbox</strong>&gt;</p>
+
+<p>Most of us have a few passwords which we recycle everywhere. It is not humanly possible to remember passwords for hundreds of different websites. The traditional way to resort to solving this problem has been the following:</p>
+
+<ul>
+<li>
+<strong>Write down</strong> all your passwords somewhere and update this list as you go (inefficient, not portable),</li>
+<li>
+<strong>Allow the browser</strong> to save every password - passwords are unlocked using a master password; if you use different passwords for each website and this database is lost/reset/not synced (computers crash) - you are left stranded.</li>
+<li>
+<strong>Use a third party SaaS</strong> to manage passwords for you. If this third party is closed source, this approach directly violates <strong>"Trust No One" (TNO)</strong>.  There are three threat models that could occur in this scenario:
+
+<ul>
+<li>your connection with the SaaS is hijacked by a <strong>man in the middle</strong>, who steals your secret in transit,</li>
+<li>the third party employs <strong>less-than-optimal security pratices</strong>, and gets compromised at some point in time, thereby compromising you,</li>
+<li>the third party is <strong>itself malicious</strong>, and uses your password to exploit websites you would sign in with that password.</li>
+</ul>
+</li>
+</ul>
+
+<p>All of the above models require either a <strong>compromise</strong> of convenience, or of TNO. If you get one, you are <strong>forced</strong> to compromise the other.</p>
+
+<h2>
+<a id="design-goals" class="anchor" href="#design-goals" aria-hidden="true"><span class="octicon octicon-link"></span></a>Design Goals</h2>
+
+<p>The design goals of gobbledygook are to find the best possible pivot for
+balancing:</p>
+
+<ul>
+<li><strong>convenience</strong></li>
+<li><strong>TNO</strong></li>
+</ul>
+
+<p>It exists as a browser plugin precisely for the first goal - the more things someone needs to do to get it to work for them, the less they will tend to use it. Making it a desktop app instead creates the problem of portability, installability etc etc. Having it exist as a plugin for the browser allows it to be ready for deployment on any desktop/OS that allows installation of the browser.</p>
+
+<p>The second goal is to protect you from the threat models identified in the problem. How do we solve TNO? The problem arises when you trust someone with your "secret". <code>gobbledygook</code> solves this problem by letting you <strong>keep your secret</strong> - i.e., it <strong>does not store</strong> your password in any shape or form. In fact, it does not even <strong><em>see</em></strong> your password - your password is directly hashed to SHA256, and only then used anywhere else in the program. Even in this form, it is not logged anywhere at the default logging level in the console logs.</p>
+
+<h2>
+<a id="how-it-works" class="anchor" href="#how-it-works" aria-hidden="true"><span class="octicon octicon-link"></span></a>How it Works</h2>
+
+<p>The algorithm, in a nutshell, is rather simple. First, create a <strong>salt-generating key</strong> from a CSPRNG, encoded in base64. Subsequently, for any domain:</p>
+
+<ul>
+<li>Obtain the user's "<strong>one true password</strong>" as a <strong>SHA256 hash</strong>,</li>
+<li>Generate a <strong>salt</strong> for the domain by passing the domain name with the "salt key" through a large number of rounds of <strong>PBKDF2-HMAC-SHA256</strong>,</li>
+<li>Generate a <strong>proxy password</strong> using the salt to stretch the SHA-256 hashed password through <strong>PBKDF2-HMAC-SHA256</strong> for a large number of rounds, encoding the result into <strong>urlsafe base64</strong>. Optionally, truncate this to a shorter length if the website has a length restriction for the password (why should they?).</li>
+</ul>
+
+<p>The salt generator key is created from 512 bytes of random data generated from a CSPRNG, and encoded with base64 to obtain 684 utf-8 characters (in the set [A-Z][a-z][0-9](-,_)) with padding. This key is then stored and used to generate a salt for every domain visited. This key will be synced across browser instances, but users should save it elsewhere as well for good measure (if it is lost, all the generated passwords become irreproducible).</p>
+
+<p>The resulting proxy password has a maximum length of 44 characters (padding ='s are stripped off), and looks just like <strong>mangled text</strong> - each character belongs to the set [A-Z][a-z][0-9](-,_). There are no other special characters (some websites don't allow them anyway - again, why wouldn't they?), but with this scheme, the "brute-force" factor per character is 10<sup>64</sup>, which is already obscenely large with this set. Common substitution based mechanisms following this hashing do not provide any significant additional security (they're easily broken by modern crackers, which allow for such substitution rulesets). Note that your original password can contain <strong>any</strong> utf-8 character; it's just that the output set is restricted due to the nature of algorithm.</p>
+
+<p>Why do we have a unique <strong>salt generator key</strong> instead of generating salts from a CSPRNG every single time? The reason for this boils down to <strong>convenience</strong> and <strong>portability</strong>; there are a very small number of things to remember across domains as well as platforms - this key itself, and the work factor (if customized) - while generating salts from the CSPRNG every time would add a lot more <strong>state</strong> to the addon, requiring syncing a lot more information across platforms/devices. The above scheme for generating salts guarantees that the salt is still <strong>globally unique</strong> per domain per user, and successfully avoids the problem of <strong>salt clustering</strong>, which facilitates <strong>rainbow table attacks</strong>. Since the key is generated using a CSPRNG, it is <strong>not possible</strong> to create rainbow tables in advance in anticipation of this scheme. Note that this "key" is <strong>not a secret</strong>; it exists purely for the same purpose salts themselves exist - to thwart the pre-creation of rainbow tables. It is therefore also stored in plaintext (storing it encrypted would result in a <strong>chicken-egg problem</strong>). If an attacker were to get a hold of this key for a user, they would be able to precompute the salt for every domain for that user; this is a moot point, since in the alternative model, the attacker would have access to all the salts anyway with the same kind of attack.</p>
+
+<h2>
+<a id="threat-models" class="anchor" href="#threat-models" aria-hidden="true"><span class="octicon octicon-link"></span></a>Threat Models</h2>
+
+<p><code>gobbledygook</code> allows you to have just the "<strong>one true password</strong>", and still create a unique password per domain. Effectively, the mangled password becomes <em>your password</em> for that domain. If an attacker can gain this "proxy" password <strong>for a domain</strong>, they have by all means gained access to your account <strong>for that domain</strong>, but <strong>nowhere else</strong>, while in the original case, they would have everywhere you used the same password. <code>gobbledygook</code> was not designed to address the <strong>man in the middle</strong> attack problem, but rather to <strong>limit your exposure</strong> to such attacks by solving the problem of <strong>password fatigue</strong>. It is still a burden on the domain to prevent such an attack when interacing with the user.</p>
+
+<p>Many websites try to do a client-side hashing before transmitting data so that the user's bare password is never transmitted at all. In a perfect world, this would render <code>gobbledygook</code> redundant, but in practice it does not:</p>
+
+<ul>
+<li>Websites that do this are <strong>still rare</strong> as of 2014,</li>
+<li>You <strong>cannot implicitly trust</strong> a website you log in to unless you can see the entire client-side code,</li>
+<li>Secure delivery of client-side crypto from the server is a <strong>chicken-egg problem</strong> (more below).</li>
+</ul>
+
+<p>The purpose of <code>gobbledygook</code> is to shield you from all of these by securing your password at <strong>your end</strong> - before you begin interaction with a website; they cannot betray your secret if they do not know it to begin with.</p>
+
+<h2>
+<a id="choice-of-crypto" class="anchor" href="#choice-of-crypto" aria-hidden="true"><span class="octicon octicon-link"></span></a>Choice of Crypto</h2>
+
+<p>The Crypto library chosen for the implementation of the algorithm is the <a href="https://github.com/bitwiseshiftleft/sjcl">Stanford Javascript Cryptography Library (SJCL)</a>. It has an easy to use interface and is very well performant, also providing a CSPRNG interface (which can be trusted as long as the underlying runtime can be trusted). <code>gobbledygook</code> ships with its own minimal version of the library to avoid the issue of secure delivery of crypto over a potentially compromised channel.</p>
+
+<h2>
+<a id="what-about-javascript-cryptography-considered-harmful" class="anchor" href="#what-about-javascript-cryptography-considered-harmful" aria-hidden="true"><span class="octicon octicon-link"></span></a>What about '<a href="http://matasano.com/articles/javascript-cryptography/">JavaScript Cryptography Considered Harmful</a>'?</h2>
+
+<p><strong>We're absolved</strong> (for the <em>most</em> part).</p>
+
+<p>Why? Most of the issues with cryptography and JavaScript in the browser revolve around the <strong>secure delivery</strong> of the crypto code from the <strong>server</strong> to the <strong>client</strong>, which is a <strong>chicken-egg problem</strong>. In our case, there <strong><em>is</em></strong> no server, and the addon ships with <strong>its own version of the crypto code</strong>, running in its own sandboxed environment and making no http requests, thus being no different from any regular application running on the client's desktop. The only remaining snag is the <strong>verifiability of the JavaScript runtime</strong>, but if your runtime is compromised, you probably have bigger issues to worry about than <code>gobbledygook</code>.</p>
+
+<h2>
+<a id="function-documentation" class="anchor" href="#function-documentation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Function documentation</h2>
+
+<p>Function documentation for <code>gobbledygook</code> was generated using <a href="http://usejsdoc.org">JSDoc 3</a>.</p>
+
+<ul>
+<li>Firefox: <a href="https://manzdagratiano.github.io/gobbledygook/firefox/">https://manzdagratiano.github.io/gobbledygook/firefox/</a>
+</li>
+<li>Chrome: <a href="https://manzdagratiano.github.io/gobbledygook/chrome/">https://manzdagratiano.github.io/gobbledygook/chrome/</a>
+</li>
+</ul>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">gobbledygook maintained by <a href="https://github.com/manzdagratiano">manzdagratiano</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
