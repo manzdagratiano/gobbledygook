@@ -17,6 +17,7 @@
 ICON = ./icon
 SRC = ./src
 SJCL = ./sjcl
+SJCL_MEGALITH = ./target/sjcl_megalith.js
 TARGET_DIR = ./target
 
 # The chrome version of "gobbledygook.html" requires that
@@ -28,7 +29,7 @@ TARGET_DIR = ./target
 CHROME_HTML_REGEX = "s/<\/footer>/<\/footer>\n\n"
 CHROME_HTML_REGEX += "   <script src=\"workhorse.js\"><\/script>\n"
 CHROME_HTML_REGEX += "   <script src=\"workhorsefunctions.js\"><\/script>\n"
-CHROME_HTML_REGEX += "   <script src=\"sjcl\/sjcl.js\"><\/script>/"
+CHROME_HTML_REGEX += "   <script src=\"sjcl\/sjcl_megalith.js\"><\/script>/"
 
 # =========================================================================
 # TARGETS
@@ -44,7 +45,7 @@ CHROME_HTML_REGEX += "   <script src=\"sjcl\/sjcl.js\"><\/script>/"
 all: chrome firefox
 
 chrome: TARGET = $(TARGET_DIR)/chrome
-chrome: chrome-clean target-dir
+chrome: chrome-clean sjcl
 	cp -r $(SRC)/chrome ./target/
 	cp $(SRC)/gobbledygook.html $(TARGET)/
 	perl -p -i -e $(subst " ", ,$(CHROME_HTML_REGEX)) \
@@ -53,12 +54,14 @@ chrome: chrome-clean target-dir
 	cp $(SRC)/keygen.js $(TARGET)/
 	cp $(SRC)/workhorsefunctions.js $(TARGET)/
 	mkdir $(TARGET)/sjcl
-	cp -r $(SJCL)/{core,README{,.md},sjcl.js} $(TARGET)/sjcl/
+	cp -r $(SJCL)/README{,.md} $(TARGET)/sjcl/
+	cp $(SJCL_MEGALITH) $(TARGET)/sjcl/
 	mkdir $(TARGET)/icon
 	cp $(ICON)/icon-{16,19,32,38,48,64,128}.png $(TARGET)/icon/
+	echo "Success!"
 
 firefox: TARGET = $(TARGET_DIR)/firefox
-firefox: firefox-clean target-dir
+firefox: firefox-clean sjcl
 	cp -r $(SRC)/firefox ./target/
 	cp ./README.md $(TARGET)/
 	cp $(SRC)/gobbledygook.html $(TARGET)/data/
@@ -66,9 +69,28 @@ firefox: firefox-clean target-dir
 	cp $(SRC)/keygen.js $(TARGET)/data/
 	cp $(SRC)/workhorsefunctions.js $(TARGET)/data/
 	mkdir $(TARGET)/data/sjcl
-	cp -r $(SJCL)/{core,README{,.md},sjcl.js} $(TARGET)/data/sjcl/
+	cp -r $(SJCL)/README{,.md} $(TARGET)/data/sjcl/
+	cp $(SJCL_MEGALITH) $(TARGET)/data/sjcl/
 	mkdir $(TARGET)/data/icon
 	cp $(ICON)/icon-{16,32,48,64}.png $(TARGET)/data/icon/
+	echo "Success!"
+
+sjcl: target-dir
+	cat $(SRC)/sjcl_megalith_header.js \
+		$(SJCL)/core/sjcl.js \
+		$(SJCL)/core/aes.js \
+		$(SJCL)/core/bitArray.js \
+		$(SJCL)/core/codecString.js \
+		$(SJCL)/core/codecHex.js \
+		$(SJCL)/core/codecBase64.js \
+		$(SJCL)/core/sha256.js \
+		$(SJCL)/core/ccm.js \
+		$(SJCL)/core/ocb2.js \
+		$(SJCL)/core/gcm.js \
+		$(SJCL)/core/hmac.js \
+		$(SJCL)/core/pbkdf2.js \
+		$(SJCL)/core/random.js \
+		$(SJCL)/core/convenience.js > $(SJCL_MEGALITH)
 
 target-dir:
 	if [ ! -d $(TARGET_DIR) ]; then mkdir $(TARGET_DIR); fi

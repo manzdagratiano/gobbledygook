@@ -50,7 +50,7 @@ var HASHER_ENV      = {
 // Avoid "ReferenceError: importScripts is not defined"
 // when hasher.js is loaded by the main addon code as well.
 if (HASHER_ENV.types.FUNCTION === typeof(importScripts)) {
-    importScripts("./sjcl/sjcl.js");
+    importScripts("./sjcl/sjcl_megalith.js");
 }
 
 // ========================================================================

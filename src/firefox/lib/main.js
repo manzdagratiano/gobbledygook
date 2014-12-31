@@ -133,9 +133,9 @@ var panel = panels.Panel({
     contentURL              : self.data.url("gobbledygook.html"),
     contentScriptFile       : [
         self.data.url("keygen.js"),
-        self.data.url("sjcl/sjcl.js"),
         self.data.url("workhorse.js"),
-        self.data.url("workhorsefunctions.js")
+        self.data.url("workhorsefunctions.js"),
+        self.data.url("sjcl/sjcl_megalith.js")
         ],
     contentScriptOptions    : {},
     onHide                  : handleHide
