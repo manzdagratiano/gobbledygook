@@ -1,0 +1,13 @@
+CREATION:
+=========
+
+$ android create project \
+    --target android-22 \
+    --name gobbledygook \
+    --path . --activity gobbledygook \
+    --package com.manzdagratiano.gobbledygook
+
+BUILD:
+======
+
+$ ant debug     # apk Files generated in the bin directory

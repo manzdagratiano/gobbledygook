@@ -1,4 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">gobbledygook</string>
+    <string name="prefs_name">gobbledygook Settings</string>
+    <string name="action_settings">Settings</string>
+    <!-- Labels and Hints -->
+    <string name="label_domain">Domain</string>
+    <string name="text_domain">The foo.bar.baz.com part of the URL</string>
+    <string name="label_password">Password</string>
+    <string name="text_password">Your KillerPassword123456789 Here</string>
+    <string name="label_iterations">Iterations</string>
+    <string name="text_iterations">10000</string>
+    <string name="label_hash">Proxy Password</string>
+    <string name="checkBox_showHash">Show</string>
+    <string name="checkBox_truncate">Truncate</string>
+    <string name="text_truncation">-1</string>
+    <string name="checkBox_saveAttributes">Save custom changes</string>
+    <string name="button_generate">Generate!</string>
+    <string name="label_fontFamily">sans-serif</string>
+    <string name="button_fontFamily">sans-serif</string>
+
+    <!-- ########### -->
+    <!-- Preferences -->
+    <!-- ########### -->
+
+    <!-- Salt Key -->
+    <string name="pref_saltKey_key">
+        saltKey
+    </string>
+    <string name="pref_saltKey_name">
+        Salt Key
+    </string>
+    <string name="pref_saltKey_summary">
+        A "key" to generate salts from domain names
+    </string>
+
+    <!-- Unlock Salt Key CheckBox -->
+    <string name="pref_unlockSaltKey_key">
+        unlockSaltKey
+    </string>
+    <string name="pref_unlockSaltKey_name">
+        Unlock Salt Key
+    </string>
+    <string name="pref_unlockSaltKey_summary">
+        Unlock the salt key for editing
+    </string>
+
+    <!-- Load Salt Key Button -->
+    <string name="pref_loadSaltKey_key">
+        loadSaltKey
+    </string>
+    <string name="pref_loadSaltKey_name">
+        Load Salt Key...
+    </string>
+    <string name="pref_loadSaltKey_summary">
+        Load the salt key from a file (needs unlock)
+    </string>
+
+    <!-- Default PBKDF2 Iterations -->
+    <string name="pref_defaultIterations_key">
+        defaultIterations
+    </string>
+    <string name="pref_defaultIterations_name">
+        Default Iterations
+    </string>
+    <string name="pref_defaultIterations_summary">
+        10000
+    </string>
+
+    <!-- Custom Website Attributes List -->
+    <string name="pref_siteAttributesList_key">
+        siteAttributesList
+    </string>
+    <string name="pref_siteAttributesList_name">
+        Custom Website Attribute List
+    </string>
+    <string name="pref_siteAttributesList_summary">
+        Overridden website attributes (use sparingly!)
+    </string>
 </resources>
