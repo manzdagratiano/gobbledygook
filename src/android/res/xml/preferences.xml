@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <!--The salt "key" -->
+    <!--The salt "key".
+         When sensitiv, clicking on this
+         will open the file picker dialog to select the key file.
+         This shall be achieved by attaching a listener to it. -->
     <EditTextPreference
         android:key="@string/pref_saltKey_key"
         android:title="@string/pref_saltKey_name"
@@ -12,15 +15,6 @@
         android:title="@string/pref_unlockSaltKey_name"
         android:summary="@string/pref_unlockSaltKey_summary"
         android:defaultValue="false"
-        />
-    <!-- The "Load Salt Key" preference.
-         Clicking on this will open the file picker dialog
-         to select the key file. This shall be achieved
-         by attaching a listener to it. -->
-    <Preference
-        android:key="@string/pref_loadSaltKey_key"
-        android:title="@string/pref_loadSaltKey_name"
-        android:summary="@string/pref_loadSaltKey_summary"
         />
     <!-- The default # of PBKDF2 iterations.
          NOTE: Even though it has the numeric attribute and

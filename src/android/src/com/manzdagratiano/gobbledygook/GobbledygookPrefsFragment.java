@@ -32,8 +32,8 @@ public class GobbledygookPrefsFragment extends PreferenceFragment
      * @brief   Namespace "Env" for constants used throughout the class
      */
     public class Env {
-        public static final String LOG_CATEGORY = "GOBBLEDYGOOK.PREFS";
-        public static final int DEFAULT_ITERATIONS = 10000;
+        public static final String LOG_CATEGORY     = "GOBBLEDYGOOK.PREFS";
+        public static final int DEFAULT_ITERATIONS  = 10000;
     }
 
     /**
@@ -49,8 +49,7 @@ public class GobbledygookPrefsFragment extends PreferenceFragment
         // Load the preferences from the xml resource
         addPreferencesFromResource(R.xml.preferences);
 
-        // Attach a listener to the "Load Salt Key..." Preference
-        configureLoadSaltKeyButton();
+        configurePreferenceElements();
     }
 
     /**
@@ -111,28 +110,98 @@ public class GobbledygookPrefsFragment extends PreferenceFragment
     // PRIVATE MEMBERS
 
     /**
-     * @brief   Function to attach a "click" listener to the loadSaltKey
-     * preference "button"
-     * @return  Does not return a value
+     * @brief   
+     * @return  
      */
-    private void configureLoadSaltKeyButton() {
-        Log.i(Env.LOG_CATEGORY,
-              "configureLoadSaltKeyButton(): Attaching clickListener...");
+    private void configurePreferenceElements() {
 
-        Preference loadSaltKeyButton =
-            (Preference)findPreference(
-                    getString(
-                        R.string.pref_loadSaltKey_key));
-        loadSaltKeyButton.setOnPreferenceClickListener(
-                new Preference.OnPreferenceClickListener() {
-                    @Override
-                    public boolean onPreferenceClick(Preference preference) {
-                        // Open the file picker dialog to select the key file
-                        // @TODO
-                        return true;
-                    }
+        class Configurator {
+
+            /**
+             * @brief   Function to configure the summary for the saltKey,
+             * and to attach a "click" listener to the saltKey
+             * preference "button"
+             * @return  Does not return a value
+             */
+            public void configureSaltKey() {
+                Log.i(Env.LOG_CATEGORY,
+                      "configureSaltKey(): Setting value...");
+
+                Preference saltKeyPref =
+                    (Preference)findPreference(
+                            getString(R.string.pref_saltKey_key));
+                SharedPreferences sharedPreferences =
+                    getPreferenceManager().getSharedPreferences();
+
+                // Set the summary with the value
+                String saltKey =
+                    sharedPreferences.getString(
+                            getString(R.string.pref_saltKey_key), "");
+                if (!saltKey.isEmpty()) {
+                    Log.i(Env.LOG_CATEGORY, "configureSaltKey(): " +
+                          "Found non-empty saltKey='" + saltKey + "'");
+                    saltKeyPref.setSummary(saltKey);
                 }
-        );
-    }
 
+                // Grey out the saltKey by default,
+                // it should be enabled only when unlockSaltKey is checked
+                saltKeyPref.setSelectable(false);
+
+                // Attach a listener to the "Load Salt Key..." Preference
+                Log.i(Env.LOG_CATEGORY,
+                      "configureSaltKey(): Attaching clickListener...");
+                saltKeyPref.setOnPreferenceClickListener(
+                        new Preference.OnPreferenceClickListener() {
+                            @Override
+                            public boolean onPreferenceClick(Preference preference) {
+                                // Open the file picker dialog to select the key file
+                                // @TODO
+                                return true;
+                            }
+                        }
+                );
+            }
+
+            /**
+             * @brief   
+             * @return  
+             */
+            public void configureUnlockSaltKey() {
+            }
+
+            /**
+             * @brief   
+             * @return  
+             */
+            public void configureDefaultIterations() {
+                Log.i(Env.LOG_CATEGORY,
+                      "configureDefaultIterations(): Setting value...");
+
+                Preference defaultIterationsPref =
+                    (Preference)findPreference(
+                            getString(R.string.pref_defaultIterations_key));
+                SharedPreferences sharedPreferences =
+                    getPreferenceManager().getSharedPreferences();
+
+                // Set the summary with the value
+                // defaultIterations needs to be retrieved as text
+                String defaultIterationsStr =
+                    sharedPreferences.getString(
+                        getString(R.string.pref_defaultIterations_key), "");
+                if (!defaultIterationsStr.isEmpty()) {
+                    Log.i(Env.LOG_CATEGORY, "configureDefaultIterations(): " +
+                          "Found non-empty defaultIterations='" +
+                          defaultIterationsStr + "'");
+                    defaultIterationsPref.setSummary(defaultIterationsStr);
+                }
+            }
+
+        };  // end class Configurator
+
+        Configurator configurator = new Configurator();
+
+        configurator.configureSaltKey();
+        configurator.configureUnlockSaltKey();
+        configurator.configureDefaultIterations();
+    }
 }

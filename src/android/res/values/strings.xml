@@ -23,7 +23,11 @@
     <!-- Preferences -->
     <!-- ########### -->
 
-    <!-- Salt Key -->
+    <!-- Salt Key
+         This preference is not sensitive by default.
+         Checking the unlockSaltKey checkbox
+         will make it sensitive and allow
+         the user to load it from a file. -->
     <string name="pref_saltKey_key">
         saltKey
     </string>
@@ -42,18 +46,7 @@
         Unlock Salt Key
     </string>
     <string name="pref_unlockSaltKey_summary">
-        Unlock the salt key for editing
-    </string>
-
-    <!-- Load Salt Key Button -->
-    <string name="pref_loadSaltKey_key">
-        loadSaltKey
-    </string>
-    <string name="pref_loadSaltKey_name">
-        Load Salt Key...
-    </string>
-    <string name="pref_loadSaltKey_summary">
-        Load the salt key from a file (needs unlock)
+        Check the box, then click Salt Key to load from file
     </string>
 
     <!-- Default PBKDF2 Iterations -->
