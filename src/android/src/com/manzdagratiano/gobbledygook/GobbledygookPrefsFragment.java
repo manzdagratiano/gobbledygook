@@ -143,9 +143,9 @@ public class GobbledygookPrefsFragment extends PreferenceFragment
                     saltKeyPref.setSummary(saltKey);
                 }
 
-                // Grey out the saltKey by default,
+                // Disable clicking on the saltKey by default for editing,
                 // it should be enabled only when unlockSaltKey is checked
-                saltKeyPref.setSelectable(false);
+                saltKeyPref.setEnabled(false);
 
                 // Attach a listener to the "Load Salt Key..." Preference
                 Log.i(Env.LOG_CATEGORY,
