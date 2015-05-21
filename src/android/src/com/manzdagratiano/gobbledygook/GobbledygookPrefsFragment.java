@@ -48,8 +48,6 @@ public class GobbledygookPrefsFragment extends PreferenceFragment
 
         // Load the preferences from the xml resource
         addPreferencesFromResource(R.xml.preferences);
-
-        configurePreferenceElements();
     }
 
     /**
@@ -62,14 +60,38 @@ public class GobbledygookPrefsFragment extends PreferenceFragment
         Log.i(Env.LOG_CATEGORY,
               "onSharedPreferencesChanged() handler called. " +
               "key='" + key + "'");
-        if (key.equals(getString(R.string.pref_defaultIterations_key))) {
+
+        if (key.equals(
+                    getString(R.string.pref_saltKey_key))) {
+            String newSaltKey = sharedPreferences.getString(key, "");
+            Log.i(Env.LOG_CATEGORY, "onSharedPreferencesChanged(): " +
+                    "New saltKey='" + newSaltKey + "'");
+        } else if (key.equals(
+                    getString(R.string.pref_unlockSaltKey_key))) {
+            Preference unlockSaltKeyPref = (Preference)findPreference(key);
+            // If the checkbox was checked, enable the Salt Key preference,
+            // else disable it
+            boolean unlockSaltKey = sharedPreferences.getBoolean(key, false);
+            Preference saltKeyPref = (Preference)findPreference(
+                                        getString(R.string.pref_saltKey_key));
+            if (unlockSaltKey) {
+                Log.i(Env.LOG_CATEGORY, "onSharedPreferencesChanged(): "+
+                      "Unlocking salt key...");
+                saltKeyPref.setEnabled(true);
+            } else {
+                Log.i(Env.LOG_CATEGORY, "onSharedPreferencesChanged(): "+
+                      "Locking salt key...");
+                saltKeyPref.setEnabled(false);
+            }
+        } else if (key.equals(
+                    getString(R.string.pref_defaultIterations_key))) {
             Preference defaultIterationsPref = (Preference)findPreference(key);
             // Modify the summary to reflect the value selected by the user;
             // fetch the value of the default iterations as string.
             String newDefaultIterationsStr =
                 sharedPreferences.getString(key, "");
             if (!newDefaultIterationsStr.isEmpty()) {
-                Log.i(Env.LOG_CATEGORY,
+                Log.i(Env.LOG_CATEGORY, "onSharedPreferencesChanged(): " +
                       "New defaultIterations=" + newDefaultIterationsStr);
                 defaultIterationsPref.setSummary(newDefaultIterationsStr);
             }
@@ -81,10 +103,22 @@ public class GobbledygookPrefsFragment extends PreferenceFragment
      * @return  
      */
     @Override
+    public void onStart() {
+        super.onStart();
+
+        Log.i(Env.LOG_CATEGORY, "onStart(): Configuring elements...");
+        configurePreferenceElements();
+    }
+
+    /**
+     * @brief   
+     * @return  
+     */
+    @Override
     public void onResume() {
         super.onResume();
-        Log.i(Env.LOG_CATEGORY, "onResume(): Registering changedListeners...");
 
+        Log.i(Env.LOG_CATEGORY, "onResume(): Registering changedListeners...");
         // The OnSharedPreferenceChangedListener for all Preference changes
         getPreferenceManager(
                 ).getSharedPreferences(
@@ -98,12 +132,27 @@ public class GobbledygookPrefsFragment extends PreferenceFragment
     @Override
     public void onPause() {
         super.onPause();
-        Log.i(Env.LOG_CATEGORY, "onPause(): Deregistering changedListeners...");
 
+        Log.i(Env.LOG_CATEGORY, "onPause(): Deregistering changedListeners...");
         // Unregister the PreferenceChangeListener
         getPreferenceManager(
                 ).getSharedPreferences(
                     ).unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    /**
+     * @brief   
+     * @return  
+     */
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        Log.i(Env.LOG_CATEGORY, "onStop(): Cleaning up clickHandlers...");
+        // Unregister the saltKey click listener
+        Preference saltKeyPref = (Preference)findPreference(
+                                    getString(R.string.pref_saltKey_key));
+        saltKeyPref.setOnPreferenceClickListener(null);
     }
 
     // --------------------------------------------------------------------
@@ -143,10 +192,6 @@ public class GobbledygookPrefsFragment extends PreferenceFragment
                     saltKeyPref.setSummary(saltKey);
                 }
 
-                // Disable clicking on the saltKey by default for editing,
-                // it should be enabled only when unlockSaltKey is checked
-                saltKeyPref.setEnabled(false);
-
                 // Attach a listener to the "Load Salt Key..." Preference
                 Log.i(Env.LOG_CATEGORY,
                       "configureSaltKey(): Attaching clickListener...");
@@ -160,6 +205,10 @@ public class GobbledygookPrefsFragment extends PreferenceFragment
                             }
                         }
                 );
+
+                // Disable clicking on the saltKey by default for editing,
+                // it should be enabled only when unlockSaltKey is checked
+                saltKeyPref.setEnabled(false);
             }
 
             /**
