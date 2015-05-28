@@ -60,21 +60,6 @@ public class Gobbledygook extends Activity
     }
 
     // ====================================================================
-    // PUBLIC DATA
-
-    public class Env
-    {
-
-        // ----------------------------------------------------------------
-        // CONSTANTS
-
-        public static final String LOG_CATEGORY = "GOBBLEDYGOOK";
-        public static final String SHA256       = "SHA-256";
-        public static final String UTF8         = "UTF-8";
-
-    }
-
-    // ====================================================================
     // PUBLIC METHODS
 
     /**
@@ -85,7 +70,7 @@ public class Gobbledygook extends Activity
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.i(Env.LOG_CATEGORY, "onCreate(): Creating activity...");
+        Log.i(LOG_CATEGORY, "onCreate(): Creating activity...");
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.main);
@@ -98,13 +83,13 @@ public class Gobbledygook extends Activity
      */
     @Override
     public void onResume() {
-        Log.i(Env.LOG_CATEGORY, "onResume(): Configuring...");
+        Log.i(LOG_CATEGORY, "onResume(): Configuring...");
         super.onResume();
 
         // ----------------------------------------------------------------
         // Retrieve saved preferences
         // The SharedPreferences handle
-        Log.i(Env.LOG_CATEGORY, "Reading saved preferences...");
+        Log.i(LOG_CATEGORY, "Reading saved preferences...");
         SharedPreferences sharedPrefs =
             PreferenceManager.getDefaultSharedPreferences(this);
         // The salt key 
@@ -136,11 +121,11 @@ public class Gobbledygook extends Activity
                     getString(R.string.pref_siteAttributesList_key),
                               "");
         } catch (Exception e) {
-            Log.e(Env.LOG_CATEGORY, "ERROR: Caught " + e);
+            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
             e.printStackTrace();
         }
 
-        Log.d(Env.LOG_CATEGORY,
+        Log.d(LOG_CATEGORY,
               "savedPreferences=[ saltKey='" + saltKey + "', " +
               "defaultIterations=" + defaultIterations.toString() + ", " +
               "siteAttributesList='" + encodedAttributesList + "' ]");
@@ -153,7 +138,7 @@ public class Gobbledygook extends Activity
 
         // ----------------------------------------------------------------
         // Read the url from the clipboard
-        Log.i(Env.LOG_CATEGORY, "Reading url from clipboard...");
+        Log.i(LOG_CATEGORY, "Reading url from clipboard...");
         String url = "";
         ClipboardManager clipboard =
             (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
@@ -164,13 +149,13 @@ public class Gobbledygook extends Activity
                 url = clipText.toString();
             }
         }
-        Log.i(Env.LOG_CATEGORY, "url='" + url + "'");
+        Log.i(LOG_CATEGORY, "url='" + url + "'");
 
         // ----------------------------------------------------------------
         // Extract the domain from the url
 
         String domain = config.extractDomain(url);
-        Log.i(Env.LOG_CATEGORY, "domain='" + domain + "'");
+        Log.i(LOG_CATEGORY, "domain='" + domain + "'");
 
         // ----------------------------------------------------------------
         // Saved and Proposed Attributes
@@ -179,7 +164,7 @@ public class Gobbledygook extends Activity
         Attributes savedAttributes =
             codec.getSavedAttributes(domain,
                                      encodedAttributesList);
-        Log.i(Env.LOG_CATEGORY,
+        Log.i(LOG_CATEGORY,
               "savedAttributes='" + codec.encode(savedAttributes) + "'");
 
         // The "proposed" attributes,
@@ -229,23 +214,23 @@ public class Gobbledygook extends Activity
      * @return  
      */
     public void generate(final View view) {
-        Log.i(Env.LOG_CATEGORY, "Generating proxy password...");
+        Log.i(LOG_CATEGORY, "Generating proxy password...");
         AttributesCodec codec = new AttributesCodec();
         final Attributes attributes = getAttributes(view);
-        Log.i(Env.LOG_CATEGORY,
+        Log.i(LOG_CATEGORY,
               "attributes='" + codec.encode(attributes) + "'");
 
         final byte[] seedSHA = getSeedSHA(view);
         if (null == seedSHA) {
-            Log.e(Env.LOG_CATEGORY, "ERROR: seedSHA.generation.failure");
+            Log.e(LOG_CATEGORY, "ERROR: seedSHA.generation.failure");
             return;
         }
         try {
-            Log.d(Env.LOG_CATEGORY,
+            Log.d(LOG_CATEGORY,
                   "seedSHA=" + (new String(Hex.encode(seedSHA),
-                                           Env.UTF8)));
+                                           UTF8)));
         } catch (UnsupportedEncodingException e) {
-            Log.e(Env.LOG_CATEGORY, "ERROR: Caught " + e);
+            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
             e.printStackTrace();
         }
 
@@ -271,16 +256,16 @@ public class Gobbledygook extends Activity
                                                   attributes.iterations());
                 if (null == salt) {
                     String errMsg = "Salt.Generation.Failure";
-                    Log.e(Env.LOG_CATEGORY, errMsg);
+                    Log.e(LOG_CATEGORY, errMsg);
                     setPassword(view, errMsg);
                     return;
                 }
                 try {
-                    Log.i(Env.LOG_CATEGORY,
+                    Log.i(LOG_CATEGORY,
                           "salt=" + (new String(Base64.encode(salt),
-                                                Env.UTF8)));
+                                                UTF8)));
                 } catch (UnsupportedEncodingException e) {
-                    Log.e(Env.LOG_CATEGORY, "ERROR: Caught " + e);
+                    Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
                     e.printStackTrace();
                 }
 
@@ -290,15 +275,15 @@ public class Gobbledygook extends Activity
                                                      attributes.iterations());
                 if (null == b64Hash) {
                     String errMsg = "Hash.Generation.Failure";
-                    Log.e(Env.LOG_CATEGORY, errMsg);
+                    Log.e(LOG_CATEGORY, errMsg);
                     setPassword(view, errMsg);
                     return;
                 }
-                Log.i(Env.LOG_CATEGORY, "hash=" + b64Hash);
+                Log.i(LOG_CATEGORY, "hash=" + b64Hash);
                 final String password =
                     Hasher.getPasswdStr(b64Hash,
                                         attributes.truncation());
-                Log.i(Env.LOG_CATEGORY, "password=" + password);
+                Log.i(LOG_CATEGORY, "password=" + password);
 
                 // Post the results to the UI thread for manipulation
                 // (using "runOnUiThread" from the "Activity" class)
@@ -313,6 +298,16 @@ public class Gobbledygook extends Activity
 
     // ====================================================================
     // PRIVATE METHODS
+
+    // --------------------------------------------------------------------
+    // CONSTANTS
+
+    public static final String LOG_CATEGORY = "GOBBLEDYGOOK";
+    public static final String SHA256       = "SHA-256";
+    public static final String UTF8         = "UTF-8";
+
+    // --------------------------------------------------------------------
+    // METHODS
 
     /**
      * @brief   
@@ -332,7 +327,7 @@ public class Gobbledygook extends Activity
                  Attributes.DEFAULT_ITERATIONS :
                  Integer.parseInt(iterationsField.getText().toString()));
         } catch (ClassCastException e) {
-            Log.e(Env.LOG_CATEGORY, "ERROR: Caught " + e);
+            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
             e.printStackTrace();
             iterations = Attributes.DEFAULT_ITERATIONS;
         }
@@ -344,7 +339,7 @@ public class Gobbledygook extends Activity
                  Attributes.NO_TRUNCATION :
                  Integer.parseInt(truncationField.getText().toString()));
         } catch (ClassCastException e) {
-            Log.e(Env.LOG_CATEGORY, "ERROR: Caught " + e);
+            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
             e.printStackTrace();
             truncation = Attributes.NO_TRUNCATION;
         }
@@ -366,11 +361,11 @@ public class Gobbledygook extends Activity
         byte[] seedSHA = null;
         MessageDigest hash = null;
         try {
-            hash = MessageDigest.getInstance(Env.SHA256);
+            hash = MessageDigest.getInstance(SHA256);
             seedSHA =
                 hash.digest(password.getText().toString().getBytes());
         } catch (NoSuchAlgorithmException e) {
-            Log.e(Env.LOG_CATEGORY, "ERROR: Caught " + e);
+            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
             e.printStackTrace();
         }
 
@@ -383,9 +378,6 @@ public class Gobbledygook extends Activity
         EditText hash = (EditText) findViewById(R.id.hash);
         hash.setText(password, TextView.BufferType.EDITABLE);
     }
-
-    // ====================================================================
-    // PRIVATE DATA
 
     // --------------------------------------------------------------------
     // INNER CLASSES
@@ -480,7 +472,7 @@ public class Gobbledygook extends Activity
         public void setTruncation(Integer truncation) {
             // Sanity check
             if (null == truncation) {
-                Log.e(Env.LOG_CATEGORY, "ERROR: " +
+                Log.e(LOG_CATEGORY, "ERROR: " +
                       "Thwarted attempt to set truncation to null!");
                 return;
             }
@@ -534,7 +526,7 @@ public class Gobbledygook extends Activity
         public Attributes decode(String encodedAttributes) {
             // Create a default-initialized Attributes object
             Attributes attributes = new Attributes();
-            Log.d(Env.LOG_CATEGORY, "AttributesCodec.decode(): Decoding " +
+            Log.d(LOG_CATEGORY, "AttributesCodec.decode(): Decoding " +
                   ((null == encodedAttributes) ?
                    "null" : "'" + encodedAttributes + "'") + " ...");
 
@@ -550,7 +542,7 @@ public class Gobbledygook extends Activity
                 encodedAttributes.split(AttributesCodec.DELIMITER);
             // Sanity check for length of the split array
             if (3 != siteAttributesArray.length) {
-                Log.e(Env.LOG_CATEGORY, "ERROR: Malformed Attributes! " +
+                Log.e(LOG_CATEGORY, "ERROR: Malformed Attributes! " +
                         "(Expected <domain|iterations|truncation>)");
                 return attributes;
             }
@@ -563,7 +555,7 @@ public class Gobbledygook extends Activity
                     attributes.setIterations(
                             Integer.parseInt(siteAttributesArray[1]));
                 } catch (ClassCastException e) {
-                    Log.e(Env.LOG_CATEGORY, "ERROR: Caught " + e);
+                    Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
                     e.printStackTrace();
                     attributes.setIterations(Attributes.DEFAULT_ITERATIONS);
                 }
@@ -573,7 +565,7 @@ public class Gobbledygook extends Activity
                     attributes.setTruncation(
                             Integer.parseInt(siteAttributesArray[2]));
                 } catch (ClassCastException e) {
-                    Log.e(Env.LOG_CATEGORY, "ERROR: Caught " + e);
+                    Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
                     e.printStackTrace();
                     attributes.setTruncation(Attributes.NO_TRUNCATION);
                 }
@@ -590,7 +582,7 @@ public class Gobbledygook extends Activity
         public Attributes
         getSavedAttributes(String domain,
                            String encodedAttributesList) {
-            Log.i(Env.LOG_CATEGORY, "Fetching saved attributes...");
+            Log.i(LOG_CATEGORY, "Fetching saved attributes...");
 
             String encodedAttributes = null;
             JSONObject encodedAttributesJson = null;
@@ -601,10 +593,10 @@ public class Gobbledygook extends Activity
                 try {
                     encodedAttributesJson =
                         new JSONObject(encodedAttributesList);
-                    Log.d(Env.LOG_CATEGORY, "encodedAttributesList=" +
+                    Log.d(LOG_CATEGORY, "encodedAttributesList=" +
                           encodedAttributesJson.toString());
                 } catch (JSONException e) {
-                    Log.e(Env.LOG_CATEGORY, "ERROR: Caught " + e);
+                    Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
                     e.printStackTrace();
                 }
             }
@@ -615,7 +607,7 @@ public class Gobbledygook extends Activity
                         encodedAttributes = encodedAttributesJson.getString(domain);
                     }
                 } catch (JSONException e) {
-                    Log.e(Env.LOG_CATEGORY, "ERROR: Caught " + e);
+                    Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
                     e.printStackTrace();
                 }
             }
@@ -749,19 +741,19 @@ public class Gobbledygook extends Activity
                 new PKCS5S2ParametersGenerator(new SHA256Digest());
 
             try {
-                MessageDigest hash = MessageDigest.getInstance(Env.SHA256);
+                MessageDigest hash = MessageDigest.getInstance(SHA256);
 
-                generator.init(hash.digest(domain.getBytes(Env.UTF8)),
+                generator.init(hash.digest(domain.getBytes(UTF8)),
                                hash.digest(saltKey.getBytes()),
                                iterations);
 
                 salt = ((KeyParameter)
                         generator.generateDerivedParameters(256)).getKey();
             } catch (NoSuchAlgorithmException e) {
-                Log.e(Env.LOG_CATEGORY, "ERROR: Caught " + e);
+                Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
                 e.printStackTrace();
             } catch (UnsupportedEncodingException e) {
-                Log.e(Env.LOG_CATEGORY, "ERROR: Caught " + e);
+                Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
                 e.printStackTrace();
             }
 
@@ -788,9 +780,9 @@ public class Gobbledygook extends Activity
 
             String b64Hash = null;
             try {
-                b64Hash = new String(Base64.encode(hash), Env.UTF8);
+                b64Hash = new String(Base64.encode(hash), UTF8);
             } catch (UnsupportedEncodingException e) {
-                Log.e(Env.LOG_CATEGORY, "ERROR: Caught " + e);
+                Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
                 e.printStackTrace();
             }
 
