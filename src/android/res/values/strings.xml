@@ -1,23 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- ########## -->
+    <!-- Activities -->
+    <!-- ########## -->
+
     <string name="app_name">gobbledygook</string>
-    <string name="prefs_name">gobbledygook Settings</string>
+    <string name="saltKeyActivity_name">gobbledygook Salt Key</string>
+    <string name="prefsActivity_name">gobbledygook Settings</string>
+
+    <!-- ##### -->
+    <!-- Fonts -->
+    <!-- ##### -->
+    <string name="label_fontFamily">sans-serif</string>
+    <string name="button_fontFamily">sans-serif</string>
+
+    <!-- ########## -->
+    <!-- Action bar -->
+    <!-- ########## -->
+    <string name="action_saltKeyActions">Salt Key Actions</string>
     <string name="action_settings">Settings</string>
-    <!-- Labels and Hints -->
+
+    <!-- ############# -->
+    <!-- Main activity -->
+    <!-- ############# -->
+
     <string name="label_domain">Domain</string>
-    <string name="text_domain">The foo.bar.baz.com part of the URL</string>
+    <string name="hint_domain">The foo.bar.baz.com part of the URL</string>
     <string name="label_password">Password</string>
-    <string name="text_password">Your KillerPassword123456789 Here</string>
+    <string name="hint_password">Your KillerPassword123456789 Here</string>
     <string name="label_iterations">Iterations</string>
-    <string name="text_iterations">10000</string>
+    <string name="hint_iterations">10000</string>
     <string name="label_hash">Proxy Password</string>
     <string name="checkBox_showHash">Show</string>
     <string name="checkBox_truncate">Truncate</string>
-    <string name="text_truncation">-1</string>
+    <string name="hint_truncation">-1</string>
     <string name="checkBox_saveAttributes">Save custom changes</string>
     <string name="button_generate">Generate!</string>
-    <string name="label_fontFamily">sans-serif</string>
-    <string name="button_fontFamily">sans-serif</string>
+
+    <!-- ######################### -->
+    <!-- Salt Key Actions Activity -->
+    <!-- ######################### -->
+
+    <string name="label_saltKey">Salt Key</string>
+    <string name="checkBox_unlockSaltKey">"Unlock" the Salt Key for Editing</string>
+    <string name="hint_saltKey">&lt;null&gt;</string>
+    <string name="button_loadSaltKey">Load Salt Key from File...</string>
+    <string name="button_generateSaltKey">Generate Salt Key</string>
+
+    <!-- ######### -->
+    <!-- Databases -->
+    <!-- ######### -->
 
     <!-- ########### -->
     <!-- Preferences -->
@@ -36,17 +68,6 @@
     </string>
     <string name="pref_saltKey_summary">
         A "key" to generate salts from domain names
-    </string>
-
-    <!-- Unlock Salt Key CheckBox -->
-    <string name="pref_unlockSaltKey_key">
-        unlockSaltKey
-    </string>
-    <string name="pref_unlockSaltKey_name">
-        Unlock Salt Key
-    </string>
-    <string name="pref_unlockSaltKey_summary">
-        Check the box, then click Salt Key to load from file
     </string>
 
     <!-- Default PBKDF2 Iterations -->

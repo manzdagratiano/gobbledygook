@@ -52,8 +52,7 @@ import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.util.encoders.Hex;
 import org.spongycastle.util.encoders.Base64;
 
-public class Gobbledygook extends Activity
-{
+public class Gobbledygook extends Activity {
 
     static {
         Security.addProvider(new BouncyCastleProvider());
@@ -70,7 +69,7 @@ public class Gobbledygook extends Activity
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.i(LOG_CATEGORY, "onCreate(): Creating activity...");
+        Log.i(LOG_CATEGORY, "onCreate(): Creating main activity...");
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.main);
@@ -91,7 +90,8 @@ public class Gobbledygook extends Activity
         // The SharedPreferences handle
         Log.i(LOG_CATEGORY, "Reading saved preferences...");
         SharedPreferences sharedPrefs =
-            PreferenceManager.getDefaultSharedPreferences(this);
+            PreferenceManager.getDefaultSharedPreferences(
+                                    this.getApplicationContext());
         // The salt key 
         String saltKey = "";
         Integer defaultIterations = Attributes.DEFAULT_ITERATIONS;
@@ -194,20 +194,28 @@ public class Gobbledygook extends Activity
     }
 
     /**
-     * @brief   Called when a menu item is selected.
+     * @brief   Called when an action bar menu item is selected.
      * @return  
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Intent intent = null;
         switch(item.getItemId()) {
-            case R.id.action_settings:
-                Intent intent = new Intent(this, GobbledygookPrefs.class);
+            case R.id.saltKeyActions:
+                intent = new Intent(this, GobbledygookSaltKeyActions.class);
+                startActivity(intent);
+                return true;
+            case R.id.settings:
+                intent = new Intent(this, GobbledygookPrefs.class);
                 startActivity(intent);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
+
+    // --------------------------------------------------------------------
+    // HANDLERS
 
     /**
      * @brief   
@@ -302,9 +310,9 @@ public class Gobbledygook extends Activity
     // --------------------------------------------------------------------
     // CONSTANTS
 
-    public static final String LOG_CATEGORY = "GOBBLEDYGOOK";
-    public static final String SHA256       = "SHA-256";
-    public static final String UTF8         = "UTF-8";
+    private static final String LOG_CATEGORY    = "GOBBLEDYGOOK";
+    private static final String SHA256          = "SHA-256";
+    private static final String UTF8            = "UTF-8";
 
     // --------------------------------------------------------------------
     // METHODS

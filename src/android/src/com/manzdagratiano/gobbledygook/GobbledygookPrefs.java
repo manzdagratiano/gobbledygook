@@ -34,8 +34,6 @@ public class GobbledygookPrefs extends Activity {
     // --------------------------------------------------------------------
     // CONSTANTS
 
-    public static final int READ_SALT_KEY_FILE  = 666;
-
     /**
      * @brief   
      * @return  
@@ -51,37 +49,6 @@ public class GobbledygookPrefs extends Activity {
                            new GobbledygookPrefsFragment(),
                            FRAGMENT_TAG);
         fragmentTx.commit();
-    }
-
-    /**
-     * @brief   
-     * @return  
-     */
-    @Override
-    public void onActivityResult(int requestCode,
-                                 int resultCode,
-                                 Intent resultData) {
-        Log.i(LOG_CATEGORY, "onActivityResult() handler called...");
-
-        // Handle the result from the file picker
-        // for the Salt Key preference, if this was called due to that
-        if (requestCode == READ_SALT_KEY_FILE &&
-            resultCode == Activity.RESULT_OK) {
-            FragmentManager fragmentManager = getFragmentManager();
-            GobbledygookPrefsFragment preferenceFragment =
-                (GobbledygookPrefsFragment)fragmentManager.findFragmentByTag(
-                        FRAGMENT_TAG);
-            if (null == preferenceFragment) {
-                Log.e(LOG_CATEGORY, "onActivityResult(): " +
-                        "FATAL: Could not retrieve " + FRAGMENT_TAG);
-            }
-
-            Log.i(LOG_CATEGORY, "onActivityResult(): " +
-                    "Calling PrefsFragment fileSelectionHandler...");
-            preferenceFragment.handleFileSelection(resultData.getData());
-        }
-
-        super.onActivityResult(requestCode, resultCode, resultData);
     }
 
     // ====================================================================

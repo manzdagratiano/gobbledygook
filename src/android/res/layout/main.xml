@@ -19,6 +19,8 @@
         android:paddingRight="5dp"
         android:fitsSystemWindows="true"
         >
+        <!-- To change an EditText background, add the attribute
+             android:background="@drawable/rounded_rectangle" -->
         <Space
             android:layout_width="match_parent"
             android:layout_height="10dp"
@@ -33,10 +35,9 @@
             android:textStyle="bold"
             />
         <EditText android:id="@+id/domain"
-            android:background="@drawable/rounded_rectangle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/text_domain"
+            android:hint="@string/hint_domain"
             />
         <Space
             android:layout_width="match_parent"
@@ -54,7 +55,7 @@
         <EditText android:id="@+id/password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/text_password"
+            android:hint="@string/hint_password"
             android:inputType="textPassword"
             />
         <Space
@@ -73,7 +74,7 @@
         <EditText android:id="@+id/iterations"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:hint="@string/text_iterations"
+            android:hint="@string/hint_iterations"
             android:inputType="number"
             />
         <Space
@@ -116,7 +117,7 @@
         <EditText android:id="@+id/truncation"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:hint="@string/text_truncation"
+            android:hint="@string/hint_truncation"
             android:inputType="number"
             />
         <Space
@@ -134,7 +135,7 @@
             android:layout_height="10dp"
             />
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/button_generate"
             android:fontFamily="@string/button_fontFamily"

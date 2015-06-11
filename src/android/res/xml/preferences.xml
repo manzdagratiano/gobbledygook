@@ -8,13 +8,7 @@
         android:key="@string/pref_saltKey_key"
         android:title="@string/pref_saltKey_name"
         android:summary="@string/pref_saltKey_summary"
-        />
-    <!-- A checkbox to unlock the salt key for editing -->
-    <CheckBoxPreference
-        android:key="@string/pref_unlockSaltKey_key"
-        android:title="@string/pref_unlockSaltKey_name"
-        android:summary="@string/pref_unlockSaltKey_summary"
-        android:defaultValue="false"
+        android:ellipsize="end"
         />
     <!-- The default # of PBKDF2 iterations.
          NOTE: Even though it has the numeric attribute and

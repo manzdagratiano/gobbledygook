@@ -1,7 +1,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Settings -->
-    <item android:id="@+id/action_settings"
+    <item android:id="@+id/saltKeyActions"
+          android:title="@string/action_saltKeyActions"
+          android:icon="@drawable/ic_menu_account_list"
+          android:showAsAction="ifRoom"
+          />
+    <item android:id="@+id/settings"
           android:title="@string/action_settings"
-          android:showAsAction="never"
+          android:icon="@drawable/ic_settings"
+          android:showAsAction="ifRoom"
           />
 </menu>
