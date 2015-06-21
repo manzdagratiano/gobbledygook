@@ -1,6 +1,6 @@
 /**
- * @file        GobbledygookSaltKeyActions.java
- * @brief       Source file for the GobbledygookSaltKey class
+ * @file        GobbledygookSaltKeyActionsFragment.java
+ * @brief       Source file for the GobbledygookSaltKeyActionsFragment class
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
  * @date        Jun 08, 2015
@@ -14,6 +14,7 @@ package com.manzdagratiano.gobbledygook;
 // Android
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -22,7 +23,9 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -43,7 +46,7 @@ import java.security.Security;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.util.encoders.Base64;
 
-public class GobbledygookSaltKeyActions extends Activity {
+public class GobbledygookSaltKeyActionsFragment extends Fragment {
 
     static {
         Security.addProvider(new BouncyCastleProvider());
@@ -54,14 +57,22 @@ public class GobbledygookSaltKeyActions extends Activity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.i(LOG_CATEGORY, "Creating SaltKeyActions activity...");
+        Log.i(LOG_CATEGORY, "Creating SaltKeyActions fragment...");
         super.onCreate(savedInstanceState);
+    }
 
-        setContentView(R.layout.saltkeyactions);
-
-        // Enable the app icon as an "up" button
-        ActionBar actionBar = getActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
+    /**
+     * @brief   Called when the fragment is ready to display its UI
+     * @return  The View representing the root of the fragment layout
+     */
+    @Override
+    public View onCreateView(LayoutInflater inflater,
+                             ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the main layout
+        return inflater.inflate(R.layout.saltkey_actions,
+                                container,
+                                false);
     }
 
     /**
@@ -74,6 +85,20 @@ public class GobbledygookSaltKeyActions extends Activity {
         super.onResume();
 
         this.configureElements();
+    }
+
+    /**
+     * @brief   
+     * @return  
+     */
+    @Override
+    public void onStop() {
+        // Clean-up listeners and handlers
+        Log.i(LOG_CATEGORY, "onStop(): Deconfiguring elements...");
+
+        this.deconfigureElements();
+
+        super.onStop();
     }
 
     /**
@@ -96,76 +121,6 @@ public class GobbledygookSaltKeyActions extends Activity {
         }
 
         super.onActivityResult(requestCode, resultCode, resultData);
-    }
-
-    // --------------------------------------------------------------------
-    // EVENT HANDLERS
-
-    /**
-     * @brief   
-     * @return  
-     */
-    public void loadSaltKey(final View view) {
-        Log.i(LOG_CATEGORY, "loadSaltKey() handler called...");
-
-        // Open the file picker dialog to select the key file.
-        // This requires creating a new "Intent".
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        // Filter to only show results that can be "opened"
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        // Filter to only show text files
-        intent.setType("text/*");
-
-        // Start the activity
-        Log.i(LOG_CATEGORY, "loadSaltKey(): Opening File Picker UI...");
-        // Start the activity, but through a "chooser"
-        // for available Content Providers instead of the intent directly,
-        // since the user may prefer a different one each time.
-        Intent fileChooser =
-            intent.createChooser(intent,
-                                 "Select a plaintext file...");
-        // Check if the intent resolves to any activities,
-        // and start it if it does.
-        if (null != intent.resolveActivity(this.getPackageManager())) {
-            startActivityForResult(fileChooser,
-                                   READ_SALT_KEY_FILE);
-        }
-        // The callback "onActivityResult" will be called
-    }
-
-    /**
-     * @brief   
-     * @return  
-     */
-    public void generateSaltKey(final View view) {
-        Log.i(LOG_CATEGORY, "generateSaltKey() handler called...");
-        Toast.makeText(getApplicationContext(),
-                       "Generating new salt key...",
-                       Toast.LENGTH_SHORT).show();
-        SecureRandom csprng = new SecureRandom();
-        byte[] saltKeyBytes = new byte[SALT_KEY_LENGTH];
-        csprng.nextBytes(saltKeyBytes);
-        String saltKey = null;
-        try {
-            saltKey = new String(Base64.encode(saltKeyBytes), UTF8);
-        } catch (UnsupportedEncodingException e) {
-            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
-            e.printStackTrace();
-        }
-        Log.i(LOG_CATEGORY, "generateSaltKey(): " +
-              "Generated saltKey='" + saltKey + "'");
-
-        // Set the view with the saltKey
-        Log.i(LOG_CATEGORY, "generateSaltKey(): " +
-              "Setting the view with saltKey...");
-        EditText saltKeyBox = (EditText)findViewById(R.id.saltKey);
-        saltKeyBox.setText(saltKey, TextView.BufferType.EDITABLE);
-
-        // Save the saltKey into the preferences object
-        saveSaltKeyToSharedPreferences(saltKey);
-
-        // Uncheck the unlockSaltKey checkBox
-        uncheckLoadSaltKeyCheckBox();
     }
 
     // ===================================================================
@@ -193,7 +148,7 @@ public class GobbledygookSaltKeyActions extends Activity {
                       "Unchecking checkbox...");
 
                 CheckBox unlockSaltKeyBox =
-                    (CheckBox)findViewById(R.id.unlockSaltKey);
+                    (CheckBox)getView().findViewById(R.id.unlockSaltKey);
                 unlockSaltKeyBox.setChecked(false);
 
                 // Attach an onCheckedChangeListener
@@ -207,15 +162,19 @@ public class GobbledygookSaltKeyActions extends Activity {
                     public void onCheckedChanged(CompoundButton view,
                                                 boolean isChecked) {
                         EditText saltKeyBox =
-                            (EditText)findViewById(R.id.saltKey);
+                            (EditText)getView().findViewById(
+                                                    R.id.saltKey);
                         Button loadSaltKeyButton =
-                            (Button)findViewById(R.id.loadSaltKey);
+                            (Button)getView().findViewById(
+                                                    R.id.loadSaltKey);
                         Button generateSaltKeyButton =
-                            (Button)findViewById(R.id.generateSaltKey);
+                            (Button)getView().findViewById(
+                                                    R.id.generateSaltKey);
                         if (isChecked) {
-                            Toast.makeText(getApplicationContext(),
-                                           "Load or Generate a new Salt Key",
-                                           Toast.LENGTH_SHORT).show();
+                            Toast.makeText(
+                                    getActivity().getApplicationContext(),
+                                    "Load or Generate a new Salt Key",
+                                    Toast.LENGTH_SHORT).show();
                             saltKeyBox.setEnabled(true);
                             loadSaltKeyButton.setEnabled(true);
                             generateSaltKeyButton.setEnabled(true);
@@ -235,11 +194,12 @@ public class GobbledygookSaltKeyActions extends Activity {
             public void configureSaltKey() {
                 Log.i(LOG_CATEGORY, "configureSaltKey(): Setting value...");
 
-                EditText saltKeyBox = (EditText)findViewById(R.id.saltKey);
+                EditText saltKeyBox =
+                    (EditText)getView().findViewById(R.id.saltKey);
 
                 SharedPreferences sharedPreferences =
                     PreferenceManager.getDefaultSharedPreferences(
-                                                getApplicationContext());
+                                        getActivity().getApplicationContext());
 
                 // Set the summary with the value
                 String saltKey = sharedPreferences.getString(
@@ -263,7 +223,22 @@ public class GobbledygookSaltKeyActions extends Activity {
              * @return  
              */
             public void configureLoadSaltKey() {
-                Button loadSaltKeyButton = (Button)findViewById(R.id.loadSaltKey);
+                Button loadSaltKeyButton =
+                    (Button)getView().findViewById(R.id.loadSaltKey);
+                loadSaltKeyButton.setOnClickListener(
+                                        new View.OnClickListener() {
+                    /**
+                     * @brief   The "onClick" callback for
+                     *          the "Load Salt Key" button
+                     * @return  Does not return a value
+                     */
+                    @Override
+                    public void onClick(View view) {
+                        loadSaltKey(view);
+                    }
+                });
+
+                // Disable the button until "unlockSaltKey" is checked
                 loadSaltKeyButton.setEnabled(false);
             }
 
@@ -272,7 +247,22 @@ public class GobbledygookSaltKeyActions extends Activity {
              * @return  
              */
             public void configureGenerateSaltKey() {
-                Button generateSaltKeyButton = (Button)findViewById(R.id.generateSaltKey);
+                Button generateSaltKeyButton =
+                    (Button)getView().findViewById(R.id.generateSaltKey);
+                generateSaltKeyButton.setOnClickListener(
+                                        new View.OnClickListener() {
+                    /**
+                     * @brief   The "onClick" callback for
+                     *          the "Generate Salt Key" button
+                     * @return  Does not return a value
+                     */
+                    @Override
+                    public void onClick(View view) {
+                        generateSaltKey(view);
+                    }
+                });
+
+                // Disable the button until "unlockSaltKey" is checked
                 generateSaltKeyButton.setEnabled(false);
             }
 
@@ -290,6 +280,74 @@ public class GobbledygookSaltKeyActions extends Activity {
      * @brief   
      * @return  
      */
+    private void loadSaltKey(final View view) {
+        Log.i(LOG_CATEGORY, "loadSaltKey() handler called...");
+
+        // Open the file picker dialog to select the key file.
+        // This requires creating a new "Intent".
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        // Filter to only show results that can be "opened"
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        // Filter to only show text files
+        intent.setType("text/*");
+
+        // Start the activity
+        Log.i(LOG_CATEGORY, "loadSaltKey(): Opening File Picker UI...");
+        // Start the activity, but through a "chooser"
+        // for available Content Providers instead of the intent directly,
+        // since the user may prefer a different one each time.
+        Intent fileChooser =
+            intent.createChooser(intent,
+                                 "Select a plaintext file...");
+        // Check if the intent resolves to any activities,
+        // and start it if it does.
+        if (null != intent.resolveActivity(
+                                getActivity().getPackageManager())) {
+            startActivityForResult(fileChooser,
+                                   READ_SALT_KEY_FILE);
+        }
+        // The callback "onActivityResult" will be called
+    }
+
+    /**
+     * @brief   
+     * @return  
+     */
+    private void generateSaltKey(final View view) {
+        Log.i(LOG_CATEGORY, "generateSaltKey() handler called...");
+        Toast.makeText(getActivity().getApplicationContext(),
+                       "Generating new salt key...",
+                       Toast.LENGTH_SHORT).show();
+        SecureRandom csprng = new SecureRandom();
+        byte[] saltKeyBytes = new byte[SALT_KEY_LENGTH];
+        csprng.nextBytes(saltKeyBytes);
+        String saltKey = null;
+        try {
+            saltKey = new String(Base64.encode(saltKeyBytes), UTF8);
+        } catch (UnsupportedEncodingException e) {
+            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
+            e.printStackTrace();
+        }
+        Log.i(LOG_CATEGORY, "generateSaltKey(): " +
+              "Generated saltKey='" + saltKey + "'");
+
+        // Set the view with the saltKey
+        Log.i(LOG_CATEGORY, "generateSaltKey(): " +
+              "Setting the view with saltKey...");
+        EditText saltKeyBox = (EditText)getView().findViewById(R.id.saltKey);
+        saltKeyBox.setText(saltKey, TextView.BufferType.EDITABLE);
+
+        // Save the saltKey into the preferences object
+        saveSaltKeyToSharedPreferences(saltKey);
+
+        // Uncheck the unlockSaltKey checkBox
+        uncheckLoadSaltKeyCheckBox();
+    }
+
+    /**
+     * @brief   
+     * @return  
+     */
     private void onSaltKeyFileSelection(Uri uri) {
         Log.i(LOG_CATEGORY, "onSaltKeyFileSelection() called..., " +
               "uri='" + uri.toString() + "'");
@@ -298,7 +356,8 @@ public class GobbledygookSaltKeyActions extends Activity {
         BufferedReader bufferedFileReader = null;
         String saltKey = null;
         try {
-            inputStream = this.getContentResolver().openInputStream(uri);
+            inputStream =
+                getActivity().getContentResolver().openInputStream(uri);
             bufferedFileReader =
                 new BufferedReader(new InputStreamReader(inputStream));
             // The "key" will be assumed to be the first whole line of the file.
@@ -341,6 +400,31 @@ public class GobbledygookSaltKeyActions extends Activity {
         uncheckLoadSaltKeyCheckBox();
     }
 
+    /**
+     * @brief   A method to "deconfigure elements", i.e.,
+     *          clean up listeners and handlers
+     * @return  Does not return a value
+     */
+    private void deconfigureElements() {
+        Log.i(LOG_CATEGORY, "deconfigureElements(): " +
+              "Cleaning up listeners/handlers");
+
+        // "Unlock Salt Key" checkbox
+        CheckBox unlockSaltKeyBox =
+            (CheckBox)getView().findViewById(R.id.unlockSaltKey);
+        unlockSaltKeyBox.setOnCheckedChangeListener(null);
+
+        // "Load Salt Key" button
+        Button loadSaltKeyButton =
+            (Button)getView().findViewById(R.id.loadSaltKey);
+        loadSaltKeyButton.setOnClickListener(null);
+
+        // "Generate Salt Key" button
+        Button generateSaltKeyButton =
+            (Button)getView().findViewById(R.id.generateSaltKey);
+        generateSaltKeyButton.setOnClickListener(null);
+    }
+
     // --------------------------------------------------------------------
     // UTILITIES
 
@@ -353,7 +437,7 @@ public class GobbledygookSaltKeyActions extends Activity {
                 "Saving to SharedPreferences saltKey='" + saltKey + "'");
         SharedPreferences preferences =
             PreferenceManager.getDefaultSharedPreferences(
-                                        this.getApplicationContext());
+                                    getActivity().getApplicationContext());
         SharedPreferences.Editor preferenceEditor = preferences.edit();
         preferenceEditor.putString(getString(R.string.pref_saltKey_key),
                                    saltKey);
@@ -371,7 +455,8 @@ public class GobbledygookSaltKeyActions extends Activity {
      */
     private void uncheckLoadSaltKeyCheckBox() {
         Log.i(LOG_CATEGORY, "Unchecking the unlockSaltKey checkBox...");
-        CheckBox unlockSaltKeyBox = (CheckBox)findViewById(R.id.unlockSaltKey);
+        CheckBox unlockSaltKeyBox =
+            (CheckBox)getView().findViewById(R.id.unlockSaltKey);
         unlockSaltKeyBox.setChecked(false);
         // The CheckBox listener would now be called,
         // disabling the "Load Salt Key" and "Generate Salt Key" buttons

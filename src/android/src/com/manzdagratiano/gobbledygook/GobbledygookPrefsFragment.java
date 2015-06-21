@@ -104,13 +104,6 @@ public class GobbledygookPrefsFragment extends PreferenceFragment
                 ).getSharedPreferences(
                     ).unregisterOnSharedPreferenceChangeListener(this);
 
-        // Unregister the saltKey click listener
-        Log.i(LOG_CATEGORY, "onStop(): " +
-              "Cleaning up onPreferenceClickListeners...");
-        Preference saltKeyPref = (Preference)findPreference(
-                                    getString(R.string.pref_saltKey_key));
-        saltKeyPref.setOnPreferenceClickListener(null);
-
         super.onStop();
     }
 
@@ -163,6 +156,8 @@ public class GobbledygookPrefsFragment extends PreferenceFragment
     private static final int    DEFAULT_ITERATIONS  = 10000;
     private static final String EMPTY_SALT_KEY_INDICATOR
                                                     = "<null>";
+    private static final String EMPTY_CUSTOM_ATTRS_INDICATOR
+                                                    = "<null>";
 
     /**
      * @brief   
@@ -177,16 +172,13 @@ public class GobbledygookPrefsFragment extends PreferenceFragment
              *          and to set it read-only
              * @return  Does not return a value
              */
-            public void configureSaltKey() {
+            public void
+            configureSaltKey(SharedPreferences sharedPreferences) {
                 Log.i(LOG_CATEGORY, "configureSaltKey(): Setting value...");
 
                 Preference saltKeyPref =
                     (Preference)findPreference(
                             getString(R.string.pref_saltKey_key));
-                SharedPreferences sharedPreferences =
-                    PreferenceManager.getDefaultSharedPreferences(
-                            ((GobbledygookPrefs)getActivity(
-                                )).getApplicationContext());
 
                 // Set the summary with the value
                 String saltKey =
@@ -202,8 +194,7 @@ public class GobbledygookPrefsFragment extends PreferenceFragment
                     saltKeyPref.setSummary(saltKey);
                 }
 
-                // Disable clicking on the saltKey;
-                // this is a read-only preference
+                // This is a READ-ONLY preference
                 saltKeyPref.setEnabled(false);
             }
 
@@ -211,17 +202,14 @@ public class GobbledygookPrefsFragment extends PreferenceFragment
              * @brief   
              * @return  
              */
-            public void configureDefaultIterations() {
+            public void
+            configureDefaultIterations(SharedPreferences sharedPreferences) {
                 Log.i(LOG_CATEGORY,
                       "configureDefaultIterations(): Setting value...");
 
                 Preference defaultIterationsPref =
                     (Preference)findPreference(
                             getString(R.string.pref_defaultIterations_key));
-                SharedPreferences sharedPreferences =
-                    PreferenceManager.getDefaultSharedPreferences(
-                            ((GobbledygookPrefs)getActivity(
-                                )).getApplicationContext());
 
                 // Set the summary with the value
                 // defaultIterations needs to be retrieved as text
@@ -240,15 +228,45 @@ public class GobbledygookPrefsFragment extends PreferenceFragment
              * @brief   
              * @return  
              */
-            public void configureCustomAttributes() {
+            public void
+            configureCustomAttributes(SharedPreferences sharedPreferences) {
+                Log.i(LOG_CATEGORY, "configureCustomAttributes(): " +
+                      "Setting value...");
+
+                Preference customAttributesPref =
+                    (Preference)findPreference(
+                            getString(R.string.pref_siteAttributesList_key));
+
+                // Set the summary with the value
+                String customAttributes =
+                    sharedPreferences.getString(
+                            getString(R.string.pref_siteAttributesList_key), "");
+                if (customAttributes.isEmpty()) {
+                    Log.i(LOG_CATEGORY, "configureCustomAttributes(): " +
+                          "The list of custom attributes is empty");
+                    customAttributesPref.setSummary(EMPTY_CUSTOM_ATTRS_INDICATOR);
+                } else {
+                    Log.i(LOG_CATEGORY, "configureCustomAttributes(): " +
+                          "Found non-empty customAttributes='" +
+                          customAttributes + "'");
+                    customAttributesPref.setSummary(customAttributes);
+                }
+
+                // This is a READ-ONLY preference
+                customAttributesPref.setEnabled(false);
             }
 
         };  // end class Configurator
 
+        // Get the SharedPreferences handle
+        SharedPreferences sharedPreferences =
+            PreferenceManager.getDefaultSharedPreferences(
+                                    getActivity().getApplicationContext());
+
         Configurator configurator = new Configurator();
 
-        configurator.configureSaltKey();
-        configurator.configureDefaultIterations();
-        configurator.configureCustomAttributes();
+        configurator.configureSaltKey(sharedPreferences);
+        configurator.configureDefaultIterations(sharedPreferences);
+        configurator.configureCustomAttributes(sharedPreferences);
     }
 }

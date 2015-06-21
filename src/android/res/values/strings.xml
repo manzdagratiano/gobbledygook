@@ -7,6 +7,7 @@
     <string name="app_name">gobbledygook</string>
     <string name="saltKeyActivity_name">gobbledygook Salt Key</string>
     <string name="prefsActivity_name">gobbledygook Settings</string>
+    <string name="navigationDrawerActivity_name">gobbledygook Navigation</string>
 
     <!-- ##### -->
     <!-- Fonts -->
@@ -19,6 +20,12 @@
     <!-- ########## -->
     <string name="action_saltKeyActions">Salt Key Actions</string>
     <string name="action_settings">Settings</string>
+
+    <!-- ################# -->
+    <!-- Navigation Drawer -->
+    <!-- ################# -->
+    <string name="drawer_open">Abracadabra!</string>
+    <string name="drawer_closed">Hasta la Vista, Baby!</string>
 
     <!-- ############# -->
     <!-- Main activity -->

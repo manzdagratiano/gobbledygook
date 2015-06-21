@@ -28,7 +28,8 @@
             android:layout_width="match_parent"
             android:layout_height="10dp"
             />
-        <CheckBox android:id="@+id/unlockSaltKey"
+        <CheckBox
+            android:id="@+id/unlockSaltKey"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/checkBox_unlockSaltKey"
@@ -50,7 +51,8 @@
             android:textAllCaps="true"
             android:textStyle="bold"
             />
-        <EditText android:id="@+id/saltKey"
+        <EditText
+            android:id="@+id/saltKey"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:lines="5"
@@ -65,30 +67,32 @@
             android:layout_height="10dp"
             />
 
-        <!-- The "Load Salt Key" Button -->
         <Space
             android:layout_width="match_parent"
             android:layout_height="10dp"
             />
-        <Button android:id="@+id/loadSaltKey"
+
+        <!-- The "Load Salt Key" Button -->
+        <Button
+            android:id="@+id/loadSaltKey"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/button_loadSaltKey"
             android:fontFamily="@string/button_fontFamily"
-            android:onClick="loadSaltKey"
             />
 
-        <!-- The "Generate Salt Key" Button -->
         <Space
             android:layout_width="match_parent"
             android:layout_height="10dp"
             />
-        <Button android:id="@+id/generateSaltKey"
+
+        <!-- The "Generate Salt Key" Button -->
+        <Button
+            android:id="@+id/generateSaltKey"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/button_generateSaltKey"
             android:fontFamily="@string/button_fontFamily"
-            android:onClick="generateSaltKey"
             />
     </LinearLayout>
 </ScrollView>

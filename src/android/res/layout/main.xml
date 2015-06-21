@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     >
@@ -11,7 +12,8 @@
          to a text field while resizing the activity window
          so that the text field is not obscured by the soft keyboard.
          -->
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -34,7 +36,8 @@
             android:textAllCaps="true"
             android:textStyle="bold"
             />
-        <EditText android:id="@+id/domain"
+        <EditText
+            android:id="@+id/domain"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/hint_domain"
@@ -52,7 +55,8 @@
             android:textAllCaps="true"
             android:textStyle="bold"
             />
-        <EditText android:id="@+id/password"
+        <EditText
+            android:id="@+id/password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/hint_password"
@@ -71,7 +75,8 @@
             android:textAllCaps="true"
             android:textStyle="bold"
             />
-        <EditText android:id="@+id/iterations"
+        <EditText
+            android:id="@+id/iterations"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:hint="@string/hint_iterations"
@@ -91,12 +96,14 @@
             android:textAllCaps="true"
             android:textStyle="bold"
             />
-        <EditText android:id="@+id/hash"
+        <EditText
+            android:id="@+id/hash"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textPassword"
             />
-        <CheckBox android:id="@+id/showHash"
+        <CheckBox
+            android:id="@+id/showHash"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/checkBox_showHash"
@@ -106,7 +113,8 @@
             android:layout_width="match_parent"
             android:layout_height="10dp"
             />
-        <CheckBox android:id="@+id/truncate"
+        <CheckBox
+            android:id="@+id/truncate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/checkBox_truncate"
@@ -114,7 +122,8 @@
             android:textAllCaps="true"
             android:textStyle="bold"
             />
-        <EditText android:id="@+id/truncation"
+        <EditText
+            android:id="@+id/truncation"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:hint="@string/hint_truncation"
@@ -124,22 +133,32 @@
             android:layout_width="match_parent"
             android:layout_height="10dp"
             />
-        <CheckBox android:id="@+id/saveAttributes"
+        <CheckBox
+            android:id="@+id/saveAttributes"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/checkBox_saveAttributes"
             android:textStyle="italic"
             />
+
         <Space
             android:layout_width="match_parent"
             android:layout_height="10dp"
             />
+
+        <!-- The "Generate" button.
+             An "onClick" attribute defined here will
+             expect the corresponding callback to be defined
+             within the main enacpsulating activity,
+             not the fragment for which we are defining this layout.
+             Hence, for the purposes of design, we will declare
+             the callback in teh codez instead. -->
         <Button
+            android:id="@+id/generate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/button_generate"
             android:fontFamily="@string/button_fontFamily"
-            android:onClick="generate"
             />
     </LinearLayout>
 </ScrollView>
