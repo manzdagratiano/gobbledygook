@@ -55,55 +55,47 @@ public class GobbledygookPrefsFragment extends PreferenceFragment
     @Override
     public void onStart() {
         super.onStart();
-
-        Log.i(LOG_CATEGORY, "onStart(): Configuring elements...");
-        configurePreferenceElements();
-
-        // The OnSharedPreferenceChangedListener for all Preference changes
-        Log.i(LOG_CATEGORY, "onStart(): "+
-              "Registering onSharedPreferenceChangedListeners...");
-        getPreferenceManager(
-                ).getSharedPreferences(
-                    ).registerOnSharedPreferenceChangeListener(this);
     }
 
     /**
      * @brief   This lifecycle function is called after onStart(),
-     *          and also when the activity comes
-     *          back to the foreground. Don't want to be doing anything with
-     *          handler registration here.
-     * @return  
+     *          and also when the activity comes back to the foreground.
+     *          Perform any configuration here,
+     *          to pick up any changes made in other fragments if
+     *          this fragment was added to the back stack.
+     * @return  Does not return a value
      */
     @Override
     public void onResume() {
+        Log.i(LOG_CATEGORY, "onResume(): Configuring elements...");
+
         super.onResume();
+
+        configurePreferenceElements();
+
     }
 
     /**
      * @brief   This lifecycle function is called when the activity is
-     * sent to the background, such as when partially covered by another
-     * activity, and also before onStop(). Don't want to be doing anything
-     * with handler deregistration here.
-     * @return  
+     *          sent to the background, such as when
+     *          partially covered by another activity, and before onStop().
+     *          Perform any cleanup here, symmetric with onResume().
+     * @return  Does not return a value
      */
     @Override
     public void onPause() {
+        Log.i(LOG_CATEGORY, "onPause(): Cleaning up...");
+        this.deconfigurePreferenceElements();
+
         super.onPause();
     }
 
     /**
      * @brief   
-     * @return  
+     * @return  Does not return a value
      */
     @Override
     public void onStop() {
-        // Unregister the PreferenceChangeListener
-        Log.i(LOG_CATEGORY, "onStop(): " +
-              "Deregistering onSharedPreferenceChangedListeners...");
-        getPreferenceManager(
-                ).getSharedPreferences(
-                    ).unregisterOnSharedPreferenceChangeListener(this);
-
         super.onStop();
     }
 
@@ -268,5 +260,25 @@ public class GobbledygookPrefsFragment extends PreferenceFragment
         configurator.configureSaltKey(sharedPreferences);
         configurator.configureDefaultIterations(sharedPreferences);
         configurator.configureCustomAttributes(sharedPreferences);
+
+        // The OnSharedPreferenceChangedListener for all Preference changes
+        Log.i(LOG_CATEGORY, "configurePreferenceElements(): "+
+              "Registering onSharedPreferenceChangedListeners...");
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+    }
+
+    /**
+     * @brief   Method to perform any cleanup, such as freeing handlers
+     *          for garbage collection
+     * @return  Does not return a value
+     */
+    private void deconfigurePreferenceElements() {
+        // Unregister the PreferenceChangeListener
+        Log.i(LOG_CATEGORY, "deconfigurePreferenceElements(): " +
+              "Deregistering onSharedPreferenceChangedListeners...");
+        SharedPreferences sharedPreferences =
+            PreferenceManager.getDefaultSharedPreferences(
+                                    getActivity().getApplicationContext());
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
     }
 }

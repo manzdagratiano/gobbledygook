@@ -10,8 +10,13 @@
                  android:theme="@android:style/Theme.Holo"
                  >
         <!-- In the end, there can be only ONE (activity) -->
+        <!-- For the soft input mode (on screen keyboard),
+             hide the keyboard on Activity launch using
+             the "stateHidden" property (until the user asks for it),
+             and allow the scroll view to work properly with the
+             "adjustResize" property -->
         <activity android:name="Gobbledygook"
-                  android:windowSoftInputMode="adjustResize"
+                  android:windowSoftInputMode="stateHidden|adjustResize"
                   android:label="@string/app_name"
                   >
             <intent-filter>

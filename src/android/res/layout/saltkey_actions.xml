@@ -57,7 +57,7 @@
             android:layout_height="wrap_content"
             android:lines="5"
             android:minLines="5"
-            android:maxLines="5"
+            android:maxLines="10"
             android:gravity="top|left"
             android:scrollbars="vertical"
             android:hint="@string/hint_saltKey"

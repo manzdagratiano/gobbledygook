@@ -81,7 +81,16 @@ public class GobbledygookSaltKeyActionsFragment extends Fragment {
      */
     @Override
     public void onStart() {
-        Log.i(LOG_CATEGORY, "onStart(): Configuring elements...");
+        super.onStart();
+    }
+
+    /**
+     * @brief   
+     * @return  
+     */
+    @Override
+    public void onResume() {
+        Log.i(LOG_CATEGORY, "onResume(): Configuring elements...");
         super.onResume();
 
         this.configureElements();
@@ -92,12 +101,21 @@ public class GobbledygookSaltKeyActionsFragment extends Fragment {
      * @return  
      */
     @Override
-    public void onStop() {
+    public void onPause() {
         // Clean-up listeners and handlers
-        Log.i(LOG_CATEGORY, "onStop(): Deconfiguring elements...");
+        Log.i(LOG_CATEGORY, "onPause(): Deconfiguring elements...");
 
         this.deconfigureElements();
 
+        super.onStop();
+    }
+
+    /**
+     * @brief   
+     * @return  
+     */
+    @Override
+    public void onStop() {
         super.onStop();
     }
 

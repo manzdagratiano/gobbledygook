@@ -1,6 +1,6 @@
 /**
- * @file        GobbledygookMainFragment.java
- * @brief       Source file for the GobbledygookMainFragment class
+ * @file        GobbledygookHomeFragment.java
+ * @brief       Source file for the GobbledygookHomeFragment class
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
  * @date        June 20, 2015
@@ -58,11 +58,11 @@ import org.spongycastle.util.encoders.Hex;
 import org.spongycastle.util.encoders.Base64;
 
 /**
- * @brief   The GobbledygookFragment class.
+ * @brief   The GobbledygookHomeFragment class.
  *          This is the "main" fragment of the application,
  *          where all the magic happens.
  */
-public class GobbledygookMainFragment extends Fragment {
+public class GobbledygookHomeFragment extends Fragment {
 
     static {
         Security.addProvider(new BouncyCastleProvider());
@@ -77,7 +77,7 @@ public class GobbledygookMainFragment extends Fragment {
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.i(LOG_CATEGORY, "onCreate(): Creating main activity...");
+        Log.i(LOG_CATEGORY, "onCreate(): Creating home activity...");
         super.onCreate(savedInstanceState);
 
         // Nullify the private data members
@@ -106,10 +106,7 @@ public class GobbledygookMainFragment extends Fragment {
      */
     @Override
     public void onStart() {
-        Log.i(LOG_CATEGORY, "onStart(): Configuring elements...");
-
         super.onStart();
-        this.configureElements();
     }
 
     /**
@@ -119,15 +116,30 @@ public class GobbledygookMainFragment extends Fragment {
      */
     @Override
     public void onResume() {
+        Log.i(LOG_CATEGORY, "onResume(): Configuring elements...");
+
         super.onResume();
+
+        // Configure elements here;
+        // this is to ensure we pick up changes made when
+        // the user navigated to a different fragment
+        // and changed any essential settings
+        // and this fragment was added to the back stack
+        this.configureElements();
     }
 
     /**
-     * @brief   
-     * @return  
+     * @brief   Called when the activity is partially covered by another.
+     *          Perform any cleanup here - symmetric to onResume
+     * @return  Does not return a value
      */
     @Override
     public void onPause() {
+        // Perform any cleanup here
+        Log.i(LOG_CATEGORY, "onPause(): Deconfiguring elements...");
+
+        this.deconfigureElements();
+
         super.onPause();
     }
 
@@ -137,10 +149,6 @@ public class GobbledygookMainFragment extends Fragment {
      */
     @Override
     public void onStop() {
-        // Clean-up listeners and handlers
-        Log.i(LOG_CATEGORY, "onStop(): Deconfiguring elements...");
-
-        this.deconfigureElements();
         super.onStop();
     }
 
@@ -285,6 +293,12 @@ public class GobbledygookMainFragment extends Fragment {
              * @return  Does not return a value
              */
             public void configureHash() {
+                // Disable the "proxy password" field
+                EditText hashField =
+                    (EditText)getView().findViewById(R.id.hash);
+                hashField.setEnabled(false);
+
+                // Attach a listener to the "Show Hash" checkbox
                 CheckBox showHashBox = 
                     (CheckBox)getView().findViewById(R.id.showHash);
                 showHashBox.setOnClickListener(new View.OnClickListener() {
@@ -625,8 +639,9 @@ public class GobbledygookMainFragment extends Fragment {
      */
     private void setPassword(View view,
                              String password) {
-        EditText hash = (EditText)getView().findViewById(R.id.hash);
-        hash.setText(password, TextView.BufferType.EDITABLE);
+        EditText hashField = (EditText)getView().findViewById(R.id.hash);
+        hashField.setEnabled(true);
+        hashField.setText(password, TextView.BufferType.EDITABLE);
     }
 
     /**

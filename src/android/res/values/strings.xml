@@ -18,6 +18,7 @@
     <!-- ########## -->
     <!-- Action bar -->
     <!-- ########## -->
+    <string name="action_home">Home</string>
     <string name="action_saltKeyActions">Salt Key Actions</string>
     <string name="action_settings">Settings</string>
 

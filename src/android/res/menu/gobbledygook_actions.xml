@@ -1,10 +1,17 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Settings -->
+    <!-- Home -->
+    <item android:id="@+id/home"
+          android:title="@string/action_home"
+          android:icon="@drawable/ic_menu_home"
+          android:showAsAction="ifRoom"
+          />
+    <!-- Salt Key Actions -->
     <item android:id="@+id/saltKeyActions"
           android:title="@string/action_saltKeyActions"
           android:icon="@drawable/ic_menu_account_list"
           android:showAsAction="ifRoom"
           />
+    <!-- Settings -->
     <item android:id="@+id/settings"
           android:title="@string/action_settings"
           android:icon="@drawable/ic_settings"

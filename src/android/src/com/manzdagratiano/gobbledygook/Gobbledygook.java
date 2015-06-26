@@ -23,14 +23,19 @@ import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 // Standard Java
@@ -71,7 +76,7 @@ public class Gobbledygook extends Activity {
         // If there is no saved state,
         // launch the "main" activity (at position 0 in the drawer)
         if (null == savedInstanceState) {
-            onActivitySelection(0);
+            onActivitySelection(DrawerItem.HOME.ordinal());
         }
     }
 
@@ -174,9 +179,11 @@ public class Gobbledygook extends Activity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         boolean isDrawerOpen = m_drawerLayout.isDrawerOpen(m_drawerView);
-        // Hide the "salt key" action if the drawer is open,
-        // since the drawer also provides navigation to that activity
+        // Hide the actions present in the navigation drawer
+        // if the drawer is open
+        menu.findItem(R.id.home).setVisible(!isDrawerOpen);
         menu.findItem(R.id.saltKeyActions).setVisible(!isDrawerOpen);
+        menu.findItem(R.id.settings).setVisible(!isDrawerOpen);
 
         return super.onPrepareOptionsMenu(menu);
     }
@@ -196,11 +203,17 @@ public class Gobbledygook extends Activity {
 
         Intent intent = null;
         switch(item.getItemId()) {
+            case R.id.home:
+                this.onActivitySelection(
+                        DrawerItem.HOME.ordinal());
+                return true;
             case R.id.saltKeyActions:
-                this.onActivitySelection(1);
+                this.onActivitySelection(
+                        DrawerItem.SALTKEY_ACTIONS.ordinal());
                 return true;
             case R.id.settings:
-                this.onActivitySelection(4);
+                this.onActivitySelection(
+                        DrawerItem.SETTINGS.ordinal());
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -217,8 +230,8 @@ public class Gobbledygook extends Activity {
         "GOBBLEDYGOOK";
 
     // Fragment tags
-    private static final String GOBBLEDYGOOK_MAIN_FRAGMENT_TAG            =
-        "GobbledygookMainFragment";
+    private static final String GOBBLEDYGOOK_HOME_FRAGMENT_TAG            =
+        "GobbledygookHomeFragment";
     private static final String GOBBLEDYGOOK_SALTKEY_ACTIONS_FRAGMENT_TAG =
         "GobbledygookSaltKeyFragment";
     private static final String GOBBLEDYGOOK_PREFERENCES_FRAGMENT_TAG     =
@@ -250,21 +263,33 @@ public class Gobbledygook extends Activity {
      */
     private void createDrawerMap() {
         Log.i(LOG_CATEGORY, "createDrawerMap() :" +
-              "Creating the (id, string) map of items in the drawer...");
+              "Creating the (id, NavigationDrawerItem) map...");
 
-        m_drawerMap = new TreeMap<Integer, String>();
-        m_drawerMap.put(DrawerItem.HOME.ordinal(),
-                        "Home");
-        m_drawerMap.put(DrawerItem.SALTKEY_ACTIONS.ordinal(),
-                        "Salt Key Actions");
-        m_drawerMap.put(DrawerItem.IMPORT_SETTINGS.ordinal(),
-                        "Import Settings...");
-        m_drawerMap.put(DrawerItem.EXPORT_SETTINGS.ordinal(),
-                        "Export Settings...");
-        m_drawerMap.put(DrawerItem.SETTINGS.ordinal(),
-                        "Settings");
-        m_drawerMap.put(DrawerItem.ABOUT.ordinal(),
-                        "About...");
+        m_drawerMap = new TreeMap<Integer, NavigationDrawerItem>();
+        m_drawerMap.put(
+                DrawerItem.HOME.ordinal(),
+                new NavigationDrawerItem(R.drawable.ic_menu_home,
+                                         "Home"));
+        m_drawerMap.put(
+                DrawerItem.SALTKEY_ACTIONS.ordinal(),
+                new NavigationDrawerItem(R.drawable.ic_menu_account_list,
+                                         "Salt Key Actions"));
+        m_drawerMap.put(
+                DrawerItem.IMPORT_SETTINGS.ordinal(),
+                new NavigationDrawerItem(R.drawable.ic_action_download,
+                                         "Import Settings..."));
+        m_drawerMap.put(
+                DrawerItem.EXPORT_SETTINGS.ordinal(),
+                new NavigationDrawerItem(R.drawable.ic_action_upload,
+                                         "Export Settings..."));
+        m_drawerMap.put(
+                DrawerItem.SETTINGS.ordinal(),
+                new NavigationDrawerItem(R.drawable.ic_settings,
+                                         "Settings"));
+        m_drawerMap.put(
+                DrawerItem.ABOUT.ordinal(),
+                new NavigationDrawerItem(R.drawable.ic_action_about,
+                                         "About..."));
     }
 
     /**
@@ -286,13 +311,14 @@ public class Gobbledygook extends Activity {
         // Get the title
         m_title = getTitle();
 
+        // Create an Array of items from m_drawerMap
+        ArrayList<NavigationDrawerItem> drawerItems =
+            new ArrayList<NavigationDrawerItem>(m_drawerMap.values());
+
         // Set the adapter for the list view
-        ArrayList<String> drawerItemList =
-            new ArrayList<String>(m_drawerMap.values());
-        m_drawerView.setAdapter(new ArrayAdapter<String>(
-                                        this,
-                                        R.layout.navigation_drawer_item,
-                                        drawerItemList));
+        m_drawerView.setAdapter(new NavigationDrawerListAdapter(
+                                            this.getApplicationContext(),
+                                            drawerItems));
 
         // Set the action bar app icon to behave as drawer toggler
         getActionBar().setDisplayHomeAsUpEnabled(true);
@@ -304,11 +330,11 @@ public class Gobbledygook extends Activity {
 
         // Set drawer toggle interactions to play well with the action bar
         m_drawerToggle = new ActionBarDrawerToggle(
-                                this,
-                                m_drawerLayout,
-                                R.drawable.ic_menu_white,
-                                R.string.drawer_open,
-                                R.string.drawer_closed) {
+                                    this,
+                                    m_drawerLayout,
+                                    R.drawable.ic_drawer,
+                                    R.string.drawer_open,
+                                    R.string.drawer_closed) {
 
             /**
              * @brief   
@@ -341,30 +367,22 @@ public class Gobbledygook extends Activity {
      * @return  Does not return a value
      */
     private void onActivitySelection(int position) {
-        Log.i(LOG_CATEGORY, "onActivitySelection() :" +
+        Log.i(LOG_CATEGORY, "onActivitySelection(): " +
               "Selecting activtity at position=" + position);
 
         // Create a const copy of the enum values
         // for use in the switch-case statement
         final DrawerItem[] items = DrawerItem.values();
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTx = null;
         switch(items[position]) {
             case HOME:
                 // Main activity
-                fragmentTx = fragmentManager.beginTransaction();
-                fragmentTx.replace(R.id.contentFrame,
-                                   new GobbledygookMainFragment(),
-                                   GOBBLEDYGOOK_MAIN_FRAGMENT_TAG);
-                fragmentTx.commit();
+                this.swapFragment(new GobbledygookHomeFragment(),
+                                  GOBBLEDYGOOK_HOME_FRAGMENT_TAG);
                 break;
             case SALTKEY_ACTIONS:
                 // Salt Key Actions
-                fragmentTx = fragmentManager.beginTransaction();
-                fragmentTx.replace(R.id.contentFrame,
-                                   new GobbledygookSaltKeyActionsFragment(),
-                                   GOBBLEDYGOOK_SALTKEY_ACTIONS_FRAGMENT_TAG);
-                fragmentTx.commit();
+                this.swapFragment(new GobbledygookSaltKeyActionsFragment(),
+                                  GOBBLEDYGOOK_SALTKEY_ACTIONS_FRAGMENT_TAG);
                 break;
             case IMPORT_SETTINGS:
                 // Import Settings
@@ -377,13 +395,13 @@ public class Gobbledygook extends Activity {
                 break;
             case SETTINGS:
                 // Settings
-                fragmentTx = fragmentManager.beginTransaction();
-                fragmentTx.replace(R.id.contentFrame,
-                                   new GobbledygookPrefsFragment(),
-                                   GOBBLEDYGOOK_PREFERENCES_FRAGMENT_TAG);
-                fragmentTx.commit();
+                this.swapFragment(new GobbledygookPrefsFragment(),
+                                  GOBBLEDYGOOK_PREFERENCES_FRAGMENT_TAG);
                 break;
             case ABOUT:
+                // About
+                this.swapFragment(new GobbledygookAboutFragment(),
+                                  GOBBLEDYGOOK_ABOUT_FRAGMENT_TAG);
                 break;
             default:
                 // Do nothing
@@ -395,8 +413,178 @@ public class Gobbledygook extends Activity {
         }
     }
 
+    /**
+     * @brief   Function to swap in a new fragment into
+     *          the frameLayout of the Navigation Drawer
+     * @return  Does not return a value
+     */
+    private void swapFragment(Fragment fragment,
+                              final String fragmentTag) {
+        assert (null != fragment) : "Asked to swap in null fragment!!!";
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTx = fragmentManager.beginTransaction();
+        fragmentTx.replace(R.id.contentFrame,
+                           fragment,
+                           fragmentTag);
+        // Provide proper "back" navigation
+        fragmentTx.addToBackStack(null);
+        fragmentTx.setTransition(
+                FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+        fragmentTx.commit();
+    }
+
     // --------------------------------------------------------------------
     // INNER CLASSES
+
+    /**
+     * @brief   Inner class NavigationDrawerItem.
+     *          Models an item in the Navigation Drawer list.
+     */
+    private class NavigationDrawerItem {
+
+        // ----------------------------------------------------------------
+        // CREATORS
+
+        /**
+         * @brief   Constructor
+         * @return  Does not have a return type
+         */
+        public NavigationDrawerItem(int iconId,
+                                    String text) {
+            this.m_iconId = iconId;
+            this.m_text = text;
+        }
+
+        // ----------------------------------------------------------------
+        // PUBLIC METHODS
+
+        /**
+         * @brief   
+         * @return  {int} The ID associated with the icon in the "R" class
+         */
+        public int getIconId() {
+            return this.m_iconId;
+        }
+
+        /**
+         * @brief   
+         * @return  {String} The text associated with the item
+         */
+        public String getText() {
+            return this.m_text;
+        }
+
+        // ----------------------------------------------------------------
+        // PRIVATE MEMBERS
+
+        private int     m_iconId;       /** @brief The id of the icon
+                                          * resource in the "R" class
+                                          */
+        private String  m_text;         /** @brief The display text
+                                          * associated with the item
+                                          */
+    }
+
+    /**
+     * @brief   Inner class NavigationDrawerListAdpater.
+     *          Provides a custom adapter for Navigation Drawer items
+     *          (which are more complex types than String types) by
+     *          extending the BaseAdapter class.
+     */
+    private class NavigationDrawerListAdapter extends BaseAdapter {
+
+        // ----------------------------------------------------------------
+        // CREATORS
+
+        /**
+         * @brief   Constructor
+         * @return  Does not have a return type
+         */
+        public NavigationDrawerListAdapter(Context context,
+                                           ArrayList<NavigationDrawerItem>
+                                                navigationDrawerItems) {
+            this.m_context = context;
+            this.m_navigationDrawerItems = navigationDrawerItems;
+        }
+
+        // ----------------------------------------------------------------
+        // PUBLIC METHODS
+
+        /**
+         * @brief   
+         * @return  
+         */
+        @Override
+        public int getCount() {
+            return m_navigationDrawerItems.size();
+        }
+
+        /**
+         * @brief   Method to return a reference to the object at
+         *          a specific position.
+         *          This would need to be typecast to the approriate type
+         *          to use that object's methods.
+         * @param   The position to look up
+         * @return  A reference to the object at position "position"
+         */
+        @Override
+        public Object getItem(int position) {
+            return m_navigationDrawerItems.get(position);
+        }
+
+        /**
+         * @brief   
+         * @return  
+         */
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        /**
+         * @brief   
+         * @return  
+         */
+        @Override
+        public View getView(int position,
+                            View view,
+                            ViewGroup parentViewGroup) {
+            if (null == view) {
+                LayoutInflater inflater =
+                    (LayoutInflater)m_context.getSystemService(
+                            Activity.LAYOUT_INFLATER_SERVICE);
+                view = inflater.inflate(R.layout.navigation_drawer_item,
+                                        null);
+            }
+
+            ImageView itemIcon =
+                (ImageView)view.findViewById(R.id.navigationItemIcon);
+            TextView itemText =
+                (TextView)view.findViewById(R.id.navigationItemText);
+
+            // Obtain a reference to the NavigationItem
+            // at position "position", and use it to set resources.
+            NavigationDrawerItem navigationItem =
+                (NavigationDrawerItem)this.getItem(position);
+            itemIcon.setImageResource(navigationItem.getIconId());
+            itemText.setText(navigationItem.getText());
+
+            return view;
+        }
+
+        // ----------------------------------------------------------------
+        // PRIVATE MEMBERS
+
+        /**
+         * @brief   A reference to the Application context
+         */
+        private Context                         m_context;
+
+        /**
+         * @brief   A reference to the list of items in the Navigation Drawer
+         */
+        private ArrayList<NavigationDrawerItem> m_navigationDrawerItems;
+    }
 
     /**
      * @brief   Inner class NavigationItemClickListener.
@@ -431,7 +619,8 @@ public class Gobbledygook extends Activity {
                                                      * @brief The drawer
                                                      * list view
                                                      */
-    private TreeMap<Integer, String>m_drawerMap;    /**
+    private TreeMap<Integer, NavigationDrawerItem>
+                                    m_drawerMap;    /**
                                                      * @brief A map of
                                                      * (id, names) of items
                                                      * in the drawer.
