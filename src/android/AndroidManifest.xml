@@ -5,6 +5,9 @@
       android:versionName="1.0">
     <!-- Min SDK Version for Action Bar (Android 3.0 and above) -->
     <uses-sdk android:minSdkVersion="11" />
+    <!-- External storage write permissions; for exporting preferences
+         (Read permissions are implied when write permissions are asked) -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <application android:label="@string/app_name"
                  android:icon="@drawable/ic_launcher"
                  android:theme="@android:style/Theme.Holo"

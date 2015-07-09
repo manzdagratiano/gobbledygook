@@ -19,7 +19,11 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
@@ -39,8 +43,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 // Standard Java
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.TreeMap;
+
+// JSON
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * @brief  The Gobbledygook class.
@@ -220,6 +236,25 @@ public class Gobbledygook extends Activity {
         }
     }
 
+    /**
+     * @brief   Called when a spawned activity returns
+     * @return  Does not return a value
+     */
+    @Override
+    public void onActivityResult(int requestCode,
+                                 int resultCode,
+                                 Intent resultData) {
+        Log.i(LOG_CATEGORY, "onActivityResult() handler called...");
+        if (READ_PREFERENCES_FILE_CODE == requestCode &&
+            Activity.RESULT_OK == resultCode) {
+            Log.i(LOG_CATEGORY, "onActivityResult(): " +
+                  "Calling onPreferencesFileSelection()...");
+            this.onPreferencesFileSelection(resultData.getData());
+        }
+
+        super.onActivityResult(requestCode, resultCode, resultData);
+    }
+
     // ====================================================================
     // PRIVATE METHODS
 
@@ -249,9 +284,39 @@ public class Gobbledygook extends Activity {
         ABOUT
     }
 
+    // Output file constants
+    private static final String OUTPUT_DIRECTORY_NAME                     =
+        "gobbledygook";
+    private static final String OUTPUT_PREFERENCES_FILENAME               =
+        "gobbledygook.json";
+    private static final int JSON_INDENT_FACTOR                           =
+        8;
+
     // Toast messages
+    private static final String DOPPELGANGER_FILE_ERROR                   =
+        "ERROR exporting settings! " +
+        "A file by the hijacked name 'gobbledygook' " +
+        "already exists in the Documents folder :( " +
+        "Please remove/rename it to continue";
     private static final String EXPORT_SETTINGS_MESSAGE                   =
-        "Successfully exported settings to file...";
+        "Successfully exported settings to file " +
+        OUTPUT_PREFERENCES_FILENAME + " in the Documents/" +
+        OUTPUT_DIRECTORY_NAME + " folder";
+    private static final String EXPORT_SETTINGS_ERROR                     =
+        "ERROR exporting settings to file :(";
+    private static final String EXTERNAL_STORAGE_ERROR                    =
+        "ERROR exporting settings! The external storage is not mounted :(";
+    private static final String FILE_MANAGER_MISSING_ERROR                =
+        "ERROR importing file! Please install a file manager " +
+        "to be able to browse to a file";
+    private static final String IMPORT_SETTINGS_MESSAGE                   =
+        "Successfully imported settings...";
+    private static final String IMPORT_SETTINGS_ERROR                     =
+        "ERROR! Found malformed file! Failed to import settings! :(";
+
+    // Request codes for spawning activities
+    private static final int    READ_PREFERENCES_FILE_CODE                =
+        8086;
 
     // --------------------------------------------------------------------
     // METHODS
@@ -385,13 +450,11 @@ public class Gobbledygook extends Activity {
                                   GOBBLEDYGOOK_SALTKEY_ACTIONS_FRAGMENT_TAG);
                 break;
             case IMPORT_SETTINGS:
-                // Import Settings
+                this.importPreferences();
                 break;
             case EXPORT_SETTINGS:
                 // Export settings
-                Toast.makeText(getApplicationContext(),
-                               EXPORT_SETTINGS_MESSAGE,
-                               Toast.LENGTH_SHORT).show();
+                this.exportPreferences();
                 break;
             case SETTINGS:
                 // Settings
@@ -431,6 +494,256 @@ public class Gobbledygook extends Activity {
         fragmentTx.setTransition(
                 FragmentTransaction.TRANSIT_FRAGMENT_FADE);
         fragmentTx.commit();
+    }
+
+    /**
+     * @brief   Function to import preferences from a JSON file
+     * @return  Does not return a value
+     */
+    private void importPreferences() {
+        Log.i(LOG_CATEGORY, "importPreferences() handler called...");
+
+        // Open the file picker dialog to select the key file.
+        // This requires creating a new "Intent".
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        // Filter to only show results that can be "opened"
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        // Filter to only show json files
+        // TODO: This filter does not seem to have any effect with
+        // the ACTION_GET_CONTENT Intent type as opposed to the
+        // ACTION_OPEN_DOCUMENT intent
+        intent.setType("application/json");
+
+        // Start the activity
+        Log.i(LOG_CATEGORY, "importPreferences(): Opening File Picker UI...");
+        // Start the activity, but through a "chooser"
+        // for available Content Providers instead of the intent directly,
+        // since the user may prefer a different one each time.
+        Intent fileChooser =
+            intent.createChooser(intent,
+                                 "Select the JSON preferences file...");
+        // Check if the intent resolves to any activities,
+        // and start it if it does.
+        if (null != intent.resolveActivity(this.getPackageManager())) {
+            startActivityForResult(fileChooser,
+                                   READ_PREFERENCES_FILE_CODE);
+        } else {
+            Toast.makeText(this.getApplicationContext(),
+                           FILE_MANAGER_MISSING_ERROR,
+                           Toast.LENGTH_SHORT).show();
+        }
+        // The callback "onActivityResult" will be called
+    }
+
+    /**
+     * @brief   
+     * @return  
+     */
+    private void onPreferencesFileSelection(Uri uri) {
+        Log.i(LOG_CATEGORY, "onPreferencesFileSelection(): " +
+              "Parsing JSON file, uri='" + uri.toString() + "'");
+
+        // Read the uri into a string
+        InputStream inputStream = null;
+        String line = null;
+        BufferedReader bufferedFileReader = null;
+        StringBuilder preferencesFileBuffer = new StringBuilder();
+        try {
+            inputStream =
+                this.getContentResolver().openInputStream(uri);
+            bufferedFileReader =
+                new BufferedReader(new InputStreamReader(inputStream));
+            while (null != (line = bufferedFileReader.readLine())) {
+                preferencesFileBuffer.append(line + "\n");
+            }
+        } catch (IOException e) {
+            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
+            Toast.makeText(this.getApplicationContext(),
+                           IMPORT_SETTINGS_ERROR,
+                           Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+            return;
+        } finally {
+            if (null != bufferedFileReader) {
+                try {
+                    bufferedFileReader.close();
+                } catch (IOException e) {
+                    Log.e(LOG_CATEGORY, "ERROR: Memory Leak! " +
+                          "Couldn't close BufferedReader; " +
+                          "uri='" + uri.toString() + "', Caught " + e);
+                    e.printStackTrace();
+                    // No need to return empty-handed here
+                }
+            }
+        }
+
+        // Parse the JSON string and set the preferences
+        try {
+            JSONObject inputPrefs =
+                new JSONObject(preferencesFileBuffer.toString());
+
+            // Get a handle to the default shared preferences
+            // and the corresponding editor
+            SharedPreferences sharedPrefs =
+                PreferenceManager.getDefaultSharedPreferences(
+                                        this.getApplicationContext());
+            SharedPreferences.Editor preferenceEditor = sharedPrefs.edit();
+
+            preferenceEditor.putString(
+                    getString(R.string.pref_saltKey_key),
+                    inputPrefs.getString(
+                        getString(R.string.pref_saltKey_key)));
+            preferenceEditor.putString(
+                    getString(R.string.pref_defaultIterations_key),
+                    inputPrefs.getString(
+                        getString(R.string.pref_defaultIterations_key)));
+            preferenceEditor.putString(
+                    getString(R.string.pref_siteAttributesList_key),
+                    inputPrefs.getString(
+                        getString(R.string.pref_siteAttributesList_key)));
+
+            // Commit the changes
+            preferenceEditor.commit();
+        } catch (JSONException e) {
+            Log.e(LOG_CATEGORY, "ERROR: Malformed JSON! " +
+                  "JSON='" + preferencesFileBuffer.toString() + "', " +
+                  "Caught " + e);
+            Toast.makeText(this.getApplicationContext(),
+                           IMPORT_SETTINGS_ERROR,
+                           Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+            return;
+        }
+
+        Toast.makeText(this.getApplicationContext(),
+                       IMPORT_SETTINGS_MESSAGE,
+                       Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * @brief   Function to export preferences to a JSON file
+     * @return  Does not return a value
+     */
+    private void exportPreferences() {
+        Log.i(LOG_CATEGORY, "exportPreferences() handler called...");
+
+        // Create a JSON object from the SharedPreferences
+        JSONObject outputPrefs = new JSONObject();
+        SharedPreferences sharedPrefs =
+            PreferenceManager.getDefaultSharedPreferences(
+                                    this.getApplicationContext());
+
+        try {
+            // Salt key; blank on empty retrieval
+            outputPrefs.put(
+                    getString(R.string.pref_saltKey_key),
+                    sharedPrefs.getString(
+                        getString(R.string.pref_saltKey_key),
+                        ""));
+            // Default iterations; the iterations "hint"
+            // (which was the default value) on empty retrieval
+            outputPrefs.put(
+                    getString(R.string.pref_defaultIterations_key),
+                    sharedPrefs.getString(
+                        getString(R.string.pref_defaultIterations_key),
+                        getString(R.string.hint_iterations)));
+            // Custom website attribute list; blank on empty retrieval
+            outputPrefs.put(
+                    getString(R.string.pref_siteAttributesList_key),
+                    sharedPrefs.getString(
+                        getString(R.string.pref_siteAttributesList_key),
+                        ""));
+        } catch (JSONException e) {
+            Log.e(LOG_CATEGORY, "exportPreferences() ERROR: " +
+                  "Caught " + e);
+            Toast.makeText(this.getApplicationContext(),
+                           EXPORT_SETTINGS_ERROR,
+                           Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+            return;
+        }
+
+        Log.i(LOG_CATEGORY, "exportPreferences(): " +
+              "outputPrefs='" + outputPrefs.toString() + "'");
+
+        // Obtain a file handle for output in the external storage;
+        // this is necessary since the user must be able to access
+        // the output file
+        String state = Environment.getExternalStorageState();
+        if (!Environment.MEDIA_MOUNTED.equals(state)) {
+            Log.e(LOG_CATEGORY, "exportPreferences() ERROR: " +
+                  "External.Storage.NOT_MOUNTED");
+            Toast.makeText(this.getApplicationContext(),
+                           EXTERNAL_STORAGE_ERROR,
+                           Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Get the directory for output
+        File outputDir =
+            new File(Environment.getExternalStoragePublicDirectory(
+                        Environment.DIRECTORY_DOCUMENTS),
+                     OUTPUT_DIRECTORY_NAME);
+
+        // Check if it already exists, and if it does, is a directory;
+        // create it if it does not exist
+        if (!outputDir.exists()) {
+            if (!outputDir.mkdirs()) {
+                Log.e(LOG_CATEGORY, "exportPreferences() ERROR: " +
+                      "Directory.Creation.Failure");
+                Toast.makeText(this.getApplicationContext(),
+                               EXPORT_SETTINGS_ERROR,
+                               Toast.LENGTH_SHORT).show();
+                return;
+            }
+        } else if (!outputDir.isDirectory()) {
+            Log.e(LOG_CATEGORY, "exportPreferences() ERROR: " +
+                  "File.Exists.InPlaceOf.Directory");
+            Toast.makeText(this.getApplicationContext(),
+                           DOPPELGANGER_FILE_ERROR,
+                           Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Write the JSON object to the file
+        FileOutputStream outputStream = null;
+        try {
+            File outputFile = new File(outputDir,
+                                       OUTPUT_PREFERENCES_FILENAME);
+            outputStream = new FileOutputStream(outputFile);
+            outputStream.write(
+                    outputPrefs.toString(JSON_INDENT_FACTOR).getBytes());
+        } catch (JSONException e) {
+            Log.e(LOG_CATEGORY, "exportPreferences() ERROR: " +
+                  "Caught " + e);
+            Toast.makeText(this.getApplicationContext(),
+                           EXPORT_SETTINGS_ERROR,
+                           Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+            return;
+        } catch (IOException e) {
+            Log.e(LOG_CATEGORY, "exportPreferences() ERROR: " +
+                  "Caught " + e);
+            Toast.makeText(this.getApplicationContext(),
+                           EXPORT_SETTINGS_ERROR,
+                           Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+            return;
+        } finally {
+            try {
+                outputStream.close();
+            } catch (IOException e) {
+                Log.e(LOG_CATEGORY, "exportPreferences() ERROR: " +
+                      "Memory Leak! Could not close FileOutputStream. " +
+                      "Caught " + e);
+                e.printStackTrace();
+                // No need to return
+            }
+        }
+
+        Toast.makeText(this.getApplicationContext(),
+                       EXPORT_SETTINGS_MESSAGE,
+                       Toast.LENGTH_SHORT).show();
     }
 
     // --------------------------------------------------------------------

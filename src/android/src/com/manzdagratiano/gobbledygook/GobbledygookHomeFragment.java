@@ -285,6 +285,27 @@ public class GobbledygookHomeFragment extends Fragment {
                 // The truncation is never null
                 truncationField.setText(truncation.toString(),
                                         TextView.BufferType.EDITABLE);
+                CheckBox truncateBox =
+                    (CheckBox)getView().findViewById(R.id.truncate);
+
+                // If the truncation value is NO_TRUNCATION,
+                // then this option is as good as inactive
+                if (Attributes.NO_TRUNCATION == truncation) {
+                    truncationField.setEnabled(false);
+                    truncateBox.setChecked(false);
+                }
+
+                // Attach a listener to the "Truncate" checkbox
+                truncateBox.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        EditText truncationField = 
+                            (EditText)getView().findViewById(R.id.truncation);
+                        CheckBox truncateBox = (CheckBox)view; 
+                        truncationField.setEnabled(truncateBox.isChecked());
+                    }
+                });
+
                 return truncation;
             }
 
@@ -299,21 +320,24 @@ public class GobbledygookHomeFragment extends Fragment {
                 hashField.setEnabled(false);
 
                 // Attach a listener to the "Show Hash" checkbox
-                CheckBox showHashBox = 
+                CheckBox showHashBox =
                     (CheckBox)getView().findViewById(R.id.showHash);
                 showHashBox.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        EditText hash = (EditText)getView().findViewById(R.id.hash);
+                        EditText hashField = 
+                            (EditText)getView().findViewById(R.id.hash);
                         CheckBox showHashBox = (CheckBox)view; 
                         if (showHashBox.isChecked()) {
-                            hash.setInputType(
-                                    InputType.TYPE_CLASS_TEXT |
-                                    InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                            hashField.setInputType(
+                                        InputType.TYPE_CLASS_TEXT |
+                                        InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                            hashField.setEnabled(true);
                         } else {
-                            hash.setInputType(
-                                    InputType.TYPE_CLASS_TEXT |
-                                    InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                            hashField.setInputType(
+                                        InputType.TYPE_CLASS_TEXT |
+                                        InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                            hashField.setEnabled(false);
                         }
                     }
                 });
@@ -664,13 +688,14 @@ public class GobbledygookHomeFragment extends Fragment {
             codec.getEncodedAttributesToSave(attributes,
                                              this.m_savedAttributes,
                                              this.m_proposedAttributes);
+        String encodedAttributes = codec.encode(attributesToSave);
+        Log.i(LOG_CATEGORY, "attributesToSave='" + encodedAttributes + "'");
+
         if (!attributesToSave.attributesExist()) {
-            Log.i(LOG_CATEGORY, "No custom changes to save.");
+            Log.i(LOG_CATEGORY, "No custom changes to save...");
             return;
         }
 
-        String encodedAttributes = codec.encode(attributesToSave);
-        Log.i(LOG_CATEGORY, "attributesToSave='" + encodedAttributes + "'");
         // Add this encoded string to the siteAttributesList
         // which, upto this point, could have been null
         if (null == m_siteAttributesList) {
@@ -720,10 +745,20 @@ public class GobbledygookHomeFragment extends Fragment {
         Log.i(LOG_CATEGORY, "deconfigureElements(): " +
               "Cleaning up listeners/handlers");
 
+        // "Truncate" checkbox
+        CheckBox truncateBox = 
+            (CheckBox)getView().findViewById(R.id.truncate);
+        truncateBox.setOnClickListener(null);
+
         // "Show Hash" checkbox
         CheckBox showHashBox = 
             (CheckBox)getView().findViewById(R.id.showHash);
         showHashBox.setOnClickListener(null);
+
+        // "Save Custom Attributes" checkbox
+        CheckBox saveAttributesBox =
+            (CheckBox)getView().findViewById(R.id.saveAttributes);
+        saveAttributesBox.setOnClickListener(null);
 
         // "Generate" button
         Button generateButton =
@@ -1008,38 +1043,42 @@ public class GobbledygookHomeFragment extends Fragment {
          *          which can be default initialized
          */
         public Attributes 
-        getEncodedAttributesToSave(Attributes attributes,
-                                   Attributes savedAttributes,
-                                   Attributes proposedAttributes) {
+        getEncodedAttributesToSave(final Attributes attributes,
+                                   final Attributes savedAttributes,
+                                   final Attributes proposedAttributes) {
             Attributes attributesToSave = new Attributes();
 
             if (savedAttributes.attributesExist()) {
                 attributesToSave.setDomain(
-                    proposedAttributes.domain() != attributes.domain() ?
+                    (attributes.domain() !=
+                     proposedAttributes.domain()) ?
                     attributes.domain() :
                     (null != savedAttributes.domain() ?
                      savedAttributes.domain() : null));
                 attributesToSave.setIterations(
-                    proposedAttributes.iterations() != attributes.iterations() ?
+                    (attributes.iterations() !=
+                     proposedAttributes.iterations()) ?
                     attributes.iterations() :
                     (null != savedAttributes.iterations() ?
                      savedAttributes.iterations() : null));
                 attributesToSave.setTruncation(
-                    proposedAttributes.truncation() != attributes.truncation() ?
+                    (attributes.truncation() !=
+                     proposedAttributes.truncation()) ?
                     attributes.truncation() :
                     (Attributes.NO_TRUNCATION != savedAttributes.truncation() ?
                      savedAttributes.truncation() : Attributes.NO_TRUNCATION));
             } else {
                 attributesToSave.setDomain(
-                    proposedAttributes.domain() != attributes.domain() ?
+                    (attributes.domain() !=
+                     proposedAttributes.domain()) ?
                     attributes.domain() : null);
                 attributesToSave.setIterations(
-                    proposedAttributes.iterations() !=
-                    attributes.iterations() ?
+                    (attributes.iterations() !=
+                     proposedAttributes.iterations()) ?
                     attributes.iterations() : null);
                 attributesToSave.setTruncation(
-                    proposedAttributes.truncation() !=
-                    attributes.truncation() ?
+                    (attributes.truncation() !=
+                     proposedAttributes.truncation()) ?
                     attributes.truncation() : Attributes.NO_TRUNCATION);
             }
 

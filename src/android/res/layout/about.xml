@@ -4,6 +4,6 @@
     android:layout_height="match_parent"
     android:layout_gravity="start"
     android:divider="@android:color/transparent"
-    android:dividerHeight="1dp"
+    android:dividerHeight="3dp"
     android:background="#111"
     />

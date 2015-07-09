@@ -131,8 +131,8 @@ public class GobbledygookSaltKeyActionsFragment extends Fragment {
 
         // Handle the result from the file picker
         // for the loadSaltKey() handler, if this is how we got here
-        if (requestCode == READ_SALT_KEY_FILE &&
-            resultCode == Activity.RESULT_OK) {
+        if (READ_SALT_KEY_FILE_CODE == requestCode &&
+            Activity.RESULT_OK == resultCode) {
             Log.i(LOG_CATEGORY, "onActivityResult(): " +
                     "Calling onSaltKeyFileSelection()...");
             this.onSaltKeyFileSelection(resultData.getData());
@@ -144,10 +144,29 @@ public class GobbledygookSaltKeyActionsFragment extends Fragment {
     // ===================================================================
     // PRIVATE METHODS
 
-    private static final String LOG_CATEGORY        = "GOBBLEDYGOOK.SALTKEY";
-    private static final int    READ_SALT_KEY_FILE  = 666;
-    private static final int    SALT_KEY_LENGTH     = 512;
-    private static final String UTF8                = "UTF-8";
+    // --------------------------------------------------------------------
+    // CONSTANTS
+
+    private static final String LOG_CATEGORY                        =
+        "GOBBLEDYGOOK.SALTKEY";
+    private static final int    READ_SALT_KEY_FILE_CODE             =
+        666;
+    private static final int    SALT_KEY_LENGTH                     =
+        512;
+    private static final String UTF8                                =
+        "UTF-8";
+
+    // Toast messages
+    private static final String FILE_MANAGER_MISSING_ERROR          =
+        "ERROR importing file! Please install a file manager " +
+        "to be able to browse to a file";
+    private static final String GENERATE_SALT_KEY_MESSAGE           =
+        "Load or Generate a new Salt Key";
+    private static final String GENERATING_SALT_KEY_MESSAGE         =
+        "Generating new salt key...";
+
+    // --------------------------------------------------------------------
+    // METHODS
 
     /**
      * @brief   
@@ -191,7 +210,7 @@ public class GobbledygookSaltKeyActionsFragment extends Fragment {
                         if (isChecked) {
                             Toast.makeText(
                                     getActivity().getApplicationContext(),
-                                    "Load or Generate a new Salt Key",
+                                    GENERATE_SALT_KEY_MESSAGE,
                                     Toast.LENGTH_SHORT).show();
                             saltKeyBox.setEnabled(true);
                             loadSaltKeyButton.setEnabled(true);
@@ -303,10 +322,13 @@ public class GobbledygookSaltKeyActionsFragment extends Fragment {
 
         // Open the file picker dialog to select the key file.
         // This requires creating a new "Intent".
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         // Filter to only show results that can be "opened"
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         // Filter to only show text files
+        // TODO: This filter does not seem to have any effect
+        // when the ACTION_GET_CONTENT intent type is used
+        // as opposed to ACTION_OPEN_DOCUMENT
         intent.setType("text/*");
 
         // Start the activity
@@ -322,7 +344,11 @@ public class GobbledygookSaltKeyActionsFragment extends Fragment {
         if (null != intent.resolveActivity(
                                 getActivity().getPackageManager())) {
             startActivityForResult(fileChooser,
-                                   READ_SALT_KEY_FILE);
+                                   READ_SALT_KEY_FILE_CODE);
+        } else {
+            Toast.makeText(getActivity().getApplicationContext(),
+                           FILE_MANAGER_MISSING_ERROR,
+                           Toast.LENGTH_SHORT).show();
         }
         // The callback "onActivityResult" will be called
     }
@@ -334,7 +360,7 @@ public class GobbledygookSaltKeyActionsFragment extends Fragment {
     private void generateSaltKey(final View view) {
         Log.i(LOG_CATEGORY, "generateSaltKey() handler called...");
         Toast.makeText(getActivity().getApplicationContext(),
-                       "Generating new salt key...",
+                       GENERATING_SALT_KEY_MESSAGE,
                        Toast.LENGTH_SHORT).show();
         SecureRandom csprng = new SecureRandom();
         byte[] saltKeyBytes = new byte[SALT_KEY_LENGTH];
@@ -399,8 +425,7 @@ public class GobbledygookSaltKeyActionsFragment extends Fragment {
                 } catch (IOException e) {
                     Log.e(LOG_CATEGORY, "ERROR: Memory Leak! " +
                           "Couldn't close BufferedReader; " +
-                          "uri = '" + uri.toString() + "', " +
-                          "Caught " + e);
+                          "uri='" + uri.toString() + "', Caught " + e);
                     e.printStackTrace();
                 }
             }
