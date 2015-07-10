@@ -14,11 +14,15 @@
 # VARIABLES
 
 # Locations for components
-ICON = ./icon
-SRC = ./src
-SJCL = ./sjcl
-SJCL_MEGALITH = ./target/sjcl_megalith.js
+ROOT = ../..
+LIB = ./libs
+HTML = ./html
+ICON = ./gobbledygook/icon
+CHROME_GOBBLEDYGOOK = ./gobbledygook/chrome
+FIREFOX_GOBBLEDYGOOK = ./gobbledygook/firefox
 TARGET_DIR = ./target
+SJCL = $(ROOT)/sjcl
+SJCL_MEGALITH = $(TARGET_DIR)/sjcl_megalith.js
 
 # The chrome version of "gobbledygook.html" requires that
 # the JS scripts be included inside the html using the "script" directive
@@ -46,13 +50,13 @@ all: chrome firefox
 
 chrome: TARGET = $(TARGET_DIR)/chrome
 chrome: chrome-clean sjcl
-	cp -r $(SRC)/chrome ./target/
-	cp $(SRC)/gobbledygook.html $(TARGET)/
+	cp -r $(CHROME_GOBBLEDYGOOK) $(TARGET_DIR)/
+	cp $(HTML)/gobbledygook.html $(TARGET)/
 	perl -p -i -e $(subst " ", ,$(CHROME_HTML_REGEX)) \
 		$(TARGET)/gobbledygook.html
-	cp $(SRC)/hasher.js $(TARGET)/
-	cp $(SRC)/keygen.js $(TARGET)/
-	cp $(SRC)/workhorsefunctions.js $(TARGET)/
+	cp $(LIB)/hasher.js $(TARGET)/
+	cp $(LIB)/keygen.js $(TARGET)/
+	cp $(LIB)/workhorsefunctions.js $(TARGET)/
 	mkdir $(TARGET)/sjcl
 	cp -r $(SJCL)/README{,.md} $(TARGET)/sjcl/
 	cp $(SJCL_MEGALITH) $(TARGET)/sjcl/
@@ -62,12 +66,12 @@ chrome: chrome-clean sjcl
 
 firefox: TARGET = $(TARGET_DIR)/firefox
 firefox: firefox-clean sjcl
-	cp -r $(SRC)/firefox ./target/
-	cp ./README.md $(TARGET)/
-	cp $(SRC)/gobbledygook.html $(TARGET)/data/
-	cp $(SRC)/hasher.js $(TARGET)/data/
-	cp $(SRC)/keygen.js $(TARGET)/data/
-	cp $(SRC)/workhorsefunctions.js $(TARGET)/data/
+	cp -r $(FIREFOX_GOBBLEDYGOOK) ./target/
+	cp $(ROOT)/README.md $(TARGET)/
+	cp $(HTML)/gobbledygook.html $(TARGET)/data/
+	cp $(LIB)/hasher.js $(TARGET)/data/
+	cp $(LIB)/keygen.js $(TARGET)/data/
+	cp $(LIB)/workhorsefunctions.js $(TARGET)/data/
 	mkdir $(TARGET)/data/sjcl
 	cp -r $(SJCL)/README{,.md} $(TARGET)/data/sjcl/
 	cp $(SJCL_MEGALITH) $(TARGET)/data/sjcl/
@@ -76,7 +80,7 @@ firefox: firefox-clean sjcl
 	echo "Success!"
 
 sjcl: target-dir
-	cat $(SRC)/sjcl_megalith_header.js \
+	cat $(LIB)/sjcl_megalith_header.js \
 		$(SJCL)/core/sjcl.js \
 		$(SJCL)/core/aes.js \
 		$(SJCL)/core/bitArray.js \

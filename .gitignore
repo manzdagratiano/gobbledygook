@@ -4,14 +4,14 @@
 *.swp
 *~
 
-# gobbledygook "target" #
-# ##################### #
-target/
+# gobbledygook browser "target" #
+# ############################# #
+src/browser/target/
 
 # Android build #
 # ############# #
-src/android/bin
-src/android/gen
+src/android/*/bin
+src/android/*/gen
 
 # Java libraries #
 # ############## #

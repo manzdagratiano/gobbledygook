@@ -4,7 +4,7 @@ CREATION:
 $ android create project \
     --target android-22 \
     --name gobbledygook \
-    --path . --activity gobbledygook \
+    --path . --activity Gobbledygook \
     --package com.manzdagratiano.gobbledygook
 
 BUILD:
