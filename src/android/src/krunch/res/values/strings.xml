@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ########## -->
+    <!-- Activities -->
+    <!-- ########## -->
+
+    <string name="app_name">Krunch!</string>
+
+    <!-- ##### -->
+    <!-- Fonts -->
+    <!-- ##### -->
+    <string name="label_fontFamily">sans-serif</string>
+    <string name="button_fontFamily">sans-serif</string>
+
+    <!-- ########## -->
+    <!-- Action bar -->
+    <!-- ########## -->
+    <string name="action_home">Home</string>
+    <string name="action_settings">Settings</string>
+
+    <!-- ################# -->
+    <!-- Navigation Drawer -->
+    <!-- ################# -->
+    <string name="drawer_open">Abracadabra!</string>
+    <string name="drawer_closed">Hasta la Vista, Baby!</string>
+
+    <!-- ############# -->
+    <!-- Main activity -->
+    <!-- ############# -->
+
+    <string name="label_domain">Domain</string>
+    <string name="hint_domain">The foo.bar.baz.com part of the URL</string>
+    <string name="label_password">Password</string>
+    <string name="hint_password">Your KillerPassword123456789 Here</string>
+    <string name="label_iterations">Iterations</string>
+    <string name="hint_iterations">10000</string>
+    <string name="label_hash">Proxy Password</string>
+    <string name="checkBox_showHash">Show</string>
+    <string name="checkBox_truncate">Truncate</string>
+    <string name="hint_truncation">-1</string>
+    <string name="checkBox_saveAttributes">Save custom changes</string>
+    <string name="button_generate">Generate!</string>
+
+    <!-- ########### -->
+    <!-- Preferences -->
+    <!-- ########### -->
+
+    <!-- Salt Key
+         This preference is not sensitive by default.
+         Checking the unlockSaltKey checkbox
+         will make it sensitive and allow
+         the user to load it from a file. -->
+    <string name="pref_saltKey_key">
+        saltKey
+    </string>
+    <string name="pref_saltKey_name">
+        Salt Key
+    </string>
+    <string name="pref_saltKey_summary">
+        A "key" to generate salts from domain names
+    </string>
+
+    <!-- Default PBKDF2 Iterations -->
+    <string name="pref_defaultIterations_key">
+        defaultIterations
+    </string>
+    <string name="pref_defaultIterations_name">
+        Default Iterations
+    </string>
+    <string name="pref_defaultIterations_summary">
+        10000
+    </string>
+
+    <!-- Custom Website Attributes List -->
+    <string name="pref_siteAttributesList_key">
+        siteAttributesList
+    </string>
+    <string name="pref_siteAttributesList_name">
+        Custom Website Attribute List
+    </string>
+    <string name="pref_siteAttributesList_summary">
+        Overridden website attributes (use sparingly!)
+    </string>
+</resources>

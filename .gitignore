@@ -12,7 +12,12 @@ src/browser/target/
 # ############# #
 src/android/*/bin
 src/android/*/gen
+src/android/build
 
 # Java libraries #
 # ############## #
 src/android/libs/*.jar
+
+# Gradle Artefacts #
+# ################ #
+src/android/.gradle

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="0dip"
+    android:layout_gravity="top"
+    >
+    <!-- Our "table" has a single row in it -->
+    <TableRow>
+        <!-- The about item icon.
+             It is in its own "TableRow" -->
+        <LinearLayout
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
+            android:paddingLeft="10dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            >
+            <ImageView
+                android:id="@+id/aboutItemIcon"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_gravity="left|top"
+                android:scaleType="centerCrop"
+                />
+        </LinearLayout>
+        <!-- The title and the value.
+             These form two rows of a TableLayout -->
+        <TableLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:paddingTop="0dip"
+            >
+            <TableRow>
+                <TextView
+                    android:id="@+id/aboutItemTitle"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="left|center_vertical"
+                    android:layout_marginLeft="5dip"
+                    android:layout_marginTop="5dip"
+                    android:layout_span="1"
+                    android:textAllCaps="true"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:fontFamily="@string/label_fontFamily"
+                    />
+            </TableRow>
+            <TableRow>
+                <TextView
+                    android:id="@+id/aboutItemText"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_gravity="left|center_vertical"
+                    android:layout_marginLeft="5dip"
+                    android:layout_marginTop="5dip"
+                    android:gravity="left"
+                    android:textSize="16sp"
+                    android:ellipsize="end"
+                    />
+            </TableRow>
+        </TableLayout>
+    </TableRow>
+</TableLayout>

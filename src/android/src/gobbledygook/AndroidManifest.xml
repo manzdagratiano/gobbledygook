@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      >
+    <!-- Permissions are declared in the manifest for the "main"
+         project, with which this manifest will be merged by gradle -->
+    <application android:label="@string/app_name"
+                 android:icon="@drawable/ic_launcher"
+                 android:theme="@android:style/Theme.Holo"
+                 >
+        <!-- In the end, there can be only ONE (activity) -->
+        <!-- For the soft input mode (on screen keyboard),
+             hide the keyboard on Activity launch using
+             the "stateHidden" property (until the user asks for it),
+             and allow the scroll view to work properly with the
+             "adjustResize" property -->
+        <activity android:name="Gobbledygook"
+                  android:windowSoftInputMode="stateHidden|adjustResize"
+                  android:label="@string/app_name"
+                  >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

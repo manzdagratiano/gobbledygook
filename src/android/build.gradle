@@ -1,0 +1,48 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.2.2'
+    }
+}
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 'android-22'
+    buildToolsVersion '22.0.1'
+
+    defaultConfig {
+        minSdkVersion 'android-11'
+        targetSdkVersion 'android-22'
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFile getDefaultProguardFile('proguard-android.txt')
+        }
+    }
+
+    productFlavors {
+        gobbledygook {
+            applicationId 'com.manzdagratiano.gobbledygook'
+            versionName '1.0'
+        }
+        krunch {
+            applicationId 'com.manzdagratiano.krunch'
+            versionName '1.0'
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+
+}
+
+dependencies {
+    compile fileTree(dir : 'libs', include : ['*.jar'])
+}
