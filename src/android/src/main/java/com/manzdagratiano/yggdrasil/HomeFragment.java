@@ -62,7 +62,7 @@ import org.spongycastle.util.encoders.Base64;
  *          This is the "main" fragment of the application,
  *          where all the magic happens.
  */
-public class HomeFragment extends Fragment {
+public abstract class HomeFragment extends Fragment {
 
     static {
         Security.addProvider(new BouncyCastleProvider());
@@ -158,23 +158,25 @@ public class HomeFragment extends Fragment {
     // --------------------------------------------------------------------
     // CONSTANTS
 
-    private static final String LOG_CATEGORY            = "GOBBLEDYGOOK";
-    private static final String SHA256                  = "SHA-256";
-    private static final String UTF8                    = "UTF-8";
+    protected static final String LOG_CATEGORY          = "GOBBLEDYGOOK";
+    protected static final String SHA256                = "SHA-256";
+    protected static final String UTF8                  = "UTF-8";
 
     // Toast messages
-    private static final String ATTRIBUTES_OVERRIDE_SPARINGLY_MESSAGE
-                                                        = "Please use the " +
-        "custom attributes option sparingly! " +
+    protected static final String ATTRIBUTES_OVERRIDE_SPARINGLY_MESSAGE
+                                                        =
+        "Please use the custom attributes option sparingly! " +
         "It should only be a last resort.";
-    private static final String ATTRIBUTES_SAVE_FAILURE_MESSAGE
-                                                        = "Alas! Failed to " +
-        "save custom attributes!";
-    private static final String ATTRIBUTES_SAVE_SUCCESS_MESSAGE
-                                                        = "Successfully " +
-        "saved custom attributes!";
-    private static final String EMPTY_SALT_KEY_MESSAGE  = "The salt key " +
-        "is empty, therefore the generated password is meaningless. " +
+    protected static final String ATTRIBUTES_SAVE_FAILURE_MESSAGE
+                                                        =
+        "Alas! Failed to save custom attributes!";
+    protected static final String ATTRIBUTES_SAVE_SUCCESS_MESSAGE
+                                                        =
+        "Successfully saved custom attributes!";
+    protected static final String EMPTY_SALT_KEY_MESSAGE
+                                                        =
+        "The salt key is empty, " +
+        "therefore the generated password is meaningless. " +
         "Please generate/load a salt key first.";
 
     // --------------------------------------------------------------------
@@ -184,7 +186,7 @@ public class HomeFragment extends Fragment {
      * @brief   
      * @return  
      */
-    private void configureElements() {
+    protected void configureElements() {
 
         // ----------------------------------------------------------------
         // The Configurator class
@@ -390,7 +392,96 @@ public class HomeFragment extends Fragment {
         }   // end class Configurator
 
         // ----------------------------------------------------------------
-        // Retrieve saved preferences
+        // Retrieve the "ingredients"
+        Ingredients ingredients = this.retrieveIngredients();
+        Log.d(LOG_CATEGORY, "ingredients=" + ingredients.toString());
+
+        // ----------------------------------------------------------------
+        // Create the "actors"
+
+        AttributesCodec codec = new AttributesCodec();
+        Configurator configurator = new Configurator();
+
+        // ----------------------------------------------------------------
+        // Read the url from the clipboard
+
+        Log.i(LOG_CATEGORY, "Reading url from clipboard...");
+        String url = configurator.extractUrlFromClipboard();
+        Log.i(LOG_CATEGORY, "url='" + url + "'");
+
+        // ----------------------------------------------------------------
+        // Extract the domain from the url
+
+        String domain = configurator.extractDomain(url);
+        Log.i(LOG_CATEGORY, "domain='" + domain + "'");
+
+        // ----------------------------------------------------------------
+        // Saved and Proposed Attributes
+
+        // Obtain the decoded siteAttributesList
+        // We'll need it later on
+        JSONObject siteAttributesList =
+            codec.getDecodedAttributesList(
+                    ingredients.encodedAttributesList());
+
+        // Obtain the saved attributes for this domain, if any
+        Attributes savedAttributes =
+            codec.getSavedAttributes(domain,
+                                     siteAttributesList);
+        Log.i(LOG_CATEGORY,
+              "savedAttributes='" + codec.encode(savedAttributes) + "'");
+
+        // The "proposed" attributes,
+        // which would be used to generate the proxy password,
+        // unless overridden
+        Attributes proposedAttributes =
+            new Attributes(
+                configurator.configureDomain(
+                                    domain,
+                                    savedAttributes.domain()),
+                configurator.configureIterations(
+                                    ingredients.defaultIterations(),
+                                    savedAttributes.iterations()),
+                configurator.configureTruncation(
+                                    savedAttributes.truncation()));
+
+        configurator.configureHash();
+        configurator.configureSaveCustomAttributesCheckBox();
+        configurator.configureGenerateButton();
+
+        // Save the saved and proposed attributes,
+        // as well as the siteAttributes list,
+        // in the class for recalling later;
+        // need to save state here since the next call will be
+        // the invocation of a handler via user interaction
+        this.m_saltKey = ingredients.saltKey();
+        this.m_savedAttributes = savedAttributes;
+        this.m_proposedAttributes = proposedAttributes;
+        this.m_siteAttributesList = siteAttributesList;
+    }
+
+    /**
+     * @brief   Method to retrieve the saved "ingredients"
+     *          for the recipe.
+     *          This method will be suitably overridden in
+     *          the respective flavor implementation.
+     * @return  Does not return a value
+     */
+    protected Ingredients retrieveIngredients() {
+        // Do nothing, except to allocate memory
+        Ingredients ingredients = new Ingredients();
+        return ingredients;
+    }
+
+    /**
+     * @brief   A method to retrieve ingredients from SharedPreferences
+     *          This can either be the default method of retrieving
+     *          ingredients, or the fallback.
+     * @return  Does not return a value
+     */
+    protected void retrieveIngredientsFromSharedPreferences(
+                                        Ingredients ingredients) {
+        assert (null != ingredients) : "Null ingredients passed in!";
 
         // The SharedPreferences handle
         Log.i(LOG_CATEGORY, "Reading saved preferences...");
@@ -428,74 +519,6 @@ public class HomeFragment extends Fragment {
             Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
             e.printStackTrace();
         }
-
-        Log.d(LOG_CATEGORY,
-              "savedPreferences=[ " +
-              "saltKey='" + saltKey + "', " +
-              "defaultIterations=" + defaultIterations.toString() + ", " +
-              "siteAttributesList='" + encodedAttributesList + "' ]");
-
-        // ----------------------------------------------------------------
-        // Create the "actors"
-
-        AttributesCodec codec = new AttributesCodec();
-        Configurator configurator = new Configurator();
-
-        // ----------------------------------------------------------------
-        // Read the url from the clipboard
-
-        Log.i(LOG_CATEGORY, "Reading url from clipboard...");
-        String url = configurator.extractUrlFromClipboard();
-        Log.i(LOG_CATEGORY, "url='" + url + "'");
-
-        // ----------------------------------------------------------------
-        // Extract the domain from the url
-
-        String domain = configurator.extractDomain(url);
-        Log.i(LOG_CATEGORY, "domain='" + domain + "'");
-
-        // ----------------------------------------------------------------
-        // Saved and Proposed Attributes
-
-        // Obtain the decoded siteAttributesList
-        // We'll need it later on
-        JSONObject siteAttributesList =
-            codec.getDecodedAttributesList(encodedAttributesList);
-
-        // Obtain the saved attributes for this domain, if any
-        Attributes savedAttributes =
-            codec.getSavedAttributes(domain,
-                                     siteAttributesList);
-        Log.i(LOG_CATEGORY,
-              "savedAttributes='" + codec.encode(savedAttributes) + "'");
-
-        // The "proposed" attributes,
-        // which would be used to generate the proxy password,
-        // unless overridden
-        Attributes proposedAttributes =
-            new Attributes(
-                configurator.configureDomain(
-                                    domain,
-                                    savedAttributes.domain()),
-                configurator.configureIterations(
-                                    defaultIterations,
-                                    savedAttributes.iterations()),
-                configurator.configureTruncation(
-                                    savedAttributes.truncation()));
-
-        configurator.configureHash();
-        configurator.configureSaveCustomAttributesCheckBox();
-        configurator.configureGenerateButton();
-
-        // Save the saved and proposed attributes,
-        // as well as the siteAttributes list,
-        // in the class for recalling later;
-        // need to save state here since the next call will be
-        // the invocation of a handler via user interaction
-        this.m_saltKey = saltKey;
-        this.m_savedAttributes = savedAttributes;
-        this.m_proposedAttributes = proposedAttributes;
-        this.m_siteAttributesList = siteAttributesList;
     }
 
     /**
@@ -504,7 +527,7 @@ public class HomeFragment extends Fragment {
      *          and the salt key
      * @return  Does not return a value
      */
-    private void generate(final View view) {
+    protected void generate(final View view) {
         Log.i(LOG_CATEGORY, "Generating proxy password...");
         AttributesCodec codec = new AttributesCodec();
         final Attributes attributes = getAttributes(view);
@@ -594,7 +617,7 @@ public class HomeFragment extends Fragment {
      *          proxy password.
      * @return  An Attributes object initialized from elements of the view
      */
-    private Attributes getAttributes(View view) {
+    protected Attributes getAttributes(View view) {
         EditText domainField     =
             (EditText)getView().findViewById(R.id.domain);
         EditText iterationsField =
@@ -641,7 +664,7 @@ public class HomeFragment extends Fragment {
      *          for security, it is not even passed around.
      * @return  The SHA256 hash of the user's password
      */
-    private byte[] getSeedSHA(View view) {
+    protected byte[] getSeedSHA(View view) {
         EditText password = (EditText)getView().findViewById(R.id.password);
         byte[] seedSHA = null;
         MessageDigest hash = null;
@@ -661,8 +684,8 @@ public class HomeFragment extends Fragment {
      * @brief   
      * @return  
      */
-    private void setPassword(View view,
-                             String password) {
+    protected void setPassword(View view,
+                               String password) {
         EditText hashField = (EditText)getView().findViewById(R.id.hash);
         hashField.setEnabled(true);
         hashField.setText(password, TextView.BufferType.EDITABLE);
@@ -672,7 +695,7 @@ public class HomeFragment extends Fragment {
      * @brief   
      * @return  
      */
-    private void checkAndSaveAttributes(final Attributes attributes) {
+    protected void checkAndSaveAttributes(final Attributes attributes) {
         CheckBox saveAttributesBox =
             (CheckBox)getView().findViewById(R.id.saveAttributes);
         if (!saveAttributesBox.isChecked()) {
@@ -741,7 +764,7 @@ public class HomeFragment extends Fragment {
      *          clean up listeners and handlers
      * @return  Does not return a value
      */
-    private void deconfigureElements() {
+    protected void deconfigureElements() {
         Log.i(LOG_CATEGORY, "deconfigureElements(): " +
               "Cleaning up listeners/handlers");
 
@@ -770,9 +793,86 @@ public class HomeFragment extends Fragment {
     // INNER CLASSES
 
     /**
+     * @brief   The Ingredients class
+     *          This class is used to retrieve/pass around the
+     *          "ingredients" that go into the "recipe", i.e.,
+     *          the necessary input to generate passwords.
+     */
+    protected class Ingredients {
+
+        // ================================================================
+        // Creators
+
+        /**
+         * @brief   The constructor.
+         * @return  Does not return a value.
+         */
+        public Ingredients() {
+            m_saltKey = null;
+            m_defaultIterations = null;
+            m_encodedAttributesList = null;
+        }
+
+        // ================================================================
+        // Accessors
+
+        public final String saltKey() {
+            return m_saltKey;
+        }
+
+        public final Integer defaultIterations() {
+            return m_defaultIterations;
+        }
+
+        public final String encodedAttributesList() {
+            return m_encodedAttributesList;
+        }
+
+        /**
+         * @brief   Method to return a textual representation of the
+         *          Ingredients object.
+         *          This method cannot return a "final" type, since it
+         *          needs to override the toString() method in the
+         *          Object class.
+         * @return  {String} Returns a string with the representation.
+         */
+        public String toString() {
+            return ("[ " + 
+                    "saltKey='" +
+                    m_saltKey + "', " +
+                    "defaultIterations=" +
+                    m_defaultIterations.toString() + ", " +
+                    "siteAttributesList='" +
+                    m_encodedAttributesList + "' ]");
+        }
+
+        // ================================================================
+        // Modifiers
+
+        public void setSaltKey(String saltKey) {
+            m_saltKey = saltKey;
+        }
+
+        public void setDefaultIterations(Integer defaultIterations) {
+            m_defaultIterations = defaultIterations;
+        }
+
+        public void setEncodedAttributesList(String encodedAttributesList) {
+            m_encodedAttributesList = encodedAttributesList;
+        }
+
+        // ================================================================
+        // Private members
+
+        private String  m_saltKey;
+        private Integer m_defaultIterations;
+        private String  m_encodedAttributesList;
+    }
+
+    /**
      * @brief   
      */
-    private class Attributes {
+    protected class Attributes {
 
         // ================================================================
         // Static Members
@@ -899,7 +999,7 @@ public class HomeFragment extends Fragment {
      * @brief   
      * @return  
      */
-    private class AttributesCodec {
+    protected class AttributesCodec {
 
         /**
          * @brief   
@@ -988,7 +1088,7 @@ public class HomeFragment extends Fragment {
          *          was a valid JSON string, else null
          */
         public JSONObject
-        getDecodedAttributesList(String encodedAttributesList) {
+        getDecodedAttributesList(final String encodedAttributesList) {
             Log.i(LOG_CATEGORY, "Decoding saved attributes list...");
 
             JSONObject siteAttributesList = null;
@@ -1096,7 +1196,7 @@ public class HomeFragment extends Fragment {
     /**
      * @brief   The Workhorse class, which does all the Crypto magic.
      */
-    private static class Hasher {
+    protected static class Hasher {
 
         public static byte[] generateSalt(String domain,
                                           String saltKey,
@@ -1171,19 +1271,25 @@ public class HomeFragment extends Fragment {
     // --------------------------------------------------------------------
     // DATA MEMBERS
 
-    String     m_saltKey;               /** @brief The salt key retrieved
-                                          * from the default
-                                          * shared preferences
-                                          */
-    Attributes m_savedAttributes;       /** @brief Attributes saved in the
-                                          * preferences system.
-                                          */
-    Attributes m_proposedAttributes;    /** @brief Proposed attributes, after
-                                          * reading from the saved preferences
-                                          * and what would be used if further
-                                          * unmodified by the user.
-                                          */
-    JSONObject m_siteAttributesList;    /** @brief The saved JSON of custom
-                                          * website attributes.
-                                          */
+    protected String     m_saltKey;             /** @brief The salt key
+                                                  * retrieved from the
+                                                  * default
+                                                  * shared preferences/
+                                                  * server
+                                                  */
+    protected Attributes m_savedAttributes;     /** @brief Attributes saved
+                                                  * in the preferences system
+                                                  */
+    protected Attributes m_proposedAttributes;  /** @brief Proposed
+                                                  * attributes,
+                                                  * after reading from the
+                                                  * saved preferences
+                                                  * and what would be used if
+                                                  * further unmodified
+                                                  * by the user
+                                                  */
+    protected JSONObject m_siteAttributesList;  /** @brief The saved JSON
+                                                  * of custom
+                                                  * website attributes
+                                                  */
 }

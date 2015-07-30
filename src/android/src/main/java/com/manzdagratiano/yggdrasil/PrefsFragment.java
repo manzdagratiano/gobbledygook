@@ -9,10 +9,7 @@
  * @copyright   Manjul Apratim, 2015
  */
 
-package com.manzdagratiano.krunch;
-
-// Libraries
-import com.manzdagratiano.yggdrasil.R;
+package com.manzdagratiano.yggdrasil;
 
 // Android
 import android.app.Activity;

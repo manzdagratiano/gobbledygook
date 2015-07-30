@@ -9,14 +9,14 @@ buildscript {
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 'android-22'
+    compileSdkVersion 22
     buildToolsVersion '22.0.1'
 
     defaultConfig {
-        minSdkVersion 'android-11'
-        targetSdkVersion 'android-22'
+        minSdkVersion 11
+        targetSdkVersion 11
         versionCode 1
-        versionName "1.0"
+        versionName '1.0'
     }
 
     buildTypes {

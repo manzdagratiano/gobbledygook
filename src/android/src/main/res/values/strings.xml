@@ -1,25 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- ########## -->
-    <!-- Activities -->
-    <!-- ########## -->
-    <string name="app_name">ACTIVITY_ENTRY_NAME</string>
-
     <!-- ##### -->
     <!-- Fonts -->
     <!-- ##### -->
+
     <string name="label_fontFamily">sans-serif</string>
     <string name="button_fontFamily">sans-serif</string>
 
     <!-- ########## -->
     <!-- Action bar -->
     <!-- ########## -->
+
     <string name="action_home">Home</string>
     <string name="action_settings">Settings</string>
 
     <!-- ################# -->
     <!-- Navigation Drawer -->
     <!-- ################# -->
+
     <string name="drawer_open">Abracadabra!</string>
     <string name="drawer_closed">Hasta la Vista, Baby!</string>
 
@@ -39,6 +37,14 @@
     <string name="hint_truncation">-1</string>
     <string name="checkBox_saveAttributes">Save custom changes</string>
     <string name="button_generate">Generate!</string>
+
+    <!-- ############# -->
+    <!-- Fragment Tags -->
+    <!-- ############# -->
+
+    <string name="tag_aboutFragment">AboutFragment</string>
+    <string name="tag_homeFragment">HomeFragment</string>
+    <string name="tag_prefsFragment">PrefsFragment</string>
 
     <!-- ########### -->
     <!-- Preferences -->
