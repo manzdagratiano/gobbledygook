@@ -9,10 +9,10 @@
  * @copyright   Manjul Apratim, 2015
  */
 
-package com.manzdagratiano.gobbledygook;
+package io.tengentoppa.gobbledygook;
 
 // Libraries
-import com.manzdagratiano.yggdrasil.R;
+import io.tengentoppa.yggdrasil.R;
 
 // Android
 import android.app.ActionBar;

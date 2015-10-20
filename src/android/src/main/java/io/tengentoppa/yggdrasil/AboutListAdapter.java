@@ -1,4 +1,4 @@
-package com.manzdagratiano.yggdrasil;
+package io.tengentoppa.yggdrasil;
 
 // Android
 import android.app.Activity;

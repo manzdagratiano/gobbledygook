@@ -9,7 +9,7 @@
  * @copyright   Manjul Apratim, 2015
  */
 
-package com.manzdagratiano.yggdrasil;
+package io.tengentoppa.yggdrasil;
 
 // Android
 import android.app.Activity;

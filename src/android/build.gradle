@@ -9,8 +9,8 @@ buildscript {
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 22
-    buildToolsVersion '22.0.1'
+    compileSdkVersion 23
+    buildToolsVersion '23.0.0'
 
     defaultConfig {
         minSdkVersion 11
@@ -28,11 +28,11 @@ android {
 
     productFlavors {
         gobbledygook {
-            applicationId 'com.manzdagratiano.gobbledygook'
+            applicationId 'io.tengentoppa.gobbledygook'
             versionName '1.0'
         }
         krunch {
-            applicationId 'com.manzdagratiano.krunch'
+            applicationId 'io.tengentoppa.krunch'
             versionName '1.0'
         }
     }

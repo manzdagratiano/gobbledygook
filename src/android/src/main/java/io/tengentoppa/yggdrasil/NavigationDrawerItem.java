@@ -1,4 +1,4 @@
-package com.manzdagratiano.yggdrasil;
+package io.tengentoppa.yggdrasil;
 
 /**
  * @brief   The NavigationDrawerItem class

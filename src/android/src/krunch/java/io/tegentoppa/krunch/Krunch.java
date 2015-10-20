@@ -9,15 +9,15 @@
  * @copyright   Manjul Apratim, 2015
  */
 
-package com.manzdagratiano.krunch;
+package io.tengentoppa.krunch;
 
 // Libraries
-import com.manzdagratiano.yggdrasil.AboutFragment;
-import com.manzdagratiano.yggdrasil.HomeFragment;
-import com.manzdagratiano.yggdrasil.NavigationDrawerItem;
-import com.manzdagratiano.yggdrasil.PrefsFragment;
-import com.manzdagratiano.yggdrasil.R;
-import com.manzdagratiano.yggdrasil.Yggdrasil;
+import io.tengentoppa.yggdrasil.AboutFragment;
+import io.tengentoppa.yggdrasil.HomeFragment;
+import io.tengentoppa.yggdrasil.NavigationDrawerItem;
+import io.tengentoppa.yggdrasil.PrefsFragment;
+import io.tengentoppa.yggdrasil.R;
+import io.tengentoppa.yggdrasil.Yggdrasil;
 
 // Android
 import android.app.Activity;

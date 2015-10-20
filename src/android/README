@@ -5,9 +5,9 @@ $ android create project \
     --target android-22 \
     --name gobbledygook \
     --path . --activity Gobbledygook \
-    --package com.manzdagratiano.gobbledygook
+    --package io.tengentoppa.gobbledygook
 
 BUILD:
 ======
 
-$ ant debug     # apk Files generated in the bin directory
+$ ./gradlew assembleDebug     # apk Files generated in the bin directory
