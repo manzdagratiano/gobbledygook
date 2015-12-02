@@ -17,6 +17,7 @@ import io.tengentoppa.yggdrasil.HomeFragment;
 import io.tengentoppa.yggdrasil.NavigationDrawerItem;
 import io.tengentoppa.yggdrasil.PrefsFragment;
 import io.tengentoppa.yggdrasil.R;
+import io.tengentoppa.yggdrasil.WorkhorseFragment;
 import io.tengentoppa.yggdrasil.Yggdrasil;
 
 // Android
@@ -192,6 +193,8 @@ public class Gobbledygook extends Yggdrasil {
         switch(items[position]) {
             case HOME:
                 // Main activity
+                //this.swapFragment(new GobbledygookWorkhorseFragment(),
+                //                  getString(R.string.tag_workhorseFragment));
                 this.swapFragment(new GobbledygookHomeFragment(),
                                   getString(R.string.tag_homeFragment));
                 break;

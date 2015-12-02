@@ -25,6 +25,8 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -55,13 +57,17 @@ import org.json.JSONObject;
  *         as "Fragments"; navigating to a different activity within
  *         the app is equivalent to replacing the contents of
  *         the frame layout with the relevant fragment.
+ *         This class extends "AppCompatActivity" from support-v7
+ *         as opposed to "Activity", so that it may use the "Toolbar"
+ *         class as the AppBar as opposed to the "ActionBar",
+ *         guaranteeing a consistent performance across devices.
  *         This class is abstract;
  *         this so that it can provide a generic implementation for the
  *         navigation drawer without reference to specific items.
  *         The appropriate subclasses will implement item-list-specific
  *         behavior.
  */
-public abstract class Yggdrasil extends Activity
+public abstract class Yggdrasil extends AppCompatActivity
 {
     // ====================================================================
     // PUBLIC METHODS
@@ -72,7 +78,11 @@ public abstract class Yggdrasil extends Activity
     {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.navigation_drawer);
+        setContentView(R.layout.main_activity);
+
+        // Set the Toolbar as the ActionBar
+        Toolbar appBar = (Toolbar)findViewById(R.id.appBar);
+        setSupportActionBar(appBar);
 
         // Create the navigation drawer
         this.createNavigationDrawer();
@@ -118,7 +128,7 @@ public abstract class Yggdrasil extends Activity
     @Override
     public void setTitle(CharSequence title) {
         m_title = title;
-        getActionBar().setTitle(title);
+        getSupportActionBar().setTitle(title);
     }
 
     /**
@@ -309,8 +319,8 @@ public abstract class Yggdrasil extends Activity
                                             drawerItems));
 
         // Set the action bar app icon to behave as drawer toggler
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        getActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
 
         // Set the onClickListener for the ListView
         m_drawerView.setOnItemClickListener(
@@ -329,7 +339,7 @@ public abstract class Yggdrasil extends Activity
              * @return  Does not return a value
              */
             public void onDrawerClosed(View drawerView) {
-                getActionBar().setTitle(m_title);
+                getSupportActionBar().setTitle(m_title);
                 // Create call to onPrepareOptionsMenu
                 invalidateOptionsMenu();
             }
@@ -339,7 +349,7 @@ public abstract class Yggdrasil extends Activity
              * @return  Does not return a value
              */
             public void onDrawerOpened(View drawerView) {
-                getActionBar().setTitle(m_title);
+                getSupportActionBar().setTitle(m_title);
                 // Create call to onPrepareOptionsMenu
                 invalidateOptionsMenu();
             }

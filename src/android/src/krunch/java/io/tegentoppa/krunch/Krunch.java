@@ -13,10 +13,10 @@ package io.tengentoppa.krunch;
 
 // Libraries
 import io.tengentoppa.yggdrasil.AboutFragment;
-import io.tengentoppa.yggdrasil.HomeFragment;
 import io.tengentoppa.yggdrasil.NavigationDrawerItem;
 import io.tengentoppa.yggdrasil.PrefsFragment;
 import io.tengentoppa.yggdrasil.R;
+import io.tengentoppa.yggdrasil.WorkhorseFragment;
 import io.tengentoppa.yggdrasil.Yggdrasil;
 
 // Android
@@ -133,8 +133,8 @@ public class Krunch extends Yggdrasil {
         switch(items[position]) {
             case HOME:
                 // Main activity
-                this.swapFragment(new KrunchHomeFragment(),
-                                  getString(R.string.tag_homeFragment));
+                this.swapFragment(new KrunchWorkhorseFragment(),
+                                  getString(R.string.tag_workhorseFragment));
                 break;
             case EXPORT_SETTINGS:
                 // Export settings

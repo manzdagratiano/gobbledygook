@@ -38,6 +38,12 @@
     <string name="checkBox_saveAttributes">Save custom changes</string>
     <string name="button_generate">Generate!</string>
 
+    <!-- ########## -->
+    <!-- Login Page -->
+    <!-- ########## -->
+
+    <string name="hint_search">Enter a URL</string>
+
     <!-- ############# -->
     <!-- Fragment Tags -->
     <!-- ############# -->
@@ -45,6 +51,7 @@
     <string name="tag_aboutFragment">AboutFragment</string>
     <string name="tag_homeFragment">HomeFragment</string>
     <string name="tag_prefsFragment">PrefsFragment</string>
+    <string name="tag_workhorseFragment">WorkhorseFragment</string>
 
     <!-- ########### -->
     <!-- Preferences -->

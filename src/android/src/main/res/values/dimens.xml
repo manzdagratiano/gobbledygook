@@ -1,0 +1,8 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="app_bar_elevation">4dp</dimen>
+    <dimen name="floating_button_diameter">56dp</dimen>
+    <dimen name="floating_button_margin">16dp</dimen>
+    <dimen name="elevation_low">2dp</dimen>
+    <dimen name="elevation_high">8dp</dimen>
+</resources>

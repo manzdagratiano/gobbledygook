@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The topmost element is a CoordinatorLayout
+     (FrameLayout on steroids)
+     so that a floating action button can be placed
+     with the appropriate "gravity" (bottom|right) -->
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/lib-auto"
+    android:id="@+id/loginFragmentFrame"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <!-- This fragment has a SearchView above a WebView,
+         so a RelativeLayout is needed to place them
+         one below the other -->
+    <RelativeLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+        <SearchView
+            android:id="@+id/homeSearchView"
+            android:queryHint="@string/hint_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            />
+
+        <!-- Place the WebView explicitly below the SearchView
+             by using the "android:layout_below" property -->
+        <WebView
+            android:id="@+id/homeWebView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/homeSearchView"
+            />
+    </RelativeLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/floatingButton"
+        android:src="@drawable/ic_menu_manage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/floating_button_margin"
+        android:layout_gravity="bottom|end"
+        app:layout_anchor="@id/loginFragmentFrame"
+        app:layout_anchorGravity="bottom|right|end"
+        />
+
+    <!--ImageButton
+        android:id="@+id/mainFragmentButton"
+        android:layout_gravity="bottom|end"
+        android:layout_width="@dimen/floating_button_diameter"
+        android:layout_height="@dimen/floating_button_diameter"
+        android:layout_marginBottom="@dimen/floating_button_margin"
+        android:layout_marginEnd="@dimen/floating_button_margin"
+        android:elevation="@dimen/elevation_low"
+        android:src="@drawable/ic_menu_manage"
+        android:background="@drawable/oval_ripple"
+        android:tint="@android:color/white"
+        android:stateListAnimator="@anim/floating_button_elevation"
+        /-->
+
+</android.support.design.widget.CoordinatorLayout>

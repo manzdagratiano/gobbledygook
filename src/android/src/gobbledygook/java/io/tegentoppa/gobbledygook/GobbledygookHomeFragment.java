@@ -13,38 +13,32 @@ package io.tengentoppa.gobbledygook;
 
 // Libraries
 import io.tengentoppa.yggdrasil.HomeFragment;
+import io.tengentoppa.yggdrasil.R;
 
 // Android
-
+import android.app.DialogFragment;
+import android.app.FragmentTransaction;
 
 /**
- * @brief   The GobbledygookHomeFragment class
- *          This class extends the HomeFragment class to
- *          provide specific implementations of the
- *          retrieveIngredients method.
+ * @brief   
  */
 public class GobbledygookHomeFragment extends HomeFragment {
 
-    // ====================================================================
-    // PRIVATE MEMBERS
-
-    // --------------------------------------------------------------------
-    // METHODS
-
     /**
-     * @brief   Method to retrieve the ingredients for the recipe from the
-     *          appropriate source, in this case the SharedPreferences in
-     *          the system
-     * @return  {Ingredients} Returns the populated ingredients object
+     * @brief   
+     * @return  Does not return a value
      */
-    protected Ingredients retrieveIngredients() {
-        // Allocate memory
-        Ingredients ingredients = new Ingredients();
+    protected void showWorkhorseDialog(String url,
+                                       FragmentTransaction fragmentTx) {
+        // Instantiate the fragment
+        boolean showAsDialog = true;
+        DialogFragment workhorseDialog =
+            GobbledygookWorkhorseFragment.newInstance(url,
+                                                      showAsDialog);
 
-        // Retrieve ingredients from shared preferences
-        this.retrieveIngredientsFromSharedPreferences(ingredients);
-
-        return ingredients;
+        // "show" will commit the transaction as well
+        workhorseDialog.show(fragmentTx,
+                             getString(R.string.tag_workhorseFragment));
     }
 
 }

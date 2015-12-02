@@ -21,12 +21,12 @@
         android:paddingRight="5dp"
         android:fitsSystemWindows="true"
         >
-        <!-- To change an EditText background, add the attribute
-             android:background="@drawable/rounded_rectangle" -->
+
         <Space
             android:layout_width="match_parent"
             android:layout_height="10dp"
             />
+
         <!-- The domain -->
         <TextView
             android:layout_width="wrap_content"
@@ -42,10 +42,12 @@
             android:layout_height="wrap_content"
             android:hint="@string/hint_domain"
             />
+
         <Space
             android:layout_width="match_parent"
             android:layout_height="10dp"
             />
+
         <!-- THE user password -->
         <TextView
             android:layout_width="wrap_content"
@@ -62,10 +64,12 @@
             android:hint="@string/hint_password"
             android:inputType="textPassword"
             />
+
         <Space
             android:layout_width="match_parent"
             android:layout_height="10dp"
             />
+
         <!-- The number of iterations -->
         <TextView
             android:layout_width="wrap_content"
@@ -82,10 +86,12 @@
             android:hint="@string/hint_iterations"
             android:inputType="number"
             />
+
         <Space
             android:layout_width="match_parent"
             android:layout_height="10dp"
             />
+
         <!-- The Proxy Password
              No hint; greyed on wake -->
         <TextView
@@ -109,10 +115,12 @@
             android:text="@string/checkBox_showHash"
             android:textStyle="italic"
             />
+
         <Space
             android:layout_width="match_parent"
             android:layout_height="10dp"
             />
+
         <CheckBox
             android:id="@+id/truncate"
             android:layout_width="wrap_content"
@@ -129,10 +137,12 @@
             android:hint="@string/hint_truncation"
             android:inputType="number"
             />
+
         <Space
             android:layout_width="match_parent"
             android:layout_height="10dp"
             />
+
         <CheckBox
             android:id="@+id/saveAttributes"
             android:layout_width="wrap_content"

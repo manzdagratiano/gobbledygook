@@ -1,6 +1,6 @@
 /**
- * @file        KrunchHomeFragment.java
- * @brief       Source file for the KrunchHomeFragment class
+ * @file        KrunchWorkhorseFragment.java
+ * @brief       Source file for the KrunchWorkhorseFragment class
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
  * @date        June 20, 2015
@@ -12,18 +12,18 @@
 package io.tengentoppa.krunch;
 
 // Libraries
-import io.tengentoppa.yggdrasil.HomeFragment;
+import io.tengentoppa.yggdrasil.WorkhorseFragment;
 
 // Android
 
 
 /**
- * @brief   The KrunchHomeFragment class
- *          This class extends the HomeFragment class to
+ * @brief   The KrunchWorkhorseFragment class
+ *          This class extends the WorkhorseFragment class to
  *          provide specific implementations of the
  *          retrieveIngredients method.
  */
-public class KrunchHomeFragment extends HomeFragment {
+public class KrunchWorkhorseFragment extends WorkhorseFragment {
 
     // ====================================================================
     // PRIVATE MEMBERS
