@@ -52,9 +52,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 // Spongycastle (Bouncycastle)
-import org.spongycastle.crypto.digests.SHA256Digest;
-import org.spongycastle.crypto.generators.PKCS5S2ParametersGenerator;
-import org.spongycastle.crypto.params.KeyParameter;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.util.encoders.Hex;
 import org.spongycastle.util.encoders.Base64;
@@ -196,30 +193,25 @@ public abstract class WorkhorseFragment extends DialogFragment {
     // --------------------------------------------------------------------
     // CONSTANTS
 
-    protected static final String LOG_CATEGORY          = "YGGDRASIL";
-    protected static final String SHA256                = "SHA-256";
-    protected static final String UTF8                  = "UTF-8";
+    protected static final String LOG_CATEGORY      = "YGGDRASIL.WORKHORSE";
+    protected static final String SHA256            = "SHA-256";
+    protected static final String UTF8              = "UTF-8";
 
     // Parameter names
-    protected static final String PARAM_DIALOG          = "dialog";
-    protected static final String PARAM_URL             = "url";
+    protected static final String PARAM_DIALOG      = "dialog";
+    protected static final String PARAM_URL         = "url";
 
     // Toast messages
     protected static final String ATTRIBUTES_OVERRIDE_SPARINGLY_MESSAGE
-                                                        =
+                                                    =
         "Please use the custom attributes option sparingly! " +
         "It should only be a last resort.";
     protected static final String ATTRIBUTES_SAVE_FAILURE_MESSAGE
-                                                        =
+                                                    =
         "Alas! Failed to save custom attributes!";
     protected static final String ATTRIBUTES_SAVE_SUCCESS_MESSAGE
-                                                        =
+                                                    =
         "Successfully saved custom attributes!";
-    protected static final String EMPTY_SALT_KEY_MESSAGE
-                                                        =
-        "The salt key is empty, " +
-        "therefore the generated password is meaningless. " +
-        "Please generate/load a salt key first.";
 
     // --------------------------------------------------------------------
     // METHODS
@@ -594,10 +586,10 @@ public abstract class WorkhorseFragment extends DialogFragment {
 
         // The salt key
         final String saltKey = m_saltKey;
+        // Sanity check
         if (saltKey.isEmpty()) {
-            Toast.makeText(getActivity().getApplicationContext(),
-                           EMPTY_SALT_KEY_MESSAGE,
-                           Toast.LENGTH_SHORT).show();
+            Log.e(LOG_CATEGORY, "FATAL: saltKey=null");
+            // Continue, but the results will be bogus.
         }
 
         // Do the heavy lifting in a separate thread.
@@ -608,7 +600,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
         new Thread(new Runnable () {
             public void run() {
                 // Generate the salt
-                byte[] salt = Hasher.generateSalt(attributes.domain(),
+                byte[] salt = Crypto.generateSalt(attributes.domain(),
                                                   saltKey,
                                                   attributes.iterations());
                 if (null == salt) {
@@ -627,7 +619,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
                 }
 
                 // Generate the hash (the "proxy password")
-                String b64Hash = Hasher.generateHash(seedSHA,
+                String b64Hash = Crypto.generateHash(seedSHA,
                                                      salt,
                                                      attributes.iterations());
                 if (null == b64Hash) {
@@ -638,7 +630,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
                 }
                 Log.i(LOG_CATEGORY, "hash=" + b64Hash);
                 final String password =
-                    Hasher.getPasswdStr(b64Hash,
+                    Crypto.getPasswdStr(b64Hash,
                                         attributes.truncation());
                 Log.i(LOG_CATEGORY, "password=" + password);
 
@@ -1238,87 +1230,6 @@ public abstract class WorkhorseFragment extends DialogFragment {
         }
 
     }   // end class AttributesCodec
-
-    // ====================================================================
-    // NESTED CLASSES
-
-    // --------------------------------------------------------------------
-    // Hasher
-
-    /**
-     * @brief   The Workhorse class, which does all the Crypto magic.
-     */
-    protected static class Hasher {
-
-        public static byte[] generateSalt(String domain,
-                                          String saltKey,
-                                          Integer iterations) {
-            byte[] salt = null;
-            PKCS5S2ParametersGenerator generator =
-                new PKCS5S2ParametersGenerator(new SHA256Digest());
-
-            try {
-                MessageDigest hash = MessageDigest.getInstance(SHA256);
-
-                generator.init(hash.digest(domain.getBytes(UTF8)),
-                               hash.digest(saltKey.getBytes()),
-                               iterations);
-
-                salt = ((KeyParameter)
-                        generator.generateDerivedParameters(256)).getKey();
-            } catch (NoSuchAlgorithmException e) {
-                Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e) {
-                Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
-                e.printStackTrace();
-            }
-
-            return salt;
-        }
-
-        /**
-         * @brief   
-         * @return  
-         */
-        public static String generateHash(byte[] seedSHA,
-                                          byte[] salt,
-                                          Integer iterations) {
-            byte[] hash = null;
-            PKCS5S2ParametersGenerator generator =
-                new PKCS5S2ParametersGenerator(new SHA256Digest());
-
-            generator.init(seedSHA,
-                           salt,
-                           iterations);
-
-            hash = ((KeyParameter)
-                    generator.generateDerivedParameters(256)).getKey();
-
-            String b64Hash = null;
-            try {
-                b64Hash = new String(Base64.encode(hash), UTF8);
-            } catch (UnsupportedEncodingException e) {
-                Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
-                e.printStackTrace();
-            }
-
-            return b64Hash;
-        }
-
-        /**
-         * @brief   
-         * @return  
-         */
-        public static String getPasswdStr(String b64Hash,
-                                          Integer truncation) {
-            return b64Hash.replace("=",
-                                   "").replace("+",
-                                               "-").replace("/",
-                                                            "_");
-        }
-
-    }   // end class Hasher
 
     // --------------------------------------------------------------------
     // DATA MEMBERS

@@ -96,6 +96,9 @@ public abstract class Yggdrasil extends AppCompatActivity
         // Set the navigation drawer header
         this.setNavigationDrawerHeader();
 
+        // If this is the first launch, create a "Salt Key"
+        this.checkAndCreateSaltKey();
+
         // If there is no saved state,
         // launch the "home" fragment
         // (guaranteed to be at position 0 in the drawer)
@@ -278,13 +281,15 @@ public abstract class Yggdrasil extends AppCompatActivity
         "ERROR exporting settings to file :(";
     protected static final String EXTERNAL_STORAGE_ERROR                  =
         "ERROR exporting settings! The external storage is not mounted :(";
-    private static final String FILE_MANAGER_MISSING_ERROR                =
+    protected static final String FILE_MANAGER_MISSING_ERROR              =
         "ERROR importing file! Please install a file manager " +
         "to be able to browse to a file";
-    private static final String IMPORT_SETTINGS_MESSAGE                   =
+    protected static final String IMPORT_SETTINGS_MESSAGE                 =
         "Successfully imported settings...";
-    private static final String IMPORT_SETTINGS_ERROR                     =
+    protected static final String IMPORT_SETTINGS_ERROR                   =
         "ERROR! Found malformed file! Failed to import settings! :(";
+    protected static final String INIT_MESSAGE                            =
+        "Initializing...";
 
     // Request codes for spawning activities
     protected static final int    READ_SETTINGS_FILE_CODE                 =
@@ -371,6 +376,45 @@ public abstract class Yggdrasil extends AppCompatActivity
      */
     protected void setNavigationDrawerHeader() {
         // Do nothing
+    }
+
+    /**
+     * @brief   Method to check if a salt key exists, and if not,
+     *          to create a new one and save it to SharedPreferences.
+     * @return  Does not return a value
+     */
+    protected void checkAndCreateSaltKey() {
+        Log.i(LOG_CATEGORY, "checkAndCreateSaltKey(): " +
+              "Checking for salt key...");
+
+        SharedPreferences sharedPrefs =
+            PreferenceManager.getDefaultSharedPreferences(
+                                    this.getApplicationContext());
+        String saltKey = "";
+        // Catch all exceptions when reading from SharedPreferences
+        try {
+            saltKey = sharedPrefs.getString(
+                    getString(R.string.pref_saltKey_key),
+                              "");
+        } catch (Exception e) {
+            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
+            e.printStackTrace();
+        }
+
+        if (saltKey.isEmpty()) {
+            Log.i(LOG_CATEGORY, "checkAndCreateSaltKey(): " +
+                    "saltKey=null, Creating new key...");
+            // Since this may take a few seconds,
+            // inform the user
+            Toast.makeText(this.getApplicationContext(),
+                           INIT_MESSAGE,
+                           Toast.LENGTH_SHORT).show();
+            saltKey = Crypto.generateSaltKey();
+            SharedPreferences.Editor preferenceEditor = sharedPrefs.edit();
+            preferenceEditor.putString(getString(R.string.pref_saltKey_key),
+                                       saltKey);
+            preferenceEditor.commit();
+        }
     }
 
     /**

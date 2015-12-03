@@ -123,9 +123,7 @@ public class PrefsFragment extends PreferenceFragment
                   "New saltKey='" + newSaltKey + "'");
 
             Preference saltKeyPref = (Preference)findPreference(key);
-            saltKeyPref.setSummary(
-                    newSaltKey.isEmpty() ? EMPTY_SALT_KEY_INDICATOR 
-                                         : newSaltKey);
+            saltKeyPref.setSummary(newSaltKey);
         } else if (key.equals(
                     getString(R.string.pref_defaultIterations_key))) {
             Preference defaultIterationsPref = (Preference)findPreference(key);
@@ -147,10 +145,8 @@ public class PrefsFragment extends PreferenceFragment
     // --------------------------------------------------------------------
     // CONSTANTS
 
-    private static final String LOG_CATEGORY        = "GOBBLEDYGOOK.PREFS";
+    private static final String LOG_CATEGORY        = "YGGDRASIL.PREFS";
     private static final int    DEFAULT_ITERATIONS  = 10000;
-    private static final String EMPTY_SALT_KEY_INDICATOR
-                                                    = "<null>";
     private static final String EMPTY_CUSTOM_ATTRS_INDICATOR
                                                     = "<null>";
 
@@ -179,15 +175,9 @@ public class PrefsFragment extends PreferenceFragment
                 String saltKey =
                     sharedPreferences.getString(
                             getString(R.string.pref_saltKey_key), "");
-                if (saltKey.isEmpty()) {
-                    Log.i(LOG_CATEGORY, "configureSaltKey(): " +
-                          "The salt key is empty");
-                    saltKeyPref.setSummary(EMPTY_SALT_KEY_INDICATOR);
-                } else {
-                    Log.i(LOG_CATEGORY, "configureSaltKey(): " +
-                          "Found non-empty saltKey='" + saltKey + "'");
-                    saltKeyPref.setSummary(saltKey);
-                }
+                // The saltKey should never be empty,
+                // since it is generated on first start when it does not exist
+                saltKeyPref.setSummary(saltKey);
 
                 // Set an onClick listener to view/edit the salt key
                 saltKeyPref.setOnPreferenceClickListener(

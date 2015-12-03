@@ -36,27 +36,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-// Standard Java
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.SecureRandom;
-import java.security.Security;
-
-// SpongyCastle
-import org.spongycastle.jce.provider.BouncyCastleProvider;
-import org.spongycastle.util.encoders.Base64;
-
 /**
  * @brief   
  */
 public class SaltKeyActionsFragment extends DialogFragment {
-
-    static {
-        Security.addProvider(new BouncyCastleProvider());
-    }
 
     // ===================================================================
     // PUBLIC METHODS
@@ -181,11 +164,7 @@ public class SaltKeyActionsFragment extends DialogFragment {
     // CONSTANTS
 
     private static final String LOG_CATEGORY                        =
-        "GOBBLEDYGOOK.SALTKEY";
-    private static final int    SALT_KEY_LENGTH                     =
-        512;
-    private static final String UTF8                                =
-        "UTF-8";
+        "YGGDRASIL.SALTKEY";
 
     // Parameter names
     private static final String PARAM_DIALOG                        =
@@ -193,7 +172,8 @@ public class SaltKeyActionsFragment extends DialogFragment {
 
     // Toast messages
     private static final String GENERATE_SALT_KEY_MESSAGE           =
-        "Load or Generate a new Salt Key";
+        "Generate a new salt key. " +
+        "(WARNING: This will irreversibly change all generated passwords!)";
     private static final String GENERATING_SALT_KEY_MESSAGE         =
         "Generating new salt key...";
 
@@ -325,18 +305,9 @@ public class SaltKeyActionsFragment extends DialogFragment {
         Toast.makeText(getActivity().getApplicationContext(),
                        GENERATING_SALT_KEY_MESSAGE,
                        Toast.LENGTH_SHORT).show();
-        SecureRandom csprng = new SecureRandom();
-        byte[] saltKeyBytes = new byte[SALT_KEY_LENGTH];
-        csprng.nextBytes(saltKeyBytes);
-        String saltKey = null;
-        try {
-            saltKey = new String(Base64.encode(saltKeyBytes), UTF8);
-        } catch (UnsupportedEncodingException e) {
-            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
-            e.printStackTrace();
-        }
-        Log.i(LOG_CATEGORY, "generateSaltKey(): " +
-              "Generated saltKey='" + saltKey + "'");
+
+        // Generate the key
+        String saltKey = Crypto.generateSaltKey();
 
         // Set the view with the saltKey
         Log.i(LOG_CATEGORY, "generateSaltKey(): " +
