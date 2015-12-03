@@ -15,25 +15,26 @@ package io.tengentoppa.yggdrasil;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.preference.Preference;
+import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
-import android.widget.Toast;
-
-// Standard Java
-import java.util.ArrayList;
 
 /**
- * @brief   The AboutFragment class
+ * @brief   The AboutFragment class.
+ *          This class is derived from a PreferenceFragment
+ *          with each of the preferences unmodifiable.
  */
-public class AboutFragment extends Fragment {
+public class AboutFragment extends PreferenceFragment {
 
     // ====================================================================
     // PUBLIC METHODS
@@ -44,22 +45,12 @@ public class AboutFragment extends Fragment {
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.i(LOG_CATEGORY, "onCreate(): Creating about activity...");
-        super.onCreate(savedInstanceState);
-    }
+        Log.i(LOG_CATEGORY, "onCreate(): Creating AboutFragment...");
 
-    /**
-     * @brief   Called when the fragment is ready to display its UI
-     * @return  The View representing the root of the fragment layout
-     */
-    @Override
-    public View onCreateView(LayoutInflater inflater,
-                             ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the main layout
-        return inflater.inflate(R.layout.about,
-                                container,
-                                false);
+        super.onCreate(savedInstanceState);
+
+        // Load the preferences from the xml resource
+        addPreferencesFromResource(R.xml.about);
     }
 
     /**
@@ -116,7 +107,7 @@ public class AboutFragment extends Fragment {
     // --------------------------------------------------------------------
     // CONSTANTS
 
-    private static final String LOG_CATEGORY            = "GOBBLEDYGOOK";
+    private static final String LOG_CATEGORY            = "YGGDRASIL.ABOUT";
 
     // --------------------------------------------------------------------
     // METHODS
@@ -127,56 +118,66 @@ public class AboutFragment extends Fragment {
      */
     private void configureElements() {
 
-        // Create the list of items
-        this.createAboutItemList();
+        /**
+         * @brief   A private class to configure individual view elements
+         */
+        class Configurator {
 
-        m_title = getActivity().getTitle();
-        m_aboutLayout = (ListView)getView().findViewById(R.id.aboutView);
-        m_aboutLayout.setAdapter(new AboutListAdapter(
-                                    getActivity().getApplicationContext(),
-                                    m_aboutItemList));
+            /**
+             * @brief   Method to configure the "Home Page" preference.
+             *          Sets an Intent to open the Home page URL.
+             * @return  Does not return a value
+             */
+            public void configureHomepagePreference() {
+                Preference homepagePref =
+                    (Preference)findPreference(
+                            getString(R.string.about_homepage_key));
+                // Set an intent to open the home page in a browser
+                homepagePref.setIntent(
+                        new Intent(Intent.ACTION_VIEW,
+                                   Uri.parse(getString(
+                                        R.string.about_homepage_summary))));
+            }
 
-        // Create the item click listener
+            /**
+             * @brief   Method to configure the "Build Version" preference
+             * @return  Does not return a value
+             */
+            public void configureVersionPreference() {
+                Preference versionPref =
+                    (Preference)findPreference(
+                            getString(R.string.about_version_key));
+
+                String versionName = "";
+                try {
+                    Context appContext = getActivity().getApplicationContext();
+                    PackageInfo pkgInfo =
+                        appContext.getPackageManager(
+                                ).getPackageInfo(appContext.getPackageName(),
+                                                 0);
+                    versionName = pkgInfo.versionName;
+                } catch(PackageManager.NameNotFoundException e) {
+                    Log.e(LOG_CATEGORY, "configureElements(): Caught " + e);
+                    e.printStackTrace();
+                }
+                versionPref.setSummary(versionName);
+            }
+
+        };  // end class Configurator
+
+        Configurator configurator = new Configurator();
+        configurator.configureHomepagePreference();
+        configurator.configureVersionPreference();
+
     }
 
-    /**
-     * @brief   
-     * @return  Does not return a value
-     */
-    private void createAboutItemList() {
-        m_aboutItemList = new ArrayList<AboutItem>();
-
-        m_aboutItemList.add(new AboutItem(
-                    R.drawable.ic_action_person,
-                    "Creator",
-                    "Manjul Apratim"));
-        m_aboutItemList.add(new AboutItem(
-                    R.drawable.ic_action_web_site,
-                    "Homepage",
-                    "https://github.com/manzdagratiano"));
-        m_aboutItemList.add(new AboutItem(
-                    R.drawable.ic_menu_help,
-                    "Help",
-                    "First, you need the 'salt'..."));
-    }
 
     /**
-     * @brief   
+     * @brief   Method to do clean up
      * @return  Does not return a value
      */
     private void deconfigureElements() {
+        // Nothing to do
     }
 
-    // --------------------------------------------------------------------
-    // PRIVATE DATA
-
-    private ListView                m_aboutLayout;      /** @brief The layout
-                                                          */
-    private CharSequence            m_title;            /** @brief The title of
-                                                          * the fragment
-                                                          */
-    private ArrayList<AboutItem>    m_aboutItemList;    /** @brief An array of
-                                                          * the items in the
-                                                          * fragment
-                                                          */
 }

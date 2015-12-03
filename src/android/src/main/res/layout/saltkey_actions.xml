@@ -20,29 +20,9 @@
         android:fitsSystemWindows="true"
         >
 
-        <!-- A checkbox to "unlock" the salt key,
-             allowing operations like generating a new one,
-             or loading an existing one from a file.
-             This is to prevent accidental regenerations of the key. -->
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            />
-        <CheckBox
-            android:id="@+id/unlockSaltKey"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/checkBox_unlockSaltKey"
-            android:textStyle="italic"
-            />
-
         <!-- The salt key 
              The EditText view for the salt key
              is multiline -->
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -62,23 +42,16 @@
             android:scrollbars="vertical"
             android:hint="@string/hint_saltKey"
             />
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            />
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            />
-
-        <!-- The "Load Salt Key" Button -->
-        <Button
-            android:id="@+id/loadSaltKey"
-            android:layout_width="match_parent"
+        <!-- A checkbox to "unlock" the salt key,
+             allowing operations like generating a new one,
+             or loading an existing one from a file.
+             This is to prevent accidental regenerations of the key. -->
+        <CheckBox
+            android:id="@+id/editSaltKey"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/button_loadSaltKey"
-            android:fontFamily="@string/button_fontFamily"
+            android:text="@string/checkBox_editSaltKey"
+            android:textStyle="italic"
             />
 
         <Space

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The "About" page is a readonly informational list.
+     None of the items in the "About" page need be saved
+     to SharedPreferences -->
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The Creator -->
+    <Preference
+        android:key="@string/about_creator_key"
+        android:title="@string/about_creator_name"
+        android:summary="@string/about_creator_summary"
+        android:icon="@drawable/ic_action_person"
+        android:editable="false"
+        android:persistent="false"
+        />
+    <!-- Home Page -->
+    <Preference
+        android:key="@string/about_homepage_key"
+        android:title="@string/about_homepage_name"
+        android:summary="@string/about_homepage_summary"
+        android:icon="@drawable/ic_action_web_site"
+        android:editable="false"
+        android:persistent="false"
+        />
+    <!-- Version
+         The summary (version name) will be set programmatically -->
+    <Preference
+        android:key="@string/about_version_key"
+        android:title="@string/about_version_name"
+        android:icon="@drawable/perm_group_app_info"
+        android:editable="false"
+        android:persistent="false"
+        />
+</PreferenceScreen>

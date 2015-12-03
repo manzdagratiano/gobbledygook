@@ -20,9 +20,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -33,15 +35,18 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 // Standard Java
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
@@ -80,18 +85,22 @@ public abstract class Yggdrasil extends AppCompatActivity
 
         setContentView(R.layout.main_activity);
 
-        // Set the Toolbar as the ActionBar
+        // Set the Toolbar as the App bar
+        // (as well as the Action bar through the "Support" framework)
         Toolbar appBar = (Toolbar)findViewById(R.id.appBar);
         setSupportActionBar(appBar);
 
         // Create the navigation drawer
         this.createNavigationDrawer();
 
+        // Set the navigation drawer header
+        this.setNavigationDrawerHeader();
+
         // If there is no saved state,
         // launch the "home" fragment
         // (guaranteed to be at position 0 in the drawer)
         if (null == savedInstanceState) {
-            this.onActivitySelection(0);
+            this.onActivitySelection(R.id.drawerHome);
         }
     }
 
@@ -221,24 +230,21 @@ public abstract class Yggdrasil extends AppCompatActivity
 
     /**
      * @brief   Called when a spawned activity returns
-     *          This method will be appropriately overridden by the subclass.
-     *          It needs to exist here for the proper "super" handling
-     *          of this override through the Activity inheritance tree.
      * @return  Does not return a value
      */
     @Override
     public void onActivityResult(int requestCode,
                                  int resultCode,
                                  Intent resultData) {
+        Log.i(LOG_CATEGORY, "onActivityResult() handler called...");
+        if (READ_SETTINGS_FILE_CODE == requestCode &&
+            Activity.RESULT_OK == resultCode) {
+            Log.i(LOG_CATEGORY, "onActivityResult(): " +
+                  "Calling onSettingsFileSelection()...");
+            this.onSettingsFileSelection(resultData.getData());
+        }
+
         super.onActivityResult(requestCode, resultCode, resultData);
-    }
-
-    // ====================================================================
-    // INTERFACES
-
-    // An interface for the items in the navigation drawer
-    // It will be implemented by an enum in the subclass
-    protected interface DrawerItem {
     }
 
     // ====================================================================
@@ -272,9 +278,16 @@ public abstract class Yggdrasil extends AppCompatActivity
         "ERROR exporting settings to file :(";
     protected static final String EXTERNAL_STORAGE_ERROR                  =
         "ERROR exporting settings! The external storage is not mounted :(";
+    private static final String FILE_MANAGER_MISSING_ERROR                =
+        "ERROR importing file! Please install a file manager " +
+        "to be able to browse to a file";
+    private static final String IMPORT_SETTINGS_MESSAGE                   =
+        "Successfully imported settings...";
+    private static final String IMPORT_SETTINGS_ERROR                     =
+        "ERROR! Found malformed file! Failed to import settings! :(";
 
     // Request codes for spawning activities
-    protected static final int    READ_PREFERENCES_FILE_CODE              =
+    protected static final int    READ_SETTINGS_FILE_CODE                 =
         8086;
 
     // --------------------------------------------------------------------
@@ -295,44 +308,38 @@ public abstract class Yggdrasil extends AppCompatActivity
      * @return  
      */
     protected void createNavigationDrawer() {
-        Log.i(LOG_CATEGORY, "createNavigationDrawer() :" +
+        Log.i(LOG_CATEGORY, "createNavigationDrawer(): " +
               "Configuring the navigation drawer...");
 
-        // Create the map of (id, name) of items in the drawer
-        this.createDrawerMap();
-
-        m_drawerLayout =
-            (DrawerLayout)findViewById(R.id.navigationDrawerLayout);
-        m_drawerView =
-            (ListView)m_drawerLayout.findViewById(R.id.navigationDrawer);
+        m_drawerLayout = (DrawerLayout)findViewById(
+                R.id.navigationDrawerLayout);
+        m_drawerView = (NavigationView)m_drawerLayout.findViewById(
+                    R.id.navigationDrawer);
+        m_drawerView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean
+                    onNavigationItemSelected(MenuItem menuItem) {
+                        menuItem.setChecked(true);
+                        onActivitySelection(menuItem.getItemId());
+                        return true;
+                    }
+                });
 
         // Get the title
         m_title = getTitle();
 
-        // Create an Array of items from m_drawerMap
-        ArrayList<NavigationDrawerItem> drawerItems =
-            new ArrayList<NavigationDrawerItem>(m_drawerMap.values());
-
-        // Set the adapter for the list view
-        m_drawerView.setAdapter(new NavigationDrawerListAdapter(
-                                            this.getApplicationContext(),
-                                            drawerItems));
-
         // Set the action bar app icon to behave as drawer toggler
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
-
-        // Set the onClickListener for the ListView
-        m_drawerView.setOnItemClickListener(
-                new NavigationItemClickListener());
 
         // Set drawer toggle interactions to play well with the action bar
         m_drawerToggle = new ActionBarDrawerToggle(
                                     this,
                                     m_drawerLayout,
                                     R.drawable.ic_drawer,
-                                    R.string.drawer_open,
-                                    R.string.drawer_closed) {
+                                    R.string.drawer_action_open,
+                                    R.string.drawer_action_closed) {
 
             /**
              * @brief   
@@ -358,11 +365,20 @@ public abstract class Yggdrasil extends AppCompatActivity
     }
 
     /**
+     * @brief   A method to set the text in the navigation drawer header.
+     *          This will be appropriately overridden in each flavor.
+     * @return  Does not return a value
+     */
+    protected void setNavigationDrawerHeader() {
+        // Do nothing
+    }
+
+    /**
      * @brief   A function to launch the activity selected in the
      *          navigation drawer.
      * @return  Does not return a value
      */
-    protected void onActivitySelection(int position) {
+    protected void onActivitySelection(int itemId) {
         // Do nothing
         // The subclass will override this method appropriately
     }
@@ -388,11 +404,11 @@ public abstract class Yggdrasil extends AppCompatActivity
     }
 
     /**
-     * @brief   Function to export preferences to a JSON file
+     * @brief   Function to export settings to a JSON file
      * @return  Does not return a value
      */
-    protected void exportPreferences() {
-        Log.i(LOG_CATEGORY, "exportPreferences() handler called...");
+    protected void exportSettings() {
+        Log.i(LOG_CATEGORY, "exportSettings() handler called...");
 
         // Create a JSON object from the SharedPreferences
         JSONObject outputPrefs = new JSONObject();
@@ -421,7 +437,7 @@ public abstract class Yggdrasil extends AppCompatActivity
                         getString(R.string.pref_siteAttributesList_key),
                         ""));
         } catch (JSONException e) {
-            Log.e(LOG_CATEGORY, "exportPreferences() ERROR: " +
+            Log.e(LOG_CATEGORY, "exportSettings() ERROR: " +
                   "Caught " + e);
             Toast.makeText(this.getApplicationContext(),
                            EXPORT_SETTINGS_ERROR,
@@ -430,7 +446,7 @@ public abstract class Yggdrasil extends AppCompatActivity
             return;
         }
 
-        Log.i(LOG_CATEGORY, "exportPreferences(): " +
+        Log.i(LOG_CATEGORY, "exportSettings(): " +
               "outputPrefs='" + outputPrefs.toString() + "'");
 
         // Obtain a file handle for output in the external storage;
@@ -438,7 +454,7 @@ public abstract class Yggdrasil extends AppCompatActivity
         // the output file
         String state = Environment.getExternalStorageState();
         if (!Environment.MEDIA_MOUNTED.equals(state)) {
-            Log.e(LOG_CATEGORY, "exportPreferences() ERROR: " +
+            Log.e(LOG_CATEGORY, "exportSettings() ERROR: " +
                   "External.Storage.NOT_MOUNTED");
             Toast.makeText(this.getApplicationContext(),
                            EXTERNAL_STORAGE_ERROR,
@@ -456,7 +472,7 @@ public abstract class Yggdrasil extends AppCompatActivity
         // create it if it does not exist
         if (!outputDir.exists()) {
             if (!outputDir.mkdirs()) {
-                Log.e(LOG_CATEGORY, "exportPreferences() ERROR: " +
+                Log.e(LOG_CATEGORY, "exportSettings() ERROR: " +
                       "Directory.Creation.Failure");
                 Toast.makeText(this.getApplicationContext(),
                                EXPORT_SETTINGS_ERROR,
@@ -464,7 +480,7 @@ public abstract class Yggdrasil extends AppCompatActivity
                 return;
             }
         } else if (!outputDir.isDirectory()) {
-            Log.e(LOG_CATEGORY, "exportPreferences() ERROR: " +
+            Log.e(LOG_CATEGORY, "exportSettings() ERROR: " +
                   "File.Exists.InPlaceOf.Directory");
             Toast.makeText(this.getApplicationContext(),
                            DOPPELGANGER_FILE_ERROR,
@@ -481,7 +497,7 @@ public abstract class Yggdrasil extends AppCompatActivity
             outputStream.write(
                     outputPrefs.toString(JSON_INDENT_FACTOR).getBytes());
         } catch (JSONException e) {
-            Log.e(LOG_CATEGORY, "exportPreferences() ERROR: " +
+            Log.e(LOG_CATEGORY, "exportSettings() ERROR: " +
                   "Caught " + e);
             Toast.makeText(this.getApplicationContext(),
                            EXPORT_SETTINGS_ERROR,
@@ -489,7 +505,7 @@ public abstract class Yggdrasil extends AppCompatActivity
             e.printStackTrace();
             return;
         } catch (IOException e) {
-            Log.e(LOG_CATEGORY, "exportPreferences() ERROR: " +
+            Log.e(LOG_CATEGORY, "exportSettings() ERROR: " +
                   "Caught " + e);
             Toast.makeText(this.getApplicationContext(),
                            EXPORT_SETTINGS_ERROR,
@@ -500,7 +516,7 @@ public abstract class Yggdrasil extends AppCompatActivity
             try {
                 outputStream.close();
             } catch (IOException e) {
-                Log.e(LOG_CATEGORY, "exportPreferences() ERROR: " +
+                Log.e(LOG_CATEGORY, "exportSettings() ERROR: " +
                       "Memory Leak! Could not close FileOutputStream. " +
                       "Caught " + e);
                 e.printStackTrace();
@@ -513,29 +529,128 @@ public abstract class Yggdrasil extends AppCompatActivity
                        Toast.LENGTH_SHORT).show();
     }
 
-    // --------------------------------------------------------------------
-    // INNER CLASSES
+    /**
+     * @brief   Function to import settings from a JSON file
+     * @return  Does not return a value
+     */
+    protected void importSettings() {
+        Log.i(LOG_CATEGORY, "importSettings() handler called...");
+
+        // Open the file picker dialog to select the key file.
+        // This requires creating a new "Intent".
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        // Filter to only show results that can be "opened"
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        // Filter to only show json files
+        // TODO: This filter does not seem to have any effect with
+        // the ACTION_GET_CONTENT Intent type as opposed to the
+        // ACTION_OPEN_DOCUMENT intent
+        intent.setType("application/json");
+
+        // Start the activity
+        Log.i(LOG_CATEGORY, "importSettings(): Opening File Picker UI...");
+        // Start the activity, but through a "chooser"
+        // for available Content Providers instead of the intent directly,
+        // since the user may prefer a different one each time.
+        Intent fileChooser =
+            intent.createChooser(intent,
+                                 "Select the JSON preferences file...");
+        // Check if the intent resolves to any activities,
+        // and start it if it does.
+        if (null != intent.resolveActivity(this.getPackageManager())) {
+            startActivityForResult(fileChooser,
+                                   READ_SETTINGS_FILE_CODE);
+        } else {
+            Toast.makeText(this.getApplicationContext(),
+                           FILE_MANAGER_MISSING_ERROR,
+                           Toast.LENGTH_SHORT).show();
+        }
+        // The callback "onActivityResult" will be called
+    }
 
     /**
-     * @brief   Inner class NavigationItemClickListener.
-     *          Being an inner class, it has direct access to the methods
-     *          of the outer enclosing class.
+     * @brief   
+     * @return  
      */
-    protected class NavigationItemClickListener
-            implements ListView.OnItemClickListener {
+    private void onSettingsFileSelection(Uri uri) {
+        Log.i(LOG_CATEGORY, "onSettingsFileSelection(): " +
+              "Parsing JSON file, uri='" + uri.toString() + "'");
 
-        /**
-         * @brief   
-         * @return  
-         */
-        @Override
-        public void onItemClick(AdapterView parent,
-                                View view,
-                                int position,
-                                long id) {
-            // Call method from outer class
-            onActivitySelection(position);
+        // Read the uri into a string
+        InputStream inputStream = null;
+        String line = null;
+        BufferedReader bufferedFileReader = null;
+        StringBuilder preferencesFileBuffer = new StringBuilder();
+        try {
+            inputStream =
+                this.getContentResolver().openInputStream(uri);
+            bufferedFileReader =
+                new BufferedReader(new InputStreamReader(inputStream));
+            while (null != (line = bufferedFileReader.readLine())) {
+                preferencesFileBuffer.append(line + "\n");
+            }
+        } catch (IOException e) {
+            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
+            Toast.makeText(this.getApplicationContext(),
+                           IMPORT_SETTINGS_ERROR,
+                           Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+            return;
+        } finally {
+            if (null != bufferedFileReader) {
+                try {
+                    bufferedFileReader.close();
+                } catch (IOException e) {
+                    Log.e(LOG_CATEGORY, "ERROR: Memory Leak! " +
+                          "Couldn't close BufferedReader; " +
+                          "uri='" + uri.toString() + "', Caught " + e);
+                    e.printStackTrace();
+                    // No need to return empty-handed here
+                }
+            }
         }
+
+        // Parse the JSON string and set the preferences
+        try {
+            JSONObject inputPrefs =
+                new JSONObject(preferencesFileBuffer.toString());
+
+            // Get a handle to the default shared preferences
+            // and the corresponding editor
+            SharedPreferences sharedPrefs =
+                PreferenceManager.getDefaultSharedPreferences(
+                                        this.getApplicationContext());
+            SharedPreferences.Editor preferenceEditor = sharedPrefs.edit();
+
+            preferenceEditor.putString(
+                    getString(R.string.pref_saltKey_key),
+                    inputPrefs.getString(
+                        getString(R.string.pref_saltKey_key)));
+            preferenceEditor.putString(
+                    getString(R.string.pref_defaultIterations_key),
+                    inputPrefs.getString(
+                        getString(R.string.pref_defaultIterations_key)));
+            preferenceEditor.putString(
+                    getString(R.string.pref_siteAttributesList_key),
+                    inputPrefs.getString(
+                        getString(R.string.pref_siteAttributesList_key)));
+
+            // Commit the changes
+            preferenceEditor.commit();
+        } catch (JSONException e) {
+            Log.e(LOG_CATEGORY, "ERROR: Malformed JSON! " +
+                  "JSON='" + preferencesFileBuffer.toString() + "', " +
+                  "Caught " + e);
+            Toast.makeText(this.getApplicationContext(),
+                           IMPORT_SETTINGS_ERROR,
+                           Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+            return;
+        }
+
+        Toast.makeText(this.getApplicationContext(),
+                       IMPORT_SETTINGS_MESSAGE,
+                       Toast.LENGTH_SHORT).show();
     }
 
     // --------------------------------------------------------------------
@@ -545,18 +660,9 @@ public abstract class Yggdrasil extends AppCompatActivity
                                                      * @brief The drawer
                                                      * layout
                                                      */
-    protected ListView              m_drawerView;   /**
+    protected NavigationView        m_drawerView;   /**
                                                      * @brief The drawer
                                                      * list view
-                                                     */
-    protected TreeMap<Integer, NavigationDrawerItem>
-                                    m_drawerMap;    /**
-                                                     * @brief A map of
-                                                     * (id, names) of items
-                                                     * in the drawer.
-                                                     * Since it's a TreeMap,
-                                                     * the items herein are
-                                                     * sorted by the ids.
                                                      */
     protected ActionBarDrawerToggle m_drawerToggle; /**
                                                      * @brief The toggle

@@ -1,0 +1,40 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Define a group with only a single item checkable at any point;
+         initially the "home" item shall be checked on wakeup.
+         From there on it will change depending upon user interaction. -->
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/drawerHome"
+            android:icon="@drawable/ic_menu_home"
+            android:title="@string/drawer_item_home"
+            android:checked="true"
+            />
+        <item
+            android:id="@+id/drawerAbout"
+            android:icon="@drawable/ic_action_about"
+            android:title="@string/drawer_item_about"
+            />
+        <item
+            android:id="@+id/drawerSettingsHeader"
+            android:title="@string/drawer_header_settings"
+            >
+            <menu>
+                <item
+                    android:id="@+id/drawerSettings"
+                    android:icon="@drawable/ic_settings"
+                    android:title="@string/drawer_item_settings"
+                    />
+                <item
+                    android:id="@+id/drawerSettingsExport"
+                    android:icon="@drawable/ic_action_upload"
+                    android:title="@string/drawer_item_export"
+                    />
+                <item
+                    android:id="@+id/drawerSettingsImport"
+                    android:icon="@drawable/ic_action_download"
+                    android:title="@string/drawer_item_import"
+                    />
+            </menu>
+        </item>
+    </group>
+</menu>

@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- The salt "key"
-         This is a read-only preference -->
-    <EditTextPreference
+         This is a read-only preference,
+         in the sense it is not editable like an EditTextPreference
+         (its value is modified by other interfaces, just not directly). -->
+    <Preference
         android:key="@string/pref_saltKey_key"
         android:title="@string/pref_saltKey_name"
         android:summary="@string/pref_saltKey_summary"
+        android:editable="false"
         android:ellipsize="end"
         />
     <!-- The default # of PBKDF2 iterations.
@@ -21,10 +24,14 @@
         android:summary="@string/pref_defaultIterations_summary"
         />
     <!-- The encoded site attributes list, saved as stringified JSON
-         This is a read-only preference -->
-    <EditTextPreference
+         This is a read-only preference,
+         in the sense it is not editable like an EditTextPreference
+         (its value is modified by other interfaces, just not directly). -->
+    <Preference
         android:key="@string/pref_siteAttributesList_key"
         android:title="@string/pref_siteAttributesList_name"
         android:summary="@string/pref_siteAttributesList_summary"
+        android:editable="false"
+        android:ellipsize="end"
         />
 </PreferenceScreen>

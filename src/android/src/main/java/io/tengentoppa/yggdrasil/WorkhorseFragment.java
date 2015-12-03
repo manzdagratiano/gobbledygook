@@ -19,7 +19,6 @@ import android.app.Fragment;
 import android.content.ClipboardManager;
 import android.content.ClipData;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -559,7 +558,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
             Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
             e.printStackTrace();
         }
-        
+
         Ingredients ingredients = new Ingredients(saltKey,
                                                   defaultIterations,
                                                   encodedAttributesList);

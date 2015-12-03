@@ -9,14 +9,13 @@
  * @copyright   Manjul Apratim, 2015
  */
 
-package io.tengentoppa.gobbledygook;
-
-// Libraries
-import io.tengentoppa.yggdrasil.R;
+package io.tengentoppa.yggdrasil;
 
 // Android
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
@@ -29,6 +28,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -52,7 +52,7 @@ import org.spongycastle.util.encoders.Base64;
 /**
  * @brief   
  */
-public class SaltKeyActionsFragment extends Fragment {
+public class SaltKeyActionsFragment extends DialogFragment {
 
     static {
         Security.addProvider(new BouncyCastleProvider());
@@ -61,10 +61,32 @@ public class SaltKeyActionsFragment extends Fragment {
     // ===================================================================
     // PUBLIC METHODS
 
+    /**
+     * @brief   
+     * @return  {SaltKeyActionsFragment} Returns an instance of self
+     */
+    static SaltKeyActionsFragment newInstance(boolean showAsDialog) {
+        SaltKeyActionsFragment saltKeyActions = new SaltKeyActionsFragment();
+        Bundle args = new Bundle();
+        args.putBoolean(PARAM_DIALOG, showAsDialog);
+        saltKeyActions.setArguments(args);
+
+        return saltKeyActions;
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Log.i(LOG_CATEGORY, "Creating SaltKeyActions fragment...");
         super.onCreate(savedInstanceState);
+
+        // Initialize private members
+        this.m_showAsDialog = false;
+
+        // Get the input arguments
+        Bundle args = this.getArguments();
+        if (null != args) {
+            this.m_showAsDialog = args.getBoolean(PARAM_DIALOG);
+        }
     }
 
     /**
@@ -79,6 +101,18 @@ public class SaltKeyActionsFragment extends Fragment {
         return inflater.inflate(R.layout.saltkey_actions,
                                 container,
                                 false);
+    }
+
+    /**
+     * @brief   Called after onCreateView() to do final initializations.
+     *          This is where the "Dialog" of the DialogFragment is created.
+     *          Hence, the setShowsDialog() property must be set before
+     *          this method in the lifecycle.
+     * @return  Does not return a value.
+     */
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
     }
 
     /**
@@ -98,6 +132,21 @@ public class SaltKeyActionsFragment extends Fragment {
     public void onResume() {
         Log.i(LOG_CATEGORY, "onResume(): Configuring elements...");
         super.onResume();
+
+        // Set the layout properties of the dialog for the fragment.
+        // This MUST be done here, i.e, after onActivityCreated()
+        // in the lifecycle, else will not take effect.
+        if (this.m_showAsDialog) {
+            Dialog dialog = this.getDialog();
+            if (null != dialog) {
+                Window window = dialog.getWindow();
+                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT,
+                                 ViewGroup.LayoutParams.WRAP_CONTENT);
+            } else {
+                // This should not happen
+                Log.e(LOG_CATEGORY, "getDialog() returned null!");
+            }
+        }
 
         this.configureElements();
     }
@@ -125,28 +174,6 @@ public class SaltKeyActionsFragment extends Fragment {
         super.onStop();
     }
 
-    /**
-     * @brief   
-     * @return  
-     */
-    @Override
-    public void onActivityResult(int requestCode,
-                                 int resultCode,
-                                 Intent resultData) {
-        Log.i(LOG_CATEGORY, "onActivityResult() handler called...");
-
-        // Handle the result from the file picker
-        // for the loadSaltKey() handler, if this is how we got here
-        if (READ_SALT_KEY_FILE_CODE == requestCode &&
-            Activity.RESULT_OK == resultCode) {
-            Log.i(LOG_CATEGORY, "onActivityResult(): " +
-                    "Calling onSaltKeyFileSelection()...");
-            this.onSaltKeyFileSelection(resultData.getData());
-        }
-
-        super.onActivityResult(requestCode, resultCode, resultData);
-    }
-
     // ===================================================================
     // PRIVATE METHODS
 
@@ -155,17 +182,16 @@ public class SaltKeyActionsFragment extends Fragment {
 
     private static final String LOG_CATEGORY                        =
         "GOBBLEDYGOOK.SALTKEY";
-    private static final int    READ_SALT_KEY_FILE_CODE             =
-        666;
     private static final int    SALT_KEY_LENGTH                     =
         512;
     private static final String UTF8                                =
         "UTF-8";
 
+    // Parameter names
+    private static final String PARAM_DIALOG                        =
+        "dialog";
+
     // Toast messages
-    private static final String FILE_MANAGER_MISSING_ERROR          =
-        "ERROR importing file! Please install a file manager " +
-        "to be able to browse to a file";
     private static final String GENERATE_SALT_KEY_MESSAGE           =
         "Load or Generate a new Salt Key";
     private static final String GENERATING_SALT_KEY_MESSAGE         =
@@ -181,54 +207,6 @@ public class SaltKeyActionsFragment extends Fragment {
     private void configureElements() {
 
         class Configurator {
-
-            /**
-             * @brief   
-             * @return  
-             */
-            public void configureUnlockSaltKey() {
-                Log.i(LOG_CATEGORY, "configureUnlockSaltKey(): " +
-                      "Unchecking checkbox...");
-
-                CheckBox unlockSaltKeyBox =
-                    (CheckBox)getView().findViewById(R.id.unlockSaltKey);
-                unlockSaltKeyBox.setChecked(false);
-
-                // Attach an onCheckedChangeListener
-                // (as opposed to an onClickListener,
-                // since we'll be unchecking the checkBox from code)
-                Log.i(LOG_CATEGORY, "configureUnlockSaltKey(): " +
-                      "Attaching onCheckedChangeListener...");
-                unlockSaltKeyBox.setOnCheckedChangeListener(
-                                new CompoundButton.OnCheckedChangeListener() {
-                    @Override
-                    public void onCheckedChanged(CompoundButton view,
-                                                boolean isChecked) {
-                        EditText saltKeyBox =
-                            (EditText)getView().findViewById(
-                                                    R.id.saltKey);
-                        Button loadSaltKeyButton =
-                            (Button)getView().findViewById(
-                                                    R.id.loadSaltKey);
-                        Button generateSaltKeyButton =
-                            (Button)getView().findViewById(
-                                                    R.id.generateSaltKey);
-                        if (isChecked) {
-                            Toast.makeText(
-                                    getActivity().getApplicationContext(),
-                                    GENERATE_SALT_KEY_MESSAGE,
-                                    Toast.LENGTH_SHORT).show();
-                            saltKeyBox.setEnabled(true);
-                            loadSaltKeyButton.setEnabled(true);
-                            generateSaltKeyButton.setEnabled(true);
-                        } else {
-                            saltKeyBox.setEnabled(false);
-                            loadSaltKeyButton.setEnabled(false);
-                            generateSaltKeyButton.setEnabled(false);
-                        }
-                    }
-                });
-            }
 
             /**
              * @brief   
@@ -256,8 +234,11 @@ public class SaltKeyActionsFragment extends Fragment {
                     saltKeyBox.setText(saltKey, TextView.BufferType.EDITABLE);
                 }
 
-                // Disable the saltKey by default for editing,
-                // it should be enabled only when unlockSaltKey is checked
+                // Disable the saltKey for editing,
+                // it is NOT safe to manually edit it.
+                // The only two ways to edit it are to either generate a new key,
+                // or import "settings" from a valid JSON configuration file.
+                // it should be enabled only when editSaltKey is checked
                 saltKeyBox.setEnabled(false);
             }
 
@@ -265,24 +246,41 @@ public class SaltKeyActionsFragment extends Fragment {
              * @brief   
              * @return  
              */
-            public void configureLoadSaltKey() {
-                Button loadSaltKeyButton =
-                    (Button)getView().findViewById(R.id.loadSaltKey);
-                loadSaltKeyButton.setOnClickListener(
-                                        new View.OnClickListener() {
-                    /**
-                     * @brief   The "onClick" callback for
-                     *          the "Load Salt Key" button
-                     * @return  Does not return a value
-                     */
+            public void configureEditSaltKey() {
+                Log.i(LOG_CATEGORY, "configureEditSaltKey(): " +
+                      "Unchecking checkbox...");
+
+                CheckBox editSaltKeyBox =
+                    (CheckBox)getView().findViewById(R.id.editSaltKey);
+                editSaltKeyBox.setChecked(false);
+
+                // Attach an onCheckedChangeListener
+                // (as opposed to an onClickListener,
+                // since we'll be unchecking the checkBox from code)
+                Log.i(LOG_CATEGORY, "configureEditSaltKey(): " +
+                      "Attaching onCheckedChangeListener...");
+                editSaltKeyBox.setOnCheckedChangeListener(
+                                new CompoundButton.OnCheckedChangeListener() {
                     @Override
-                    public void onClick(View view) {
-                        loadSaltKey(view);
+                    public void onCheckedChanged(CompoundButton view,
+                                                boolean isChecked) {
+                        EditText saltKeyBox =
+                            (EditText)getView().findViewById(
+                                                    R.id.saltKey);
+                        Button generateSaltKeyButton =
+                            (Button)getView().findViewById(
+                                                    R.id.generateSaltKey);
+                        if (isChecked) {
+                            Toast.makeText(
+                                    getActivity().getApplicationContext(),
+                                    GENERATE_SALT_KEY_MESSAGE,
+                                    Toast.LENGTH_SHORT).show();
+                            generateSaltKeyButton.setEnabled(true);
+                        } else {
+                            generateSaltKeyButton.setEnabled(false);
+                        }
                     }
                 });
-
-                // Disable the button until "unlockSaltKey" is checked
-                loadSaltKeyButton.setEnabled(false);
             }
 
             /**
@@ -305,7 +303,7 @@ public class SaltKeyActionsFragment extends Fragment {
                     }
                 });
 
-                // Disable the button until "unlockSaltKey" is checked
+                // Disable the button until "editSaltKey" is checked
                 generateSaltKeyButton.setEnabled(false);
             }
 
@@ -313,50 +311,9 @@ public class SaltKeyActionsFragment extends Fragment {
 
         Configurator configurator = new Configurator();
 
-        configurator.configureUnlockSaltKey();
         configurator.configureSaltKey();
-        configurator.configureLoadSaltKey();
+        configurator.configureEditSaltKey();
         configurator.configureGenerateSaltKey();
-    }
-
-    /**
-     * @brief   
-     * @return  
-     */
-    private void loadSaltKey(final View view) {
-        Log.i(LOG_CATEGORY, "loadSaltKey() handler called...");
-
-        // Open the file picker dialog to select the key file.
-        // This requires creating a new "Intent".
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        // Filter to only show results that can be "opened"
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        // Filter to only show text files
-        // TODO: This filter does not seem to have any effect
-        // when the ACTION_GET_CONTENT intent type is used
-        // as opposed to ACTION_OPEN_DOCUMENT
-        intent.setType("text/*");
-
-        // Start the activity
-        Log.i(LOG_CATEGORY, "loadSaltKey(): Opening File Picker UI...");
-        // Start the activity, but through a "chooser"
-        // for available Content Providers instead of the intent directly,
-        // since the user may prefer a different one each time.
-        Intent fileChooser =
-            intent.createChooser(intent,
-                                 "Select a plaintext file...");
-        // Check if the intent resolves to any activities,
-        // and start it if it does.
-        if (null != intent.resolveActivity(
-                                getActivity().getPackageManager())) {
-            startActivityForResult(fileChooser,
-                                   READ_SALT_KEY_FILE_CODE);
-        } else {
-            Toast.makeText(getActivity().getApplicationContext(),
-                           FILE_MANAGER_MISSING_ERROR,
-                           Toast.LENGTH_SHORT).show();
-        }
-        // The callback "onActivityResult" will be called
     }
 
     /**
@@ -390,63 +347,8 @@ public class SaltKeyActionsFragment extends Fragment {
         // Save the saltKey into the preferences object
         saveSaltKeyToSharedPreferences(saltKey);
 
-        // Uncheck the unlockSaltKey checkBox
-        uncheckLoadSaltKeyCheckBox();
-    }
-
-    /**
-     * @brief   
-     * @return  
-     */
-    private void onSaltKeyFileSelection(Uri uri) {
-        Log.i(LOG_CATEGORY, "onSaltKeyFileSelection() called..., " +
-              "uri='" + uri.toString() + "'");
-
-        InputStream inputStream = null;
-        BufferedReader bufferedFileReader = null;
-        String saltKey = null;
-        try {
-            inputStream =
-                getActivity().getContentResolver().openInputStream(uri);
-            bufferedFileReader =
-                new BufferedReader(new InputStreamReader(inputStream));
-            // The "key" will be assumed to be the first whole line of the file.
-            // Therefore, a StringBuilder is not needed.
-            // Read the key, and trim any leading/trailing whitespace.
-            saltKey = bufferedFileReader.readLine().trim();
-            // Sanity check
-            if (null != bufferedFileReader.readLine()) {
-                Log.e(LOG_CATEGORY, "onSaltKeyFileSelection(), " +
-                      "ERROR: Malformed file with extraneous data");
-            }
-            Log.i(LOG_CATEGORY, "onSaltKeyFileSelection(), " +
-                  "saltKey='" + saltKey + "'");
-        } catch (IOException e) {
-            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
-            e.printStackTrace();
-        } finally {
-            if (null != bufferedFileReader) {
-                try {
-                    bufferedFileReader.close();
-                } catch (IOException e) {
-                    Log.e(LOG_CATEGORY, "ERROR: Memory Leak! " +
-                          "Couldn't close BufferedReader; " +
-                          "uri='" + uri.toString() + "', Caught " + e);
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        // Modify the "saltKey"
-        // Allow an empty salt key;
-        // either someone really tried to do that if a blank got here,
-        // or they have a malformed file and they'll come to know.
-        if (null != saltKey) {
-            saveSaltKeyToSharedPreferences(saltKey);
-        }
-
-        // Uncheck the unlockSaltKey checkBox
-        uncheckLoadSaltKeyCheckBox();
+        // Uncheck the editSaltKey checkBox
+        uncheckEditSaltKeyCheckBox();
     }
 
     /**
@@ -458,15 +360,10 @@ public class SaltKeyActionsFragment extends Fragment {
         Log.i(LOG_CATEGORY, "deconfigureElements(): " +
               "Cleaning up listeners/handlers");
 
-        // "Unlock Salt Key" checkbox
-        CheckBox unlockSaltKeyBox =
-            (CheckBox)getView().findViewById(R.id.unlockSaltKey);
-        unlockSaltKeyBox.setOnCheckedChangeListener(null);
-
-        // "Load Salt Key" button
-        Button loadSaltKeyButton =
-            (Button)getView().findViewById(R.id.loadSaltKey);
-        loadSaltKeyButton.setOnClickListener(null);
+        // "Edit Salt Key" checkbox
+        CheckBox editSaltKeyBox =
+            (CheckBox)getView().findViewById(R.id.editSaltKey);
+        editSaltKeyBox.setOnCheckedChangeListener(null);
 
         // "Generate Salt Key" button
         Button generateSaltKeyButton =
@@ -502,13 +399,22 @@ public class SaltKeyActionsFragment extends Fragment {
      * @brief   
      * @return  Does not return a value
      */
-    private void uncheckLoadSaltKeyCheckBox() {
-        Log.i(LOG_CATEGORY, "Unchecking the unlockSaltKey checkBox...");
-        CheckBox unlockSaltKeyBox =
-            (CheckBox)getView().findViewById(R.id.unlockSaltKey);
-        unlockSaltKeyBox.setChecked(false);
+    private void uncheckEditSaltKeyCheckBox() {
+        Log.i(LOG_CATEGORY, "Unchecking the editSaltKey checkBox...");
+        CheckBox editSaltKeyBox =
+            (CheckBox)getView().findViewById(R.id.editSaltKey);
+        editSaltKeyBox.setChecked(false);
         // The CheckBox listener would now be called,
         // disabling the "Load Salt Key" and "Generate Salt Key" buttons
     }
+
+    // --------------------------------------------------------------------
+    // UTILITIES
+
+    protected boolean    m_showAsDialog;        /** @brief A parameter to
+                                                  * indicate if this fragment
+                                                  * should be shown
+                                                  * as a dialog
+                                                  */
 
 }

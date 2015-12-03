@@ -1,3 +1,7 @@
+import java.lang.Integer
+import java.text.SimpleDateFormat
+import java.util.Date
+
 buildscript {
     repositories {
         mavenCentral()
@@ -8,6 +12,35 @@ buildscript {
 }
 apply plugin: 'com.android.application'
 
+/**
+  * @brief Method to determine the android:versionCode attribute,
+  *        which is an integer.
+  *        This just returns the current date in YYYYMMDD format,
+  *        which ensures it will be monotonically increasing.
+  *        We assume we would not need version granularity within a day.
+  */
+def computeVersionCode() {
+    Date today = new Date()
+    SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd")
+    def versionCode = Integer.parseInt(fmt.format(today))
+    return versionCode
+}
+
+/**
+  * @brief Method to compute the android:versionName attribute,
+  *        which is a string.
+  *        The versionName is computed as 1.YYYYMMDD.gitCommitSHA
+  *        in order to uniquely identify the version.
+  */
+def computeVersionName() {
+    def gitCommand = "git rev-parse --short HEAD"
+    def proc = gitCommand.execute()
+    def versionName = "1." + \
+                      Integer.toString(computeVersionCode()) + "." + \
+                      proc.text.trim()
+    return versionName
+}
+
 android {
     compileSdkVersion 23
     buildToolsVersion '23.0.2'
@@ -15,8 +48,8 @@ android {
     defaultConfig {
         minSdkVersion 11
         targetSdkVersion 23
-        versionCode 1
-        versionName '1.0'
+        versionCode computeVersionCode()
+        versionName computeVersionName()
     }
 
     buildTypes {
@@ -29,11 +62,13 @@ android {
     productFlavors {
         gobbledygook {
             applicationId 'io.tengentoppa.gobbledygook'
-            versionName '1.0'
+            versionCode computeVersionCode()
+            versionName computeVersionName()
         }
         krunch {
             applicationId 'io.tengentoppa.krunch'
-            versionName '1.0'
+            versionCode computeVersionCode()
+            versionName computeVersionName()
         }
     }
 
@@ -48,6 +83,11 @@ ext {
 }
 
 dependencies {
+    /** The following android libraries are NOT in mavenCentral();
+      * they require the android-support-repository package to be installed;
+      * the path to the repository is automatically determined using
+      * the "sdk.dir" property in the "local.properties" file
+      */
     compile "com.android.support:appcompat-v7:${supportLibVersion}"
     compile "com.android.support:support-v4:${supportLibVersion}"
     compile "com.android.support:design:${supportLibVersion}"

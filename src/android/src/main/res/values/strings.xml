@@ -7,9 +7,9 @@
     <string name="label_fontFamily">sans-serif</string>
     <string name="button_fontFamily">sans-serif</string>
 
-    <!-- ########## -->
-    <!-- Action bar -->
-    <!-- ########## -->
+    <!-- ####### -->
+    <!-- App bar -->
+    <!-- ####### -->
 
     <string name="action_home">Home</string>
     <string name="action_settings">Settings</string>
@@ -18,8 +18,15 @@
     <!-- Navigation Drawer -->
     <!-- ################# -->
 
-    <string name="drawer_open">Abracadabra!</string>
-    <string name="drawer_closed">Hasta la Vista, Baby!</string>
+    <string name="drawer_action_open">Abracadabra!</string>
+    <string name="drawer_action_closed">Hasta la Vista, Baby!</string>
+    <string name="drawer_header_settings">Settings</string>
+    <string name="drawer_header_text">B3c0m3.T3h.Unh4X4b13</string>
+    <string name="drawer_item_home">Home</string>
+    <string name="drawer_item_settings">View/Edit</string>
+    <string name="drawer_item_import">Import...</string>
+    <string name="drawer_item_export">Export...</string>
+    <string name="drawer_item_about">About...</string>
 
     <!-- ############# -->
     <!-- Main activity -->
@@ -38,12 +45,6 @@
     <string name="checkBox_saveAttributes">Save custom changes</string>
     <string name="button_generate">Generate!</string>
 
-    <!-- ########## -->
-    <!-- Login Page -->
-    <!-- ########## -->
-
-    <string name="hint_search">Enter a URL</string>
-
     <!-- ############# -->
     <!-- Fragment Tags -->
     <!-- ############# -->
@@ -51,46 +52,69 @@
     <string name="tag_aboutFragment">AboutFragment</string>
     <string name="tag_homeFragment">HomeFragment</string>
     <string name="tag_prefsFragment">PrefsFragment</string>
+    <string name="tag_saltKeyActionsFragment">SaltKeyActionsFragment</string>
     <string name="tag_workhorseFragment">WorkhorseFragment</string>
+
+    <!-- ############# -->
+    <!-- Home Fragment -->
+    <!-- ############# -->
+
+    <string name="hint_search">Enter a URL</string>
+
+    <!-- ######################### -->
+    <!-- Salt Key Actions Fragment -->
+    <!-- ######################### -->
+
+    <string name="label_saltKey">Salt Key</string>
+    <string name="checkBox_editSaltKey">Edit (Caution!)</string>
+    <string name="hint_saltKey">&lt;null&gt;</string>
+    <string name="button_generateSaltKey">Generate New Salt Key</string>
 
     <!-- ########### -->
     <!-- Preferences -->
     <!-- ########### -->
 
-    <!-- Salt Key
-         This preference is not sensitive by default.
-         Checking the unlockSaltKey checkbox
-         will make it sensitive and allow
-         the user to load it from a file. -->
-    <string name="pref_saltKey_key">
-        saltKey
-    </string>
-    <string name="pref_saltKey_name">
-        Salt Key
-    </string>
+    <!-- Salt Key -->
+    <string name="pref_saltKey_key">saltKey</string>
+    <string name="pref_saltKey_name">Salt Key</string>
     <string name="pref_saltKey_summary">
         A "key" to generate salts from domain names
     </string>
 
     <!-- Default PBKDF2 Iterations -->
-    <string name="pref_defaultIterations_key">
-        defaultIterations
-    </string>
-    <string name="pref_defaultIterations_name">
-        Default Iterations
-    </string>
+    <string name="pref_defaultIterations_key">defaultIterations</string>
+    <string name="pref_defaultIterations_name">Default Iterations</string>
     <string name="pref_defaultIterations_summary">
         10000
     </string>
 
     <!-- Custom Website Attributes List -->
-    <string name="pref_siteAttributesList_key">
-        siteAttributesList
-    </string>
-    <string name="pref_siteAttributesList_name">
-        Custom Website Attribute List
-    </string>
+    <string name="pref_siteAttributesList_key">siteAttributesList</string>
+    <string name="pref_siteAttributesList_name">Custom Overrides</string>
     <string name="pref_siteAttributesList_summary">
         Overridden website attributes (use sparingly!)
     </string>
+
+    <!-- ##### -->
+    <!-- About -->
+    <!-- ##### -->
+
+    <!-- Creator -->
+    <string name="about_creator_key">creator</string>
+    <string name="about_creator_name">Creator</string>
+    <string name="about_creator_summary">
+        Manjul Apratim
+    </string>
+
+    <!-- Homepage -->
+    <string name="about_homepage_key">homepage</string>
+    <string name="about_homepage_name">Home Page</string>
+    <string name="about_homepage_summary">
+        https://github.com/manzdagratiano
+    </string>
+
+    <!-- Version -->
+    <string name="about_version_key">version</string>
+    <string name="about_version_name">Build Version</string>
+
 </resources>

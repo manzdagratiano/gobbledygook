@@ -13,7 +13,6 @@ package io.tengentoppa.krunch;
 
 // Libraries
 import io.tengentoppa.yggdrasil.AboutFragment;
-import io.tengentoppa.yggdrasil.NavigationDrawerItem;
 import io.tengentoppa.yggdrasil.PrefsFragment;
 import io.tengentoppa.yggdrasil.R;
 import io.tengentoppa.yggdrasil.WorkhorseFragment;
@@ -25,9 +24,6 @@ import android.app.Fragment;
 import android.content.Intent;
 import android.util.Log;
 import android.view.MenuItem;
-
-// Standard Java
-import java.util.TreeMap;
 
 /**
  * @brief  The Krunch class
@@ -58,12 +54,10 @@ public class Krunch extends Yggdrasil {
         Intent intent = null;
         switch(item.getItemId()) {
             case R.id.home:
-                this.onActivitySelection(
-                        KrunchDrawerItem.HOME.ordinal());
+                this.onActivitySelection(R.id.drawerHome);
                 return true;
             case R.id.settings:
-                this.onActivitySelection(
-                        KrunchDrawerItem.SETTINGS.ordinal());
+                this.onActivitySelection(R.id.drawerSettings);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -74,46 +68,7 @@ public class Krunch extends Yggdrasil {
     // PRIVATE METHODS
 
     // --------------------------------------------------------------------
-    // CONSTANTS
-
-    // Drawer Items
-    protected enum KrunchDrawerItem implements DrawerItem {
-        HOME,
-        EXPORT_SETTINGS,
-        SETTINGS,
-        ABOUT
-    }
-
-    // --------------------------------------------------------------------
     // METHODS
-
-    /**
-     * @brief   Routine to create the map (id, string) of items
-     *          in the navigation drawer
-     * @return  Does not return a value
-     */
-    protected void createDrawerMap() {
-        Log.i(LOG_CATEGORY, "createDrawerMap() :" +
-              "Creating the (id, NavigationDrawerItem) map...");
-
-        m_drawerMap = new TreeMap<Integer, NavigationDrawerItem>();
-        m_drawerMap.put(
-                KrunchDrawerItem.HOME.ordinal(),
-                new NavigationDrawerItem(R.drawable.ic_menu_home,
-                                         "Home"));
-        m_drawerMap.put(
-                KrunchDrawerItem.EXPORT_SETTINGS.ordinal(),
-                new NavigationDrawerItem(R.drawable.ic_action_upload,
-                                         "Export Settings..."));
-        m_drawerMap.put(
-                KrunchDrawerItem.SETTINGS.ordinal(),
-                new NavigationDrawerItem(R.drawable.ic_settings,
-                                         "Settings"));
-        m_drawerMap.put(
-                KrunchDrawerItem.ABOUT.ordinal(),
-                new NavigationDrawerItem(R.drawable.ic_action_about,
-                                         "About..."));
-    }
 
     /**
      * @brief   A function to launch the activity selected in the
@@ -122,30 +77,30 @@ public class Krunch extends Yggdrasil {
      *          appropriate fragment.
      * @return  Does not return a value
      */
-    protected void onActivitySelection(int position) {
+    protected void onActivitySelection(int itemId) {
         Log.i(LOG_CATEGORY, "onActivitySelection(): " +
-              "Selecting activtity at position=" + position);
+              "Selecting activtity id=" + itemId);
 
-        // Create a const copy of the enum values
-        // for use in the switch-case statement
-        final KrunchDrawerItem[] items =
-            KrunchDrawerItem.values();
-        switch(items[position]) {
-            case HOME:
-                // Main activity
+        switch(itemId) {
+            case R.id.drawerHome:
+                // Home fragment
                 this.swapFragment(new KrunchWorkhorseFragment(),
                                   getString(R.string.tag_workhorseFragment));
                 break;
-            case EXPORT_SETTINGS:
-                // Export settings
-                this.exportPreferences();
-                break;
-            case SETTINGS:
+            case R.id.drawerSettings:
                 // Settings
                 this.swapFragment(new PrefsFragment(),
                                   getString(R.string.tag_prefsFragment));
                 break;
-            case ABOUT:
+            case R.id.drawerSettingsExport:
+                // Export settings
+                this.exportSettings();
+                break;
+            case R.id.drawerSettingsImport:
+                // Import settings
+                this.importSettings();
+                break;
+            case R.id.drawerAbout:
                 // About
                 this.swapFragment(new AboutFragment(),
                                   getString(R.string.tag_aboutFragment));

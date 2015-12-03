@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawerHeader"
+    android:layout_width="match_parent"
+    android:layout_height="150dp"
+    android:padding="16dp"
+    android:orientation="vertical"
+    android:background="@color/primary_text_default_material_light"
+    >
+
+    <!-- Temporary filler with layout_weight=1 to push the TextView
+         to the bottom of the LinearLayout -->
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"/>
+
+    <TextView
+        android:id="@+id/drawerHeaderText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:textColor="@color/primary_text_default_material_dark"
+        />
+</LinearLayout>

@@ -13,7 +13,10 @@ package io.tengentoppa.yggdrasil;
 
 // Android
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -40,7 +43,7 @@ public class PrefsFragment extends PreferenceFragment
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.i(LOG_CATEGORY, "onCreate(): Creating activity...");
+        Log.i(LOG_CATEGORY, "onCreate(): Creating PreferenceFragment...");
 
         super.onCreate(savedInstanceState);
 
@@ -71,7 +74,7 @@ public class PrefsFragment extends PreferenceFragment
 
         super.onResume();
 
-        configurePreferenceElements();
+        this.configurePreferenceElements();
 
     }
 
@@ -186,8 +189,43 @@ public class PrefsFragment extends PreferenceFragment
                     saltKeyPref.setSummary(saltKey);
                 }
 
-                // This is a READ-ONLY preference
-                saltKeyPref.setEnabled(false);
+                // Set an onClick listener to view/edit the salt key
+                saltKeyPref.setOnPreferenceClickListener(
+                        new Preference.OnPreferenceClickListener() {
+                    // @Override
+                    public boolean onPreferenceClick(Preference preference) {
+                        // Display the SaltKeyFragment as a dialog
+                        Log.i(LOG_CATEGORY,
+                              "onClick(): Creating SaltKeyActions dialog...");
+
+                        // Show the WorkhorseFragment as a Dialog
+                        FragmentManager fragmentManager =
+                            getActivity().getFragmentManager();
+                        FragmentTransaction fragmentTx =
+                            fragmentManager.beginTransaction();
+                        Fragment prevInstance =
+                            fragmentManager.findFragmentByTag(
+                                getString(R.string.tag_saltKeyActionsFragment));
+                        if (null != prevInstance) {
+                            fragmentTx.remove(prevInstance);
+                        }
+                        // Provide proper "back" navigation
+                        fragmentTx.addToBackStack(null);
+
+                        // Instantiate the fragment
+                        boolean showAsDialog = true;
+                        DialogFragment saltKeyActionsDialog =
+                            SaltKeyActionsFragment.newInstance(showAsDialog);
+
+                        // "show" will commit the transaction as well
+                        saltKeyActionsDialog.show(
+                                fragmentTx,
+                                getString(R.string.tag_saltKeyActionsFragment));
+
+                        // The click was handled, so return true
+                        return true;
+                    }
+                });
             }
 
             /**
@@ -243,9 +281,6 @@ public class PrefsFragment extends PreferenceFragment
                           customAttributes + "'");
                     customAttributesPref.setSummary(customAttributes);
                 }
-
-                // This is a READ-ONLY preference
-                customAttributesPref.setEnabled(false);
             }
 
         };  // end class Configurator

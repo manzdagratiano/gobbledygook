@@ -1,30 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <!-- ########## -->
     <!-- Activities -->
     <!-- ########## -->
 
     <string name="app_name">Gobbledygook</string>
 
-    <!-- ########## -->
-    <!-- Action bar -->
-    <!-- ########## -->
-
-    <string name="action_saltKeyActions">Salt Key Actions</string>
-
-    <!-- ############# -->
-    <!-- Fragment Tags -->
-    <!-- ############# -->
-
-    <string name="tag_saltKeyActionsFragment">SaltKeyActionsFragment</string>
-
-    <!-- ######################### -->
-    <!-- Salt Key Actions Fragment -->
-    <!-- ######################### -->
-
-    <string name="label_saltKey">Salt Key</string>
-    <string name="checkBox_unlockSaltKey">"Unlock" the Salt Key for Editing</string>
-    <string name="hint_saltKey">&lt;null&gt;</string>
-    <string name="button_loadSaltKey">Load Salt Key from File...</string>
-    <string name="button_generateSaltKey">Generate Salt Key</string>
 </resources>
