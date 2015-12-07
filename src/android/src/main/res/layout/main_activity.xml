@@ -54,15 +54,4 @@
         app:headerLayout="@layout/navigation_drawer_header"
         app:menu="@menu/navigation_drawer"
         />
-
-    <!--ListView
-        android:id="@+id/navigationDrawer"
-        android:layout_width="240dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:choiceMode="singleChoice"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="0dp"
-        android:listSelector="@drawable/navigation_drawer_item_selector"
-        android:background="#111"/-->
 </android.support.v4.widget.DrawerLayout>

@@ -1,6 +1,6 @@
 # gobbledygook
 
-Annihilate Password Fatigue!
+The Unhackable Password Solution
 
 ## Houston, We have a Problem!
 
@@ -53,21 +53,32 @@ domain only**, and easily mitigated (more later).
 
 **And yet, we don't save no "secrets".**
 
-## Using gobbledygook
+## Using Gobbledygook
 
 It's very simple!
 
-- Create a **salt-generating key** (only once!) in the add-on Options:
-    - For Firefox, "Tools"->"Add-ons"->"Extensions"->"gobbledygook"->"More"
-    - For Chrome, "More tools"->"Extensions"->"gobbledygook"->"Options"
-- Whatever web page you are on, when you need to enter a password, click on `gobbledygook`, enter your **one true password**, and hit "Generate!"
-- Optionally, if there is a length restriction on the password (why should
-  there be?), specify a **truncation** before hitting "Generate!".
+Whatever web page you are on, when you need to enter a password, click on `gobbledygook`, enter your **one true password**, and hit "Generate!". Your proxy password has been generated and copied to the clipboard. Paste it where you need it.
+
+Under the hood, Gobbledygook generates a **salt generating key** for you on
+the first run, and sets the default number of iterations to 10000. You can
+tweak these settings for the extension (by clicking on the settings icon
+in the Gobbledygook UI or through the browser's extension menu).
 
 Needless to say, **if the salt generating key changes, so will the
 generated passwords**. To prevent accidental changes to the key while
 examining options, the following **rudimentary safeguards** towards
 1D107-proofing are built in:
+
+
+### Advanced Options
+
+The main Gobbledygook UI keeps things simple - it generates the proxy
+password based on the salt key and the default number of iterations. However,
+you can access the "Advanced" options for each run where you can:
+- Override the number of iterations for the run,
+- Optionally, if there is a length restriction on the password (why should
+  there be?), specify a **truncation** before hitting "Generate!",
+- Choose to save any custom overrides from the run for future use.
 
 - Firefox requires the "Unlock Salt Key" radio button to be set to "Unlock" to generate the key using "Generate Key", after which it automatically locks it again (this does **not** prevent manual changes, which is by design - e.g., if you are importing an existing key from elsewhere),
 - Chrome will only save the new key (generated using "Generate Key" or updated manually) IFF "Save Options" is clicked after generating the key.

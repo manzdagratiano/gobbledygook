@@ -1,7 +1,7 @@
 /**
- * @module      main
+ * @module      index
  * @overview    The entry point into the addon.
- *              The "main" module has access to all the high-level APIs
+ *              The "index" module has access to all the high-level APIs
  *              for interacting with the browser.
  *              This module does not implement any algorithm logic itself,
  *              but merely extracts parameters from,
@@ -38,7 +38,10 @@ var ENV                     = {
         HIDE                : "hide",
         SET_SALT_KEY        : "setSaltKey",
         SAVE                : "save",
-        SHOW                : "show"
+        SHOW                : "show",
+        SETTINGS_SHOW       : "showSettings",
+        SETTINGS_EXPORT     : "exportSettings",
+        SETTINGS_IMPORT     : "importSettings"
     },
 
     /**
@@ -60,6 +63,8 @@ var ENV                     = {
         TEXT                : "text"
     },
 
+    settingsFile            : "gobbledygook.json",
+
     /**
      * @summary The list of all the user "preferences" stored in the
      *          browser's preferences system.
@@ -77,14 +82,24 @@ var ENV                     = {
 // ========================================================================
 // SDK METHODS
 
-var self                = require("sdk/self");
-var clipboard           = require("sdk/clipboard");
+var self                = require('sdk/self');
+var {Cc, Ci}            = require('chrome');
+var clipboard           = require('sdk/clipboard');
+var downloadDir         = require('sdk/system').pathFor('DfltDwnld');
+var file                = require('sdk/io/file');
+var notifications       = require('sdk/notifications');
 var panels              = require("sdk/panel");
-var tabs                = require("sdk/tabs");
-var { ToggleButton }    = require('sdk/ui/button/toggle');
-var simplePrefs         = require('sdk/simple-prefs');
-var prefs               = simplePrefs.prefs;
+var path                = require('sdk/fs/path');
 var prefsService        = require('sdk/preferences/service');
+var simplePrefs         = require('sdk/simple-prefs');
+var tabs                = require('sdk/tabs');
+var { ToggleButton }    = require('sdk/ui/button/toggle');
+var views               = require('sdk/view/core');
+var windows             = require('sdk/window/utils');
+
+var filePicker          = Cc["@mozilla.org/filepicker;1"].createInstance(
+                                Ci.nsIFilePicker);
+var prefs               = simplePrefs.prefs;
 
 // ========================================================================
 // TOGGLE BUTTON
@@ -129,17 +144,23 @@ function handleChange(state) {
  */
 var panel = panels.Panel({
     width                   : 350,
-    height                  : 510,
-    contentURL              : self.data.url("gobbledygook.html"),
+    height                  : 430,
+    contentURL              : self.data.url("./gobbledygook.html"),
     contentScriptFile       : [
-        self.data.url("keygen.js"),
-        self.data.url("workhorse.js"),
-        self.data.url("workhorsefunctions.js"),
-        self.data.url("sjcl/sjcl_megalith.js")
+        self.data.url("./keygen.js"),
+        self.data.url("./workhorse.js"),
+        self.data.url("./workhorsefunctions.js"),
+        self.data.url("./sjcl/sjcl_megalith.js")
         ],
     contentScriptOptions    : {},
     onHide                  : handleHide
 });
+
+// A bug in the addon SDK causes tooltips set with the "title" attribute
+// in HTML to not show up.
+// (https://bugzilla.mozilla.org/show_bug.cgi?id=918600)
+// Assign a tooltip to the view, which will fix this.
+views.getActiveView(panel).setAttribute('tooltip', 'aHTMLTooltip');
 
 /**
  * @summary Event handler for the "show" event. It obtains the necessary
@@ -231,7 +252,7 @@ prefKeys.forEach(function(preferenceName) {
  *          (to prevent accidental resets of the key).
  * @return  {undefined}
  */
-function onGenerateSaltKey() {
+simplePrefs.on(ENV.preferences.generateSaltKey, function() {
     console.info(ENV.logCategory + "Generating salt 'key'...");
     if (prefs[ENV.preferences.unlockSaltKey] !== "N") {
         console.info(ENV.logCategory +
@@ -241,8 +262,7 @@ function onGenerateSaltKey() {
         console.info(ENV.logCategory +
                      "'unlockSaltKey' is locked. Doing nothing.");
     }
-}
-simplePrefs.on(ENV.preferences.generateSaltKey, onGenerateSaltKey);
+});
 
 /**
  * @summary Event listener for the "setSaltKey" event
@@ -256,3 +276,156 @@ panel.port.on(ENV.events.SET_SALT_KEY, function (key) {
     // prevent accidental regeneration.
     prefs[ENV.preferences.unlockSaltKey] = "N";
 });
+
+// ========================================================================
+// SETTINGS
+
+/**
+ * @summary Event listener for the "showSettings" event
+ * @return  {undefined}
+ */
+panel.port.on(ENV.events.SETTINGS_SHOW, function () {
+    console.info(ENV.logCategory + "Opening addons tab...");
+    tabs.open("about:addons");
+});
+
+/**
+ * @summary Event listener for the "exportSettings" event.
+ *          This method will gather the settings from SimplePrefs
+ *          and export them to a JSON file in the user's
+ *          default download directory.
+ * @return  {undefined}
+ */
+panel.port.on(ENV.events.SETTINGS_EXPORT, function () {
+    console.info(ENV.logCategory + "Exporting preferences...");
+    // Construct the settings JSON object
+    var settings = getApplicationSettings();
+
+    // Open the file picker for the user to select the download location
+    var thisWindow = windows.getMostRecentBrowserWindow();
+    filePicker.init(thisWindow, "Save As...", Ci.nsIFilePicker.modeSave);
+    filePicker.appendFilter("Text (JSON)", "*.json");
+    var returnCode = filePicker.show();
+    // If the file picker was closed by the user without hitting "Ok",
+    // i.e., without selecting a file
+    if (!(Ci.nsIFilePicker.returnOK === returnCode ||
+          Ci.nsIFilePicker.returnReplace === returnCode)) {
+        console.info(ENV.logCategory + "Export canceled. Nothing to do");
+        return;
+    }
+
+    // Write to the file
+    // var absPath = path.join(downloadDir, ENV.settingsFile);
+    var absPath = filePicker.file.path;
+    var fileHandle = file.open(absPath, "w");
+    fileHandle.write(JSON.stringify(settings, null, ENV.indentation));
+    fileHandle.close();
+
+    // Notify the user
+    notifications.notify({
+        title   : "Export Settings",
+        iconURL : "./icon/icon-64.png",
+        text    : "Successfully exported settings to " + absPath,
+        onClick : function(data) {
+            // Do nothing
+        }
+    });
+});
+
+/**
+ * @summary Event listener for the "importSettings" event.
+ *          This method will read in a JSON file in the correct
+ *          format, and set the SimplePrefs attributes from it.
+ * @return  {undefined}
+ */
+panel.port.on(ENV.events.SETTINGS_IMPORT, function () {
+    console.info(ENV.logCategory + "Importing preferences...");
+
+    var thisWindow = windows.getMostRecentBrowserWindow();
+    filePicker.init(thisWindow, "Open File...", Ci.nsIFilePicker.modeOpen);
+    filePicker.appendFilter("Text (JSON)", "*.json");
+    var returnCode = filePicker.show();
+    // If the file picker was closed by the user without hitting "Ok",
+    // i.e., without selecting a file
+    if (Ci.nsIFilePicker.returnOK !== returnCode) {
+        console.info(ENV.logCategory + "Import canceled. Nothing to do");
+        return;
+    }
+
+    var filePath = filePicker.file.path;
+    if (!file.exists(filePath)) {
+        console.info(ENV.logCategory + "file=" + filePath +
+                     ", does not exist!");
+        return;
+    }
+    var fileHandle = file.open(filePath, "r");
+    var settingsStr = fileHandle.read();
+    fileHandle.close();
+    console.info(ENV.logCategory + "settings=" + settingsStr);
+
+    // Parse the string into a JSON object
+    var settings = {};
+    try {
+        settings = JSON.parse(settingsStr);
+    } catch (e) {
+        console.info(ENV.logCategory +
+                     "WARN Failed to parse settings" +
+                     ", errorMsg=\"" + e + "\"");
+        return;
+    }
+
+    setApplicationSettings(settings);
+});
+
+// -----------------------------------------------------------------------
+// Utilities
+
+/**
+ * @summary Method to obtain a settings object from SimplePrefs
+ * @return  {Object} A settings object with the three attributes
+ *          saltKey, defaultIterations and siteAttributesList
+ */
+function getApplicationSettings() {
+    var ids = ENV.preferences;
+    var settings = {};
+    settings[ids.saltKey] = prefs[ids.saltKey];
+    settings[ids.defaultIterations] = prefs[ids.defaultIterations];
+    settings[ids.siteAttributesList] = prefs[ids.siteAttributesList];
+    return settings;
+}
+
+/**
+ * @summary Method to set the application settings from a JSON object
+ * @param   {Object} A JSON object with:
+ *          @prop   {string} saltKey - salt key
+ *          @prop   {int} defaultIterations - default # of PBKDF2 iterations
+ *          @prop   {string} siteAttributesList - stringified JSON of
+ *                  encoded siteAttributes list
+ * @return  {undefined}
+ */
+function setApplicationSettings(settings) {
+    // Sanity check
+    var ids = ENV.preferences;
+    if (!(settings.hasOwnProperty(ids.saltKey) &&
+          settings.hasOwnProperty(ids.defaultIterations) &&
+          settings.hasOwnProperty(ids.siteAttributesList) &&
+          (3 === Object.keys(settings).length))) {
+        console.info(ENV.logCategory + "Malformed settings file!");
+        // Notify the user
+        notifications.notify({
+            title   : "Malformed Settings!",
+            iconURL : "./icon/icon-64.png",
+            text    : "The settings file chosen is invalid!",
+            onClick : function(data) {
+                // Do nothing
+            }
+        });
+        return;
+    }
+
+    // Safe to proceed; import the settings
+    prefs[ids.saltKey] = settings[ids.saltKey];
+    prefs[ids.defaultIterations] = settings[ids.defaultIterations];
+    prefs[ids.siteAttributesList] = settings[ids.siteAttributesList];
+    console.info(ENV.logCategory + "Successfully imported settings!");
+}

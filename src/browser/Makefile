@@ -17,12 +17,41 @@
 ROOT = ../..
 LIB = ./libs
 HTML = ./html
+ANDROID = $(HTML)/android
 ICON = ./gobbledygook/icon
 CHROME_GOBBLEDYGOOK = ./gobbledygook/chrome
 FIREFOX_GOBBLEDYGOOK = ./gobbledygook/firefox
 TARGET_DIR = ./target
 SJCL = $(ROOT)/sjcl
 SJCL_MEGALITH = $(TARGET_DIR)/sjcl_megalith.js
+
+# -------------------------------------------------------------------------
+# BUILD TAG
+
+# Firefox addons are versioned as major[.minor[.patch[.build]]]
+# where "major" and "patch" are integers and "minor" and "build" are strings.
+# In our case:
+#	* the major is 1 (until we change it),
+#	* the minor is the date YYYYMMDD
+#	* the patch is always 0 (no need based on the minor convention)
+#	* the build is the git commit SHA of the repository
+
+# Chrome extensions are versioned with x.y.w.z
+# where x, y, w, z are non-negative integers less than 65535.
+# This convention is problematic for us, but luckily,
+# chrome also has a "version_name" attribute which is a string and is used for
+# display purposes, so we shall use the same string as Firefox.
+
+BUILDTAG = 1.`date +'%Y%m%d'`.0.`git rev-parse --short HEAD`
+BUILD_REGEX = "s/\@BUILDTAG/$(BUILDTAG)/"
+
+# We shall use the number of commits in the master branch
+# to create a version for the chrome extension.
+CHROME_VERSION = 1.`git rev-list --count HEAD`.0
+CHROME_VERSION_REGEX = "s/\@BUILDVER/$(CHROME_VERSION)/"
+
+# -------------------------------------------------------------------------
+# MISCELLANEOUS
 
 # The chrome version of "gobbledygook.html" requires that
 # the JS scripts be included inside the html using the "script" directive
@@ -33,6 +62,8 @@ SJCL_MEGALITH = $(TARGET_DIR)/sjcl_megalith.js
 CHROME_HTML_REGEX = "s/<\/footer>/<\/footer>\n\n"
 CHROME_HTML_REGEX += "   <script src=\"workhorse.js\"><\/script>\n"
 CHROME_HTML_REGEX += "   <script src=\"workhorsefunctions.js\"><\/script>\n"
+CHROME_HTML_REGEX += "   <script src=\"hasher.js\"><\/script>\n"
+CHROME_HTML_REGEX += "   <script src=\"keygen.js\"><\/script>\n"
 CHROME_HTML_REGEX += "   <script src=\"sjcl\/sjcl_megalith.js\"><\/script>/"
 
 # =========================================================================
@@ -51,32 +82,35 @@ all: chrome firefox
 chrome: TARGET = $(TARGET_DIR)/chrome
 chrome: chrome-clean sjcl
 	cp -r $(CHROME_GOBBLEDYGOOK) $(TARGET_DIR)/
-	cp $(HTML)/gobbledygook.html $(TARGET)/
+	perl -p -i -e $(subst " ", ,$(BUILD_REGEX)) \
+		$(TARGET)/manifest.json
+	perl -p -i -e $(subst " ", ,$(CHROME_VERSION_REGEX)) \
+		$(TARGET)/manifest.json
+	cp $(ROOT)/README.md $(TARGET)/
+	cp $(HTML)/* $(TARGET)/
+	cp $(ANDROID)/* $(TARGET)/
 	perl -p -i -e $(subst " ", ,$(CHROME_HTML_REGEX)) \
 		$(TARGET)/gobbledygook.html
-	cp $(LIB)/hasher.js $(TARGET)/
-	cp $(LIB)/keygen.js $(TARGET)/
-	cp $(LIB)/workhorsefunctions.js $(TARGET)/
-	mkdir $(TARGET)/sjcl
+	cp $(LIB)/{hasher,keygen,workhorsefunctions}.js $(TARGET)/
+	mkdir $(TARGET)/{icon,sjcl}
+	cp $(ICON)/icon-{16,19,32,38,48,64,128}.png $(TARGET)/icon/
 	cp -r $(SJCL)/README{,.md} $(TARGET)/sjcl/
 	cp $(SJCL_MEGALITH) $(TARGET)/sjcl/
-	mkdir $(TARGET)/icon
-	cp $(ICON)/icon-{16,19,32,38,48,64,128}.png $(TARGET)/icon/
 	echo "Success!"
 
 firefox: TARGET = $(TARGET_DIR)/firefox
 firefox: firefox-clean sjcl
 	cp -r $(FIREFOX_GOBBLEDYGOOK) ./target/
+	perl -p -i -e $(subst " ", ,$(BUILD_REGEX)) \
+		$(TARGET)/package.json
 	cp $(ROOT)/README.md $(TARGET)/
-	cp $(HTML)/gobbledygook.html $(TARGET)/data/
-	cp $(LIB)/hasher.js $(TARGET)/data/
-	cp $(LIB)/keygen.js $(TARGET)/data/
-	cp $(LIB)/workhorsefunctions.js $(TARGET)/data/
-	mkdir $(TARGET)/data/sjcl
+	cp $(HTML)/*.html $(TARGET)/data/
+	cp $(ANDROID)/* $(TARGET)/data/
+	cp $(LIB)/{hasher,keygen,workhorsefunctions}.js $(TARGET)/data/
+	mkdir $(TARGET)/data/{icon,sjcl}
+	cp $(ICON)/icon-{16,32,48,64}.png $(TARGET)/data/icon/
 	cp -r $(SJCL)/README{,.md} $(TARGET)/data/sjcl/
 	cp $(SJCL_MEGALITH) $(TARGET)/data/sjcl/
-	mkdir $(TARGET)/data/icon
-	cp $(ICON)/icon-{16,32,48,64}.png $(TARGET)/data/icon/
 	echo "Success!"
 
 sjcl: target-dir

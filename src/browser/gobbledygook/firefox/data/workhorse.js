@@ -27,7 +27,7 @@
  * @namespace
  * @summary A global namespace for miscellaneous "environment" variables.
  */
-var WORKHORSE_ENV           = {
+var WORKHORSE           = {
 
     /**
      * @summary The actionable events that could be triggered when
@@ -40,7 +40,10 @@ var WORKHORSE_ENV           = {
         HIDE                : "hide",
         SET_SALT_KEY        : "setSaltKey",
         SAVE                : "save",
-        SHOW                : "show"
+        SHOW                : "show",
+        SETTINGS_SHOW       : "showSettings",
+        SETTINGS_EXPORT     : "exportSettings",
+        SETTINGS_IMPORT     : "importSettings"
     },
 
     /**
@@ -58,7 +61,7 @@ var WORKHORSE_ENV           = {
         UNDEFINED           : "undefined"
     }
 
-};  // end namepace WORKHORSE_ENV
+};  // end namepace WORKHORSE
 
 // ========================================================================
 // EVENT HANDLERS
@@ -66,30 +69,38 @@ var WORKHORSE_ENV           = {
 /**
  * @summary An event listener for the "generateSaltKey" event from
  *          the Options UI.
+ * @param   {String} key - The saltKey to set. The caller can either
+ *          pass in a key, or have the method generate one (this is
+ *          to facilitate being called from two different contexts).
  * @return  {undefined}
  */
-self.port.on(WORKHORSE_ENV.events.GENERATE_SALT_KEY,
-             function onGenerateSaltKey() {
-    if (WORKHORSE_ENV.types.OBJECT === typeof(Keygen)) {
-        var key = Keygen.generate();
-        if (WORKHORSE_ENV.types.UNDEFINED !== typeof(key)) {
-            self.port.emit(WORKHORSE_ENV.events.SET_SALT_KEY, key);
+function onGenerateSaltKey(key) {
+    // If "key" is undefined, generate one;
+    if (WORKHORSE.types.undefined === key) {
+        if (WORKHORSE.types.OBJECT === typeof(Keygen)) {
+            key = Keygen.generate();
+        } else {
+            console.error(WORKHORSE.logCategory +
+                          "ERROR: 'Keygen' undefined");
         }
-    } else {
-        console.error(WORKHORSE_ENV.logCategory +
-                      "ERROR: 'Keygen' undefined");
     }
-});
+
+    if (WORKHORSE.types.UNDEFINED !== typeof(key)) {
+        self.port.emit(WORKHORSE.events.SET_SALT_KEY, key);
+    }
+}
+self.port.on(WORKHORSE.events.GENERATE_SALT_KEY,
+             onGenerateSaltKey);
 
 /**
  * @summary An event listener for the "show" event for the addon UI.
  * @return  {undefined}
  */
-self.port.on(WORKHORSE_ENV.events.SHOW, function onShow(params) {
-    if (WORKHORSE_ENV.types.OBJECT === typeof(DOM)) {
+self.port.on(WORKHORSE.events.SHOW, function onShow(params) {
+    if (WORKHORSE.types.OBJECT === typeof(DOM)) {
         DOM.configure(self.options, params);
     } else {
-        console.error(WORKHORSE_ENV.logCategory +
+        console.error(WORKHORSE.logCategory +
                       "ERROR: 'DOM' undefined");
     }
 });
@@ -98,11 +109,11 @@ self.port.on(WORKHORSE_ENV.events.SHOW, function onShow(params) {
  * @summary An event listener for the "hide" event for the addon UI.
  * @return  {undefined}
  */
-self.port.on(WORKHORSE_ENV.events.HIDE, function onHide() {
-    if (WORKHORSE_ENV.types.OBJECT === typeof(DOM)) {
+self.port.on(WORKHORSE.events.HIDE, function onHide() {
+    if (WORKHORSE.types.OBJECT === typeof(DOM)) {
         DOM.deconfigure();
     } else {
-        console.error(WORKHORSE_ENV.logCategory +
+        console.error(WORKHORSE.logCategory +
                       "ERROR: 'DOM' undefined");
     }
 });
@@ -112,14 +123,38 @@ self.port.on(WORKHORSE_ENV.events.HIDE, function onHide() {
  *          main module.
  * @return  {undefined}
  */
-self.port.on(WORKHORSE_ENV.events.SAVE, function onSave(success) {
-    if (WORKHORSE_ENV.types.OBJECT === typeof(DOM)) {
+self.port.on(WORKHORSE.events.SAVE, function onSave(success) {
+    if (WORKHORSE.types.OBJECT === typeof(DOM)) {
         DOM.togglers.toggleAttributesSaveSuccess(success);
     } else {
-        console.error(WORKHORSE_ENV.logCategory +
+        console.error(WORKHORSE.logCategory +
                       "ERROR: 'DOM' undefined");
     }
 });
+
+/**
+ * @summary Method to emit the "showSettings" event.
+ * @return  {undefined}
+ */
+function onShowSettings() {
+    self.port.emit(WORKHORSE.events.SETTINGS_SHOW);
+}
+
+/**
+ * @summary Method to emit the "showSettings" event.
+ * @return  {undefined}
+ */
+function onExportSettings() {
+    self.port.emit(WORKHORSE.events.SETTINGS_EXPORT);
+}
+
+/**
+ * @summary Method to emit the "showSettings" event.
+ * @return  {undefined}
+ */
+function onImportSettings() {
+    self.port.emit(WORKHORSE.events.SETTINGS_IMPORT);
+}
 
 /**
  * @summary A function to "finalize" the algorithm. The finalization
@@ -132,5 +167,5 @@ self.port.on(WORKHORSE_ENV.events.SAVE, function onSave(success) {
  */
 function finalize(doneData) {
     // Fire a signal to the main panel code with the result.
-    self.port.emit(WORKHORSE_ENV.events.DONE, doneData);
+    self.port.emit(WORKHORSE.events.DONE, doneData);
 }

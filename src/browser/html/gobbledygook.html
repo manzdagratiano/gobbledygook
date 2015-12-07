@@ -12,7 +12,7 @@
 -->
 <head>
     <meta charset="UTF-8">
-    <title>gobbledygook</title>
+    <title>Gobbledygook</title>
     <style>
     body {
         background-color    : LightGoldenRodYellow;
@@ -72,32 +72,63 @@
         width               : 100px;
     }
 
-    .theButton {
+    /*
+     * Container for the "advanced" configuration
+     */
+    #advancedConfig {
+        margin-left         : 20px;
+        margin-right        : 20px;
+    }
+
+    /*
+     * Standalone style for "generateButton"
+     */
+    #generateButton {
         font-family         : "Comic Sans", "Comic Sans MS", cursive;
         font-weight         : bold;
         display             : block;
+        margin              : 0 auto;
     }
+
+    /*
+     * Icons for settings-related elements
+     */
+    input[type=image] {
+        height              : 20px;
+        width               : 20px;
+    }
+    .settingsIcon {
+        float               : left;
+    }
+
+    /*
+     * Container for the settings icons
+     */
+    #settingsContainer {
+        display             : flex;
+        justify-content     : space-between;
+    }
+
     </style>
 </head>
 <body>
     <header>
-        <h2>gobbledygook</h2>
+        <h2>Gobbledygook</h2>
     </header>
     <br/>
 
+    <!-- The domain name used -->
     <label for="domain" class="inputLabel">Domain</label>
     <input type="text" name="domain" id="domain" class="textBox"
     title="The website domain."/>
 
+    <!-- The user's actual password -->
     <label for="password" class="inputLabel">Password</label>
     <input type="password" name="password" id="password" class="textBox"
     title="The One True Password, which only you will ever know"/>
 
-    <label for="iterations" class="inputLabel">Iterations</label>
-    <input type="number" name="iterations" id="iterations" min="1"
-    title="The 'work factor'; more is better, with a performance tradeoff"
-    class="numberBox"/>
-
+    <br/>
+    <!-- The generated proxy password -->
     <label for="hash" id="hashLabel" class="inputLabel">
         Proxy Password
     </label>
@@ -105,28 +136,52 @@
     title="The generated proxy password will appear here (masked)"/>
 
     <input type="checkbox" name="showHash" id="showHash"
-    title="Use this checkbox to toggle generated hash visibility"/>
+    title="Use this checkbox to toggle the visibility of the generated password"/>
     <label for="showHash" class="actionLabel">
         Show
     </label>
 
     <br/>
     <br/>
-    <input type="checkbox" name="truncate" id="truncate"
-    title="Check this box if you want to truncate the generated password"/>
-    <label for="truncate" class="inputLabel">Truncate</label>
-    <input type="number" name="truncation" id="truncation" min="-1"
-    title="The number of characters to truncate the generated password to"
-    class="numberBox"/>
+    <!-- "Advanced" configuration, which the user will typically
+          not edit on vanilla runs. This section is collapsed and
+          can be expanded on demand. -->
+    <input type="checkbox" name="showAdvanced" id="showAdvanced"
+    title="Use this checkbox to toggle advanced configuration visibility"/>
+    <label for="showAdvanced" class="actionLabel">
+        Advanced...
+    </label>
 
-    <br/>
-    <input type="checkbox" name="saveAttributes" id="saveAttributes"
-    title="Check this box if you need your custom changes for future use"/>
-    <label for="saveAttributes" class="attributesLabel">
-        Save custom changes
-    </label>
-    <label id="attributesSaveSuccessLabel" for="saveAttributes" class="">
-    </label>
+    <div id="advancedConfig" name="advancedConfig">
+        <hr/>
+        <!-- The number of key-stretching iterations for this run,
+             set equal to the # of defaultIterations by default -->
+        <label for="iterations" class="inputLabel">Iterations</label>
+        <input type="number" name="iterations" id="iterations" min="1"
+        title="The 'work factor'; more is better, with a performance tradeoff. Change affects this run only"
+        class="numberBox"/>
+
+        <br/>
+        <!-- The number of characters to truncate to,
+             for incompetent websites that limit password length. -->
+        <input type="checkbox" name="truncate" id="truncate"
+        title="Check this box if you want to truncate the generated password"/>
+        <label for="truncate" class="inputLabel">Truncate</label>
+        <input type="number" name="truncation" id="truncation" min="-1"
+        title="The number of characters to truncate the generated password to"
+        class="numberBox"/>
+
+        <br/>
+        <!-- Whether to save an overridden configuration or not. -->
+        <input type="checkbox" name="saveAttributes" id="saveAttributes"
+        title="Check this box if you need your custom changes for future use"/>
+        <label for="saveAttributes" class="attributesLabel">
+            Save custom changes
+        </label>
+        <label id="attributesSaveSuccessLabel" for="saveAttributes" class="">
+        </label>
+        <hr/>
+    </div>
 
     <br/>
     <br/>
@@ -137,11 +192,26 @@
         adding an "event listener" to this button in the content script.
     -->
     <button type="button" name="generateButton" id="generateButton"
-    title="Let's rock!" class="theButton">
+    title="Let's rock!">
         Generate!
     </button>
 
     <br/>
+    <div id="settingsContainer">
+        <input type="image" id="showSettingsIcon"
+                            src="./ic_settings_black_48dp.png"
+                            class="settingsIcon"
+                            title="View/Edit Settings"/>
+        <input type="image" id="exportSettingsIcon"
+                            src="./ic_file_download_black_48dp.png"
+                            class="settingsIcon"
+                            title="Export Settings"/>
+        <input type="image" id="importSettingsIcon"
+                            src="./ic_file_upload_black_48dp.png"
+                            class="settingsIcon"
+                            title="Import Settings"/>
+    </div>
+
     <footer>
     </footer>
 </body>

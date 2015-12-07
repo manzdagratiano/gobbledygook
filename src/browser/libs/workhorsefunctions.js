@@ -4,6 +4,10 @@
  *              with the UI/DOM as well as the mechanism of interpreting
  *              and saving user preferences. This is the main "workhorse"
  *              responsible for implementing the algorithm.
+ *              This module is BROWSER-AGNOSTIC. Browser-specific APIs
+ *              do not belong in here. All incoming data is abstracted
+ *              out into a common interface, and all outgoing data is
+ *              adapted back into the browser-specific layer.
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
  * @date        Nov 19, 2014
@@ -21,12 +25,21 @@
  * @namespace
  * @summary A global namespace for miscellaneous "environment" variables.
  */
-var AUX_ENV                         = {
+var AUX                             = {
 
     /**
      * @summary The default number of iterations of PBKDF2 (when unset).
      */
     defaultIterations               : 10000,
+
+    /**
+     * @summary The modes of display for a panel that can be shown/hidden.
+     *          In the present case, it is the "Advanced" settings container.
+     */
+    display                         : {
+        BLOCK                       : "block",
+        NONE                        : "none"
+    },
 
     /**
      * @summary The actionable events that could be triggered when
@@ -88,7 +101,7 @@ var AUX_ENV                         = {
         UNDEFINED                   : "undefined"
     }
 
-};  // end namepace AUX_ENV
+};  // end namepace AUX
 
 // ========================================================================
 // CLASS DEFINITIONS
@@ -106,11 +119,11 @@ var AUX_ENV                         = {
  *          (default Attributes.NO_TRUNCATION).
  */
 var Attributes = function(domain, iterations, truncation) {
-    this.domain     = (AUX_ENV.types.UNDEFINED === typeof(domain) ?
+    this.domain     = (AUX.types.UNDEFINED === typeof(domain) ?
                        null : domain);
-    this.iterations = (AUX_ENV.types.UNDEFINED === typeof(iterations) ?
+    this.iterations = (AUX.types.UNDEFINED === typeof(iterations) ?
                        null : iterations);
-    this.truncation = (AUX_ENV.types.UNDEFINED === typeof(truncation) ?
+    this.truncation = (AUX.types.UNDEFINED === typeof(truncation) ?
                        Attributes.NO_TRUNCATION : truncation);
 };
 
@@ -166,16 +179,16 @@ var AttributesCodec = {
         try {
             siteAttributesList = JSON.parse(encodedAttributesList);
         } catch (e) {
-            console.info(AUX_ENV.logCategory +
+            console.info(AUX.logCategory +
                          "WARN Failed to parse siteAttributesList" +
                          ", errorMsg=\"" + e + "\"");
             return {};
         }
 
-        console.debug(AUX_ENV.logCategory + "siteAttributesList=" +
+        console.debug(AUX.logCategory + "siteAttributesList=" +
                       JSON.stringify(siteAttributesList,
                                      null,
-                                     AUX_ENV.indentation));
+                                     AUX.indentation));
         return siteAttributesList;
     },
 
@@ -196,12 +209,12 @@ var AttributesCodec = {
         // Create a "default-initialized" object of type "Attributes"
         var attributes = new Attributes();
 
-        if (AUX_ENV.types.UNDEFINED !== typeof(encodedAttributes)) {
+        if (AUX.types.UNDEFINED !== typeof(encodedAttributes)) {
             var siteAttributesArray =
                 encodedAttributes.split(AttributesCodec.delimiter);
             // Sanity check
             if (3 !== siteAttributesArray.length) {
-                console.error(AUX_ENV.logCategory +
+                console.error(AUX.logCategory +
                               "ERROR: Malformed Attributes! " +
                               "(Expected <salt|iterations|truncation>)");
                 return attributes;
@@ -335,22 +348,22 @@ var AttributesCodec = {
                                       proposedAttributes,
                                       attributes);
         if ("" === encodedAttributes) {
-            console.info(AUX_ENV.logCategory + "No custom changes to save");
+            console.info(AUX.logCategory + "No custom changes to save");
             return "";
-        } else {
-            console.info(AUX_ENV.logCategory +
-                         "customAttributes=" + encodedAttributes);
         }
+
+        console.info(AUX.logCategory +
+                     "customAttributes=" + encodedAttributes);
 
         // Create new, or update existing
         siteAttributesList[domain] = encodedAttributes;
-        console.debug(AUX_ENV.logCategory + "Saving siteAttributesList=" +
+        console.debug(AUX.logCategory + "Saving siteAttributesList=" +
                       JSON.stringify(siteAttributesList,
                                      null,
-                                     AUX_ENV.indentation));
+                                     AUX.indentation));
 
         var encodedAttributesList = JSON.stringify(siteAttributesList);
-        console.debug(AUX_ENV.logCategory +
+        console.debug(AUX.logCategory +
                       "encodedAttributesList=" + encodedAttributesList);
         return encodedAttributesList;
     }
@@ -367,16 +380,21 @@ var AttributesCodec = {
 var DOM                             = {
 
     elements                        : {
-        domain                      : "domain",
-        password                    : "password",
-        hash                        : "hash",
-        showHash                    : "showHash",
-        iterations                  : "iterations",
-        truncate                    : "truncate",
-        truncation                  : "truncation",
-        saveAttributes              : "saveAttributes",
+        domainBox                   : "domain",
+        passwordBox                 : "password",
+        hashBox                     : "hash",
+        showHashCheckBox            : "showHash",
+        iterationsBox               : "iterations",
+        truncateCheckBox            : "truncate",
+        truncationBox               : "truncation",
+        saveAttributesCheckBox      : "saveAttributes",
         attributesSaveSuccessLabel  : "attributesSaveSuccessLabel",
+        showAdvancedCheckBox        : "showAdvanced",
+        advancedConfigContainer     : "advancedConfig",
         generateButton              : "generateButton",
+        showSettingsIcon            : "showSettingsIcon",
+        exportSettingsIcon          : "exportSettingsIcon",
+        importSettingsIcon          : "importSettingsIcon"
     },
 
     /**
@@ -393,16 +411,33 @@ var DOM                             = {
          *          "text" (show) or to "password" (don't show).
          * @return  {undefined}
          */
-        showListener : function() {
-            var checkBox = document.getElementById(DOM.elements.showHash);
-            var hashField = document.getElementById(DOM.elements.hash);
+        showHashListener : function() {
+            var checkBox =
+                document.getElementById(DOM.elements.showHashCheckBox);
+            var hashField = document.getElementById(DOM.elements.hashBox);
             if (checkBox.checked) {
-                hashField.type = AUX_ENV.inputType.TEXT;
+                hashField.type = AUX.inputType.TEXT;
             } else {
-                hashField.type = AUX_ENV.inputType.PASSWORD;
+                hashField.type = AUX.inputType.PASSWORD;
             }
         },
 
+        /**
+         * @summary Event listener for the checkbox to show
+         *          "Advanced" settings
+         * @return  {undefined}
+         */
+        showAdvancedListener : function() {
+            var checkBox =
+                document.getElementById(DOM.elements.showAdvancedCheckBox);
+            var advancedConfigContainer =
+                document.getElementById(DOM.elements.advancedConfigContainer);
+            if (checkBox.checked) {
+                advancedConfigContainer.style.display = AUX.display.BLOCK; 
+            } else {
+                advancedConfigContainer.style.display = AUX.display.NONE; 
+            }
+        },
 
         /**
          * @summary Event listener for the truncate checkbox.
@@ -413,9 +448,10 @@ var DOM                             = {
          * @return  {undefined}
          */
         truncateListener : function() {
-            var checkBox = document.getElementById(DOM.elements.truncate);
+            var checkBox =
+                document.getElementById(DOM.elements.truncateCheckBox);
             var truncationBox =
-                document.getElementById(DOM.elements.truncation);
+                document.getElementById(DOM.elements.truncationBox);
             if (checkBox.checked) {
                 truncationBox.disabled = false;
             } else {
@@ -423,7 +459,6 @@ var DOM                             = {
                 truncationBox.disabled = true;
             }
         },
-
 
         /**
          * @summary Event listener for the "Generate" button.
@@ -439,11 +474,11 @@ var DOM                             = {
             // This in case the user made any custom changes.
             var attributes =
                 new Attributes(document.getElementById(
-                                    DOM.elements.domain).value,
+                                    DOM.elements.domainBox).value,
                                parseInt(document.getElementById(
-                                    DOM.elements.iterations).value),
+                                    DOM.elements.iterationsBox).value),
                                parseInt(document.getElementById(
-                                    DOM.elements.truncation).value));
+                                    DOM.elements.truncationBox).value));
             // Note that the script never sees
             // the input password itself at all -
             // it is hashed through SHA256
@@ -457,14 +492,51 @@ var DOM                             = {
                 seedSHA             : sjcl.codec.hex.fromBits(
                                         sjcl.hash.sha256.hash(
                                             document.getElementById(
-                                            DOM.elements.password).value)),
+                                            DOM.elements.passwordBox).value)),
                 attributes          : attributes,
                 proposedAttributes  : button.proposedAttributes,
                 savedAttributes     : button.savedAttributes,
                 saveAttributes      : document.getElementById(
-                                      DOM.elements.saveAttributes).checked,
+                                      DOM.elements.saveAttributesCheckBox)
+                                        .checked,
                 savedAttributesList : button.savedAttributesList
             });
+        },
+
+        /**
+         * @summary Event listener for the "Settings" icon
+         * @return  {undefined}
+         */
+        showSettingsListener        : function() {
+            console.info(AUX.logCategory +
+                         "showSettings() handler called...");
+            if (AUX.types.FUNCTION === typeof(onShowSettings)) {
+                onShowSettings();
+            }
+        },
+
+        /**
+         * @summary Event listener for the "exportSettings" icon
+         * @return  {undefined}
+         */
+        exportSettingsListener      : function() {
+            console.info(AUX.logCategory +
+                         "exportSettings() handler called...");
+            if (AUX.types.FUNCTION === typeof(onExportSettings)) {
+                onExportSettings();
+            }
+        },
+
+        /**
+         * @summary Event listener for the "importSettings" icon
+         * @return  {undefined}
+         */
+        importSettingsListener      : function() {
+            console.info(AUX.logCategory +
+                         "importSettings() handler called...");
+            if (AUX.types.FUNCTION === typeof(onImportSettings)) {
+                onImportSettings();
+            }
         }
 
     },  // end namespace "listeners"
@@ -489,21 +561,21 @@ var DOM                             = {
          * @return  {undefined}
          */
         toggleHashField : function(eventType, message) {
-            var hashField = document.getElementById(DOM.elements.hash);
-            if (eventType === AUX_ENV.events.CLICK) {
+            var hashField = document.getElementById(DOM.elements.hashBox);
+            if (eventType === AUX.events.CLICK) {
                 hashField.disabled = false;
-                hashField.type = AUX_ENV.inputType.TEXT;
-            } else if (eventType === AUX_ENV.events.DONE) {
+                hashField.type = AUX.inputType.TEXT;
+            } else if (eventType === AUX.events.DONE) {
                 hashField.disabled = false;
-                hashField.type = AUX_ENV.inputType.PASSWORD;
-            } else if (eventType === AUX_ENV.events.ERROR) {
+                hashField.type = AUX.inputType.PASSWORD;
+            } else if (eventType === AUX.events.ERROR) {
                 hashField.disabled = false;
-                hashField.type = AUX_ENV.inputType.TEXT;
-            } else if (eventType === AUX_ENV.events.GENERATE) {
+                hashField.type = AUX.inputType.TEXT;
+            } else if (eventType === AUX.events.GENERATE) {
                 hashField.disabled = true;
             }
 
-            if (AUX_ENV.types.STRING === typeof(message)) {
+            if (AUX.types.STRING === typeof(message)) {
                 hashField.value = message;
             }
         },
@@ -519,8 +591,8 @@ var DOM                             = {
         toggleAttributesSaveSuccess : function(success) {
             document.getElementById(
                 DOM.elements.attributesSaveSuccessLabel).textContent =
-                (success ?  AUX_ENV.successString.SUCCESS :
-                            AUX_ENV.successString.FAILURE);
+                (success ?  AUX.successString.SUCCESS :
+                            AUX.successString.FAILURE);
         }
 
     },  // end namespace "togglers"
@@ -545,17 +617,17 @@ var DOM                             = {
      * @return  {undefined}
      */
     configure : function(options, params) {
-        console.info(AUX_ENV.logCategory +
+        console.info(AUX.logCategory +
                      "workhorseOptions=" +
-                     JSON.stringify(options, null, AUX_ENV.indentation) +
+                     JSON.stringify(options, null, AUX.indentation) +
                      ",\nworkhorseParams=" +
-                     JSON.stringify(params, null, AUX_ENV.indentation));
+                     JSON.stringify(params, null, AUX.indentation));
 
         // ----------------------------------------------------------------
         // Private Methods
 
         /**
-         * @brief   A function to obtain the domain name of the url
+         * @summary A function to obtain the domain name of the url
          *          (more correctly, the domain-subdomain-subsub...).
          *          This will be used as the "key" to identify this
          *          website, e.g.,
@@ -582,13 +654,34 @@ var DOM                             = {
 
             // Obtain the "root" of the url - the domain-subdomain
             domain = domain.split("/")[0];
-            console.info(AUX_ENV.logCategory + "domain=" + domain);
+
+            // For compatibility with mobile pages, also remove
+            // the starting "www*." or "m."
+            // The new JavaScript "startsWith" method (ECMAScript 2015)
+            // does not allow regexes, so we check for "www" or "m."
+            // and then remove everything upto the first ".", so that
+            // prefixes like "www2." etc (load balancing) are also covered.
+            // Assumption: No website name is abusing the "www" prefix,
+            // i.e., there is never going to be a name like
+            // wwwimadethisstupidnameforfun.org
+            if (domain.startsWith("www") || domain.startsWith("m.")) {
+                var chopIndex = domain.indexOf(".");
+                if (-1 !== chopIndex) {
+                    // Take everything after the first "."
+                    domain = domain.substring(chopIndex + 1);
+                } else {
+                    // Sanity check; something wild is this happens!
+                    console.info(AUX.logCategory + "domain=" + domain +
+                                 ", Something wild! Nothing to chop off");
+                }
+            }
+            console.info(AUX.logCategory + "domain=" + domain);
 
             return domain;
         };
 
         /**
-         * @brief   A function to configure
+         * @summary A function to configure
          *          the "domain" element of the DOM.
          * @param   {string} domain - The website domain.
          * @param   {string} savedDomain - The saved domain,
@@ -597,7 +690,7 @@ var DOM                             = {
          */
         var configureDomain = function(domain,
                                        savedDomain) {
-            var domainBox = document.getElementById(DOM.elements.domain);
+            var domainBox = document.getElementById(DOM.elements.domainBox);
             domainBox.value = (savedDomain ? savedDomain : domain);
             return domainBox.value;
         }
@@ -614,15 +707,15 @@ var DOM                             = {
         var configureIterations = function(defaultIterations,
                                            savedIterations) {
             var iterationBox =
-                document.getElementById(DOM.elements.iterations);
+                document.getElementById(DOM.elements.iterationsBox);
             var iterations = savedIterations;
             if (!iterations) {
                 iterations = defaultIterations;
             }
             if (!iterations) {
-                iterations = AUX_ENV.defaultIterations;
+                iterations = AUX.defaultIterations;
             }
-            console.info(AUX_ENV.logCategory + "iterations=" + iterations);
+            console.info(AUX.logCategory + "iterations=" + iterations);
             iterationBox.value = iterations;
             return iterations;
         };
@@ -635,17 +728,18 @@ var DOM                             = {
          */
         var configureHash = function() {
             // The proxy password output field
-            var hashField = document.getElementById(DOM.elements.hash);
+            var hashField = document.getElementById(DOM.elements.hashBox);
             hashField.value = "";
             hashField.disabled = true;
 
             // The "Show" checkbox for the proxy password
-            var checkBox = document.getElementById(DOM.elements.showHash);
+            var checkBox =
+                document.getElementById(DOM.elements.showHashCheckBox);
 
             // Add an event listener to the "click" action,
             // which toggles the visibility of the generated hash.
-            checkBox.addEventListener(AUX_ENV.events.CHANGE,
-                                      DOM.listeners.showListener);
+            checkBox.addEventListener(AUX.events.CHANGE,
+                                      DOM.listeners.showHashListener);
         };
 
         /**
@@ -654,24 +748,25 @@ var DOM                             = {
          * @param   {int} truncation - The number of truncation characters.
          *          If this number is equal to Attributes.NO_TRUNCATION,
          *          the input box will be disabled.
-         * @return  {int} The number of characters to truncate 
+         * @return  {int} The number of characters to truncate
          *          the proxy password to.
          */
         var configureTruncation = function(truncation) {
             var truncationBox =
-                document.getElementById(DOM.elements.truncation);
+                document.getElementById(DOM.elements.truncationBox);
             truncationBox.disabled =
                 (Attributes.NO_TRUNCATION === truncation) ? true : false;
             truncationBox.value = truncation;
 
             // Configure the "truncate" checkbox of the DOM
-            var checkBox = document.getElementById(DOM.elements.truncate);
+            var checkBox =
+                document.getElementById(DOM.elements.truncateCheckBox);
             checkBox.checked =
                 (Attributes.NO_TRUNCATION === truncation) ? false : true;
 
             // Add an event listener to the "click" action,
             // which toggles the editability of the truncation parameter.
-            checkBox.addEventListener(AUX_ENV.events.CHANGE,
+            checkBox.addEventListener(AUX.events.CHANGE,
                                       DOM.listeners.truncateListener);
 
             return truncation;
@@ -686,10 +781,31 @@ var DOM                             = {
          */
         var configureSaveAttributes = function() {
             document.getElementById(
-                DOM.elements.saveAttributes).checked = false;
+                DOM.elements.saveAttributesCheckBox).checked = false;
             document.getElementById(
                 DOM.elements.attributesSaveSuccessLabel).textContent = "";
         };
+
+        /**
+         * @summary A function to configure the checkbox to show/hide
+         *          "Advanced" settings (iterations, truncation, save custom),
+         *          which the user would typically not modify for every run.
+         *          By default, the advanced section is hidden.
+         * @return  {undefined}
+         */
+        var configureShowAdvanced = function() {
+            var checkBox =
+                document.getElementById(DOM.elements.showAdvancedCheckBox);
+            var advancedConfigContainer =
+                document.getElementById(DOM.elements.advancedConfigContainer);
+            // Uncheck the checkbox and hide the "Advanced" panel
+            checkBox.checked = false;
+            advancedConfigContainer.style.display = AUX.display.NONE; 
+            // Add an event listener to the "click" action,
+            // which toggles the editability of the truncation parameter.
+            checkBox.addEventListener(AUX.events.CHANGE,
+                                      DOM.listeners.showAdvancedListener);
+        }
 
         /**
          * @summary A function to configure the "Generate" button
@@ -727,23 +843,48 @@ var DOM                             = {
             // Add an event listener to the "click" action,
             // whose purpose is to gather the values of the elements
             // when "Generate" is hit (the input to the algorithm).
-            button.addEventListener(AUX_ENV.events.CLICK,
+            button.addEventListener(AUX.events.CLICK,
                                     DOM.listeners.generateListener);
         };
 
+        /**
+         * @summary Method to configure the settings icons
+         * @return  {undefined}
+         */
+        var configureSettingsIcons = function() {
+                document.getElementById(DOM.elements.showSettingsIcon).
+                    addEventListener(AUX.events.CLICK,
+                                      DOM.listeners.showSettingsListener);
+                document.getElementById(DOM.elements.exportSettingsIcon).
+                    addEventListener(AUX.events.CLICK,
+                                     DOM.listeners.exportSettingsListener);
+                document.getElementById(DOM.elements.importSettingsIcon).
+                    addEventListener(AUX.events.CLICK,
+                                     DOM.listeners.importSettingsListener);
+        };
+
         // ----------------------------------------------------------------
-        // Check if the saltKey was generated, i.e., it is not empty.
+        // Check if the saltKey exists;
+        // if not, generate a new one (e.g., on first run).
+        // This allows taking the generation onus away from the user
+        // and makes the addon out-of-the-box ready.
         if (!params.saltKey) {
-            DOM.togglers.toggleHashField(AUX_ENV.events.ERROR,
-                                         "ERROR: " +
-                                         "saltKey === EMPTY");
-            return;
+            console.info(AUX.logCategory + "No saltKey found. " +
+                         "Generating a new one...");
+            // Generate a new key
+            params.key = Keygen.generate();
+            // Send an event to set the salt key to SimplePrefs.
+            // We do not need to wait for returning from this
+            // asynchronous operation, as this is only for future usage.
+            if (AUX.types.FUNCTION === typeof(onGenerateSaltKey)) {
+                onGenerateSaltKey(params.key);
+            }
         }
 
         // ----------------------------------------------------------------
         // Configure all the elements.
 
-        console.info(AUX_ENV.logCategory + "Configuring elements...");
+        console.info(AUX.logCategory + "Configuring elements...");
 
         // Check and extract saved site attributes, if any.
         var domain = extractDomain(params.url);
@@ -754,10 +895,10 @@ var DOM                             = {
         var savedAttributes =
             AttributesCodec.getSavedAttributes(domain,
                                                savedAttributesList);
-        console.info(AUX_ENV.logCategory + "savedAttributes=" +
+        console.info(AUX.logCategory + "savedAttributes=" +
                      JSON.stringify(savedAttributes,
                                     null,
-                                    AUX_ENV.indentation));
+                                    AUX.indentation));
 
         var proposedAttributes =
             new Attributes(configureDomain(domain,
@@ -769,11 +910,13 @@ var DOM                             = {
 
         configureHash();
         configureSaveAttributes();
+        configureShowAdvanced();
         configureGenerateButton(domain,
                                 params.saltKey,
                                 savedAttributes,
                                 proposedAttributes,
                                 savedAttributesList);
+        configureSettingsIcons();
     },
 
     /**
@@ -782,19 +925,31 @@ var DOM                             = {
      * @return  {undefined}
      */
     deconfigure : function() {
-        console.info(AUX_ENV.logCategory + "Cleaning up resources...");
+        console.info(AUX.logCategory + "Cleaning up resources...");
         // Remove all the event listeners
-        var generateButton =
-            document.getElementById(DOM.elements.generateButton);
-        generateButton.removeEventListener(AUX_ENV.events.CLICK,
-                                           DOM.listeners.generateListener);
-        var truncateBox =
-            document.getElementById(DOM.elements.truncate);
-        truncateBox.removeEventListener(AUX_ENV.events.CHANGE,
-                                        DOM.listeners.truncateListener);
-        var showBox = document.getElementById(DOM.elements.showHash);
-        showBox.removeEventListener(AUX_ENV.events.CHANGE,
-                                    DOM.listeners.showListener);
+        document.getElementById(DOM.elements.generateButton).
+            removeEventListener(AUX.events.CLICK,
+                                DOM.listeners.generateListener);
+        document.getElementById(DOM.elements.truncateCheckBox).
+            removeEventListener(AUX.events.CHANGE,
+                                DOM.listeners.truncateListener);
+        document.getElementById(DOM.elements.showHashCheckBox).
+            removeEventListener(AUX.events.CHANGE,
+                                DOM.listeners.showHashListener);
+        // Advanced settings
+        document.getElementById(DOM.elements.showAdvancedCheckBox).
+            removeEventListener(AUX.events.CHANGE,
+                                DOM.listeners.showAdvancedListener);
+        // Settings icons
+        document.getElementById(DOM.elements.showSettingsIcon).
+            removeEventListener(AUX.events.CLICK,
+                                DOM.listeners.showSettingsListener);
+        document.getElementById(DOM.elements.exportSettingsIcon).
+            removeEventListener(AUX.events.CLICK,
+                                DOM.listeners.exportSettingsListener);
+        document.getElementById(DOM.elements.importSettingsIcon).
+            removeEventListener(AUX.events.CLICK,
+                                DOM.listeners.importSettingsListener);
     }
 
 };  // end namespace "DOM"
@@ -836,34 +991,35 @@ var Workhorse           = {
      */
     generate : function(params) {
         // Clear the password field immediately
-        document.getElementById(DOM.elements.password).value = "";
+        document.getElementById(DOM.elements.passwordBox).value = "";
         // Clear the attributesSaveSuccessLabel (in case set)
         document.getElementById(
                 DOM.elements.attributesSaveSuccessLabel).textContent = "";
         // Toggle the "show" checkbox
-        document.getElementById(DOM.elements.showHash).checked = false;
-        DOM.togglers.toggleHashField(AUX_ENV.events.GENERATE, "");
+        document.getElementById(DOM.elements.showHashCheckBox).checked =
+            false;
+        DOM.togglers.toggleHashField(AUX.events.GENERATE, "");
 
-        console.debug(AUX_ENV.logCategory + "generateParams=" +
-                      JSON.stringify(params, null, AUX_ENV.indentation));
+        console.debug(AUX.logCategory + "generateParams=" +
+                      JSON.stringify(params, null, AUX.indentation));
 
         // Check if Web Workers are supported
-        if (AUX_ENV.types.UNDEFINED === typeof(Worker)) {
+        if (AUX.types.UNDEFINED === typeof(Worker)) {
             // No support for web workers;
             // do nothing,
             // since doing intensive operations here will
             // block the UI thread.
             // Modern browsers support the API, so no reason to be burdened
             // by chains of the past.
-            console.error(AUX_ENV.logCategory +
+            console.error(AUX.logCategory +
                           "ERROR: No web worker support!");
-            DOM.togglers.toggleHashField(AUX_ENV.events.ERROR,
+            DOM.togglers.toggleHashField(AUX.events.ERROR,
                                          "ERROR: " +
                                          "browser.Type === ANCIENT");
             return;
         }
 
-        console.info(AUX_ENV.logCategory + "Firing web worker HASHER...");
+        console.info(AUX.logCategory + "Firing web worker HASHER...");
         var hasher = new Worker("hasher.js");
 
         hasher.onmessage = function(oEvent) {
@@ -871,18 +1027,18 @@ var Workhorse           = {
             console.debug(logCategory +
                           JSON.stringify(oEvent.data,
                                          null,
-                                         AUX_ENV.indentation));
+                                         AUX.indentation));
             var eventData = oEvent.data;
 
             // Finalize the worker, if this is the "done" signal
-            if (eventData.hasOwnProperty(AUX_ENV.events.DONE)) {
-                console.info(AUX_ENV.logCategory + "Finalizing worker...");
-                DOM.togglers.toggleHashField(AUX_ENV.events.DONE,
+            if (eventData.hasOwnProperty(AUX.events.DONE)) {
+                console.info(AUX.logCategory + "Finalizing worker...");
+                DOM.togglers.toggleHashField(AUX.events.DONE,
                                              eventData.password);
 
                 var encodedAttributesList = "";
                 if (params.saveAttributes) {
-                    console.info(AUX_ENV.logCategory +
+                    console.info(AUX.logCategory +
                                  "Generating attributes list string...");
                     encodedAttributesList =
                         AttributesCodec.getEncodedAttributesList(
@@ -895,7 +1051,7 @@ var Workhorse           = {
 
                 // Check if a function "finalize" is defined,
                 // and if so, call it.
-                if (AUX_ENV.types.FUNCTION === typeof(finalize)) {
+                if (AUX.types.FUNCTION === typeof(finalize)) {
                     finalize({
                         domain                  : params.domain,
                         password                : eventData.password,
@@ -907,7 +1063,7 @@ var Workhorse           = {
                 // DO NOT CALL "hasher.terminate()",
                 // which rudely terminates the web worker
                 // without a chance to clean up.
-                hasher.postMessage({ done : AUX_ENV.events.DONE });
+                hasher.postMessage({ done : AUX.events.DONE });
             };
         };
 
@@ -917,7 +1073,7 @@ var Workhorse           = {
                             ":" + oEvent.lineno + ")");
         };
 
-        DOM.togglers.toggleHashField(AUX_ENV.events.CLICK,
+        DOM.togglers.toggleHashField(AUX.events.CLICK,
                                      "<Generating...>");
         var hasherParams = {
             saltKey         : params.saltKey,

@@ -32,7 +32,9 @@ var ENV                     = {
      * @enum    {string}
      */
     events                  : {
-        DOM_CONTENT_LOADED  : "DOMContentLoaded"
+        DOM_CONTENT_LOADED  : "DOMContentLoaded",
+        EXPORT              : "Export",
+        IMPORT              : "Import"
     },
 
     /**
@@ -68,7 +70,7 @@ var HTML                    = {
      * @enum    {string}
      */
     commands                : {
-        COPY                : "Copy",
+        COPY                : "Copy"
     },
 
     /**
@@ -118,8 +120,8 @@ document.addEventListener(ENV.events.DOM_CONTENT_LOADED,
         }, function(items) {
             if (chrome.runtime.lastError) {
                 console.error(ENV.logCategory +
-                              "ERROR loading default options" +
-                              ", errorMsg=" + chrome.runtime.lastError);
+                              "ERROR loading default options, " +
+                              "errorMsg=" + chrome.runtime.lastError);
                 // No need to return; defaults will be set.
                 // The user can choose not to proceed.
             }
@@ -141,6 +143,24 @@ document.addEventListener(ENV.events.DOM_CONTENT_LOADED,
 
 // ========================================================================
 // AUXILIARY FUNCTIONS
+
+/**
+ * @summary A method to save a generated salt key to the preferences system
+ * @return  {undefined}
+ */
+function onGenerateSaltKey(key) {
+    console.info(ENV.logCategory + "Saving salt key to the sync system...");
+    chrome.storage.sync.set({
+        saltKey             : key
+    }, function() {
+        // Check if the options were successfully saved
+        if (chrome.runtime.lastError) {
+            console.error(ENV.logCategory + "ERROR saving saltKey" +
+                          ", errorMsg=" + chrome.runtime.lastError);
+            return;
+        }
+    });
+}
 
 /**
  * @summary A function to "finalize" the algorithm.
@@ -191,7 +211,7 @@ function finalize(doneData) {
     if ("" !== doneData.attributesListString) {
         console.info(ENV.logCategory + "Saving site attributes...");
         chrome.storage.sync.set({
-            siteAttributesList  : doneData.attributesListString,
+            siteAttributesList  : doneData.attributesListString
         }, function() {
             // Check if the options were successfully saved.
             var success = false;
@@ -210,4 +230,70 @@ function finalize(doneData) {
             }
         });
     }
+}
+
+// ------------------------------------------------------------------------
+// SETTINGS
+
+/**
+ * Settings Import/Export will be done using HTML5 techniques, since Chrome
+ * does not provide APIs to save files to/read files from arbitrary
+ * locations on the filesystem, even through a file picker that the user
+ * will be consciously interacting with. This is done on the pretext of
+ * "security" and "sandboxing", when really it achieves neither.
+ *
+ * Since both import and export will be performed by creating temporary
+ * elements, they need to be done from a page whose UI does not
+ * vanish upon click. This is particularly true for Import, in which case
+ * the "change" event of a temporary fileinput element does not fire
+ * from the DOM of the extension UI itself. To ensure behavioral consistency,
+ * Export and Import are implemented in the same way.
+ *
+ * Therefore, the implementation of these actions is placed in the settings
+ * page, which is opened on selecting either action, and a runtime.connect()
+ * event fired to invoke the implementation on that page. This allows
+ * consistency with the UI for the Firefox addon, as well as no special
+ * knowledge on the part of the user to achieve these actions, even if the
+ * experience is a little unconventional.
+ */
+
+/**
+ * @summary A method to open the settings page, switch to it, and take
+ *          the appropriate action, if specified.
+ * @param   {string} action - one of ENV.events.IMPORT or
+ *          ENV.events.EXPORT
+ * @return  {undefined}
+ */
+function onShowSettings(action) {
+    chrome.runtime.sendMessage({
+        type    : "background",
+        action  : action
+    }, function(response) {
+        console.info(ENV.logCategory +
+                     "response=" + JSON.stringify(response));
+    });
+}
+
+/**
+ * @summary A method called when the "Show Settings" icon is clicked
+ * @return  {undefined}
+ */
+function onClickShowSettings() {
+    onShowSettings();
+}
+
+/**
+ * @summary A method called when the "Export Settings" icon is clicked
+ * @return  {undefined}
+ */
+function onExportSettings() {
+    onShowSettings(ENV.events.EXPORT);
+}
+
+/**
+ * @summary A method called when the "Import Settings" icon is clicked
+ * @return  {undefined}
+ */
+function onImportSettings() {
+    onShowSettings(ENV.events.IMPORT);
 }

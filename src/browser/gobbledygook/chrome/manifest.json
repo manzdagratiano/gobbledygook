@@ -2,9 +2,10 @@
     "manifest_version"  : 2,
     "name"              : "gobbledygook",
     "short_name"        : "gobbledygook",
-    "version"           : "1.1.0",
+    "version"           : "@BUILDVER",
+    "version_name"      : "@BUILDTAG",
 
-    "description"       : "Annihilate password fatigue!",
+    "description"       : "The Unhackable Password Solution",
 
     "icons"             : {
         "16"            : "icon/icon-16.png",
@@ -16,6 +17,7 @@
 
     "permissions"       : [
         "clipboardWrite",
+        "downloads",
         "storage",
         "tabs"
     ],
@@ -27,6 +29,16 @@
             "38"        : "icon/icon-38.png"
         },
         "default_popup" : "gobbledygook.html"
+    },
+
+    "background"        : {
+        "scripts"       : [ "eventpage.js" ],
+        "persistent"    : false
+    },
+
+    "options_ui"        : {
+        "page"          : "options.html",
+        "chrome_style"  : true
     },
 
     "options_page"      : "options.html",
