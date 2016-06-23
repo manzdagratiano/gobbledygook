@@ -2,7 +2,8 @@
 
 ## HTML Code
 
-"gobbledygook.html" is licensed under the GNU GPLv3+.
+The HTML files (gobbledygook.html and options.html) are
+licensed under the GNU GPLv3+.
 
 ## Settings Icons
 

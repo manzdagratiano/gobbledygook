@@ -18,7 +18,7 @@
  * @namespace
  * @summary A global namespace for miscellaneous "environment" variables.
  */
-var KEYGEN_ENV              = {
+var KEYGEN                  = {
 
     /**
      * @summary A "category" to log with, to identify which component
@@ -61,7 +61,7 @@ var Keygen                  = {
         } catch(e) {
             // TODO: Use other "collectors" in SJCL to generate data
             // in the event the browser crypto API is not available.
-            console.error(KEYGEN_ENV.logCategory + e);
+            console.error(KEYGEN.logCategory + e);
             return;
         }
 

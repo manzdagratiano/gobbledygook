@@ -64,7 +64,7 @@ var OPTIONS             = {
     preferences             : {
         defaultIterations   : "defaultIterations",
         saltKey             : "saltKey",
-        siteAttributesList  : "siteAttributesList"
+        customOverrides     : "customOverrides"
     },
 
     /**
@@ -105,7 +105,7 @@ var OPT_DOM             = {
     editSaltKeyCheckBox     : "editSaltKey",
     generateKeyButton       : "generateKeyButton",
     defaultIterationsBox    : "defaultIterations",
-    siteAttributesListBox   : "siteAttributesList",
+    customOverridesBox      : "customOverrides",
     saveButton              : "saveButton",
     optionsSaveSuccessLabel : "optionsSaveSuccessLabel",
     exportSettingsIcon      : "exportSettingsIcon",
@@ -124,16 +124,17 @@ var OPT_DOM             = {
 function toggleSaltKey() {
     var checkBox =
         document.getElementById(OPT_DOM.editSaltKeyCheckBox);
-    var saltKeyBox =
-        document.getElementById(OPT_DOM.saltKeyBox);
     var generateKeyButton =
         document.getElementById(OPT_DOM.generateKeyButton);
 
     if (checkBox.checked) {
         console.info(OPTIONS.logCategory +
                      "Enabling the salt key for editing...");
-        // Allow the Salt Key to be edited
-        saltKeyBox.disabled = false;
+        // Allow the Salt Key to be edited,
+        // but leave the text box disabled
+        // (we don't want to allow manual updates to the key;
+        // the key can be generated, exported, or imported).
+
         // Enable the "Generate Salt Key"
         generateKeyButton.disabled = false;
 
@@ -146,7 +147,6 @@ function toggleSaltKey() {
         generateKeyButton.removeEventListener(OPTIONS.events.CLICK,
                                               generateKey);
         generateKeyButton.disabled = true;
-        saltKeyBox.disabled = true;
     }
 }
 
@@ -185,13 +185,13 @@ function generateKey() {
 function saveOptions() {
     console.info(OPTIONS.logCategory +
                  "Saving default options...");
-    chrome.storage.sync.set({
+    Quirks.getSyncMethod().set({
         saltKey             : document.getElementById(
                                 OPT_DOM.saltKeyBox).value,
         defaultIterations   : parseInt(document.getElementById(
                                 OPT_DOM.defaultIterationsBox).value),
-        siteAttributesList  : document.getElementById(
-                                OPT_DOM.siteAttributesListBox).value,
+        customOverrides     : document.getElementById(
+                                OPT_DOM.customOverridesBox).value,
     }, function() {
         // Check if the options were successfully saved
         if (chrome.runtime.lastError) {
@@ -222,14 +222,17 @@ function loadOptions() {
 
     // Set default Salt Key state
     document.getElementById(OPT_DOM.editSaltKeyCheckBox).checked = false;
+    // We do not want users editing the salt key by hand.
     document.getElementById(OPT_DOM.saltKeyBox).disabled = true;
     document.getElementById(OPT_DOM.generateKeyButton).disabled = true;
+    // We do not want users editing custom overrides by hand.
+    document.getElementById(OPT_DOM.customOverridesBox).disabled = true;
 
     // Restore options from the preferences system
-    chrome.storage.sync.get({
+    Quirks.getSyncMethod().get({
         saltKey             : "",
         defaultIterations   : OPTIONS.defaultIterations,
-        siteAttributesList  : ""
+        customOverrides     : ""
     }, function(items) {
         if (chrome.runtime.lastError) {
             console.info(OPTIONS.logCategory +
@@ -245,7 +248,7 @@ function loadOptions() {
         // Check if the options page was loaded as a result of
         // the user requesting an import/export action,
         // and if so, execute the action
-        chrome.storage.local.get({
+        Quirks.getSyncMethod().get({
             action  : ""
         }, function(items) {
             if (chrome.runtime.lastError) {
@@ -265,7 +268,7 @@ function loadOptions() {
 
             // Reset the localStorage variable, and take the action
             console.info(OPTIONS.logCategory + "Resetting localStorage...");
-            chrome.storage.local.set({
+            Quirks.getSyncMethod().set({
                 action  : ""
             }, function() {
                 if (chrome.runtime.lastError) {
@@ -289,7 +292,7 @@ function loadOptions() {
  * @param   {Object} settings - The settings object
  *          @prop {string} saltKey
  *          @prop {int} defaultIterations
- *          @prop {string} siteAttributesList
+ *          @prop {string} customOverrides
  * @return  {undefined}
  */
 function setDomElements(settings) {
@@ -297,7 +300,7 @@ function setDomElements(settings) {
     var ids = OPTIONS.preferences;
     if (!(settings.hasOwnProperty(ids.saltKey) &&
           settings.hasOwnProperty(ids.defaultIterations) &&
-          settings.hasOwnProperty(ids.siteAttributesList) &&
+          settings.hasOwnProperty(ids.customOverrides) &&
           (3 === Object.keys(settings).length))) {
         console.info(OPTIONS.logCategory + "Malformed settings!");
         return;
@@ -306,9 +309,9 @@ function setDomElements(settings) {
     document.getElementById(OPT_DOM.saltKeyBox).value =
         settings.saltKey;
     document.getElementById(OPT_DOM.defaultIterationsBox).value =
-        settings.defaultIterations;
-    document.getElementById(OPT_DOM.siteAttributesListBox).value =
-        settings.siteAttributesList;
+        parseInt(settings.defaultIterations);
+    document.getElementById(OPT_DOM.customOverridesBox).value =
+        settings.customOverrides;
     console.info(OPTIONS.logCategory + "DOM elements configured.");
 }
 
@@ -318,18 +321,23 @@ function setDomElements(settings) {
  */
 function exportSettings() {
     console.info(OPTIONS.logCategory + "exportSettings() handler called.");
-    chrome.storage.sync.get({
+    Quirks.getSyncMethod().get({
         saltKey             : "",
         defaultIterations   : OPTIONS.defaultIterations,
-        siteAttributesList  : ""
+        customOverrides     : ""
     }, function(items) {
         if (chrome.runtime.lastError) {
             console.error(OPTIONS.logCategory +
                           "ERROR loading default options, " +
                           "errorMsg=" + chrome.runtime.lastError);
             // Nothing to export, return
+            notifyUser("Failed to export application settings :-(");
             return;
         }
+
+        // Create the settings to be exported from "items"
+        var settings = Profile.makeSettings(items);
+
         // We could try to use the window.requestFileSystem API,
         // but it is not a web standard, and is chrome-specific ATM.
         // Probably a bad idea to use unless it is wrapped into 
@@ -340,7 +348,7 @@ function exportSettings() {
         // Create a new active ('a', as in <a href="..." />) element
         var a = window.document.createElement('a');
         a.href = window.URL.createObjectURL(new Blob([
-                                    JSON.stringify(items,
+                                    JSON.stringify(settings,
                                                    null,
                                                    OPTIONS.indentation)
         ],{
@@ -380,36 +388,20 @@ function importSettings() {
                              JSON.stringify(settings));
 
                 // Sanity check
-                var ids = OPTIONS.preferences;
-                if (!(settings.hasOwnProperty(ids.saltKey) &&
-                      settings.hasOwnProperty(ids.defaultIterations) &&
-                      settings.hasOwnProperty(ids.siteAttributesList) &&
-                      (3 === Object.keys(settings).length))) {
+                var profileSettings =
+                    Profile.validateAndReturnPreferences(settings);
+                if (!profileSettings) {
                     console.info(ENV.logCategory + "Malformed settings file!");
+                    notifyUser("Failed to import application settings :-(");
                     return;
                 }
 
-                // Save the options read
-                console.info(OPTIONS.logCategory +
-                             "Saving options to browser...");
-                chrome.storage.sync.set({
-                    saltKey             : settings[ids.saltKey],
-                    defaultIterations   : parseInt(settings[ids.defaultIterations]),
-                    siteAttributesList  : settings[ids.siteAttributesList]
-                }, function() {
-                    // Check if the options were successfully saved
-                    if (chrome.runtime.lastError) {
-                        console.error(OPTIONS.logCategory +
-                                      "ERROR saving options" +
-                                      ", errorMsg=" + chrome.runtime.lastError);
-                        return;
-                    }
+                // Refresh the view.
+                setDomElements(profileSettings);
 
-                    console.info(OPTIONS.logCategory + "Options saved");
-
-                    // The view will not refresh automatically; do so manually
-                    setDomElements(settings);
-                });
+                // Do not save the imported settings automatically!
+                // Let the user make a conscious decision to save.
+                notifyUser("Settings imported! You'd probably want to save them!");
             };
         })(settingsFile);
 
@@ -419,6 +411,22 @@ function importSettings() {
     document.body.appendChild(fileInput);
     fileInput.click();
     document.body.removeChild(fileInput);
+}
+
+/**
+ * @brief   A method to show a notification to the user.
+ * @param   {string} The message to display
+ * @return  {undefined}
+ */
+function notifyUser(message) {
+    console.info(OPTIONS.logCategory +
+                 "notifyUser(): message=" + message);
+    chrome.notifications.create({
+        "type"      : "basic",
+        "iconUrl"   : "icon/icon-48.png",
+        "title"     : "Gobbledygook",
+        "message"   : message
+    });
 }
 
 // ========================================================================

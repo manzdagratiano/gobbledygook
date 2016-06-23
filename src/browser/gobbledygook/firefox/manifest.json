@@ -1,9 +1,14 @@
 {
+    "applications"      : {
+        "gecko"         : {
+            "id"        : "gobbledygook@manzdagratiano.org",
+            "strict_min_version"    : "48.0"
+        }
+    },
+
     "manifest_version"  : 2,
     "name"              : "Gobbledygook",
-    "short_name"        : "Gobbledygook",
-    "version"           : "@BUILDVER",
-    "version_name"      : "@BUILDTAG",
+    "version"           : "@BUILDTAG",
 
     "description"       : "T3h Unh@X@b13 P@$$w0rd $01ut10n",
 
@@ -16,7 +21,6 @@
     },
 
     "permissions"       : [
-        "clipboardWrite",
         "downloads",
         "notifications",
         "storage",
@@ -29,20 +33,18 @@
             "19"        : "icon/icon-19.png",
             "38"        : "icon/icon-38.png"
         },
-        "default_popup" : "gobbledygook.html"
+        "default_popup" : "gobbledygook.html",
+        "browser_style" : false
     },
 
     "background"        : {
-        "scripts"       : [ "eventpage.js" ],
-        "persistent"    : false
+        "scripts"       : [ "eventpage.js" ]
     },
 
     "options_ui"        : {
         "page"          : "options.html",
-        "chrome_style"  : false
+        "open_in_tab"   : false
     },
-
-    "options_page"      : "options.html",
 
     "homepage_url"      : "https://github.com/manzdagratiano/gobbledygook"
 }

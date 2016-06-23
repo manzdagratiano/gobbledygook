@@ -171,25 +171,25 @@ var AttributesCodec = {
      *          where at most two of those may be empty.
      */
     getDecodedAttributesList : function(encodedAttributesList) {
-        var siteAttributesList = {};
+        var customOverrides = {};
 
         // JSON.parse will fail if the input string is empty;
         // catch any exceptions and leave it to the user to proceed or not
         // (Empty attributes will be returned in this case).
         try {
-            siteAttributesList = JSON.parse(encodedAttributesList);
+            customOverrides = JSON.parse(encodedAttributesList);
         } catch (e) {
             console.info(AUX.logCategory +
-                         "WARN Failed to parse siteAttributesList" +
+                         "WARN Failed to parse customOverrides" +
                          ", errorMsg=\"" + e + "\"");
             return {};
         }
 
-        console.debug(AUX.logCategory + "siteAttributesList=" +
-                      JSON.stringify(siteAttributesList,
+        console.debug(AUX.logCategory + "customOverrides=" +
+                      JSON.stringify(customOverrides,
                                      null,
                                      AUX.indentation));
-        return siteAttributesList;
+        return customOverrides;
     },
 
     /**
@@ -332,14 +332,14 @@ var AttributesCodec = {
      *          preference system. The format is just the
      *          JSON stringification of the object.
      * @param   {string} domain - The site domain.
-     * @param   {object} siteAttributesList - A JSON
+     * @param   {object} customOverrides - A JSON
      *          (domain, encodedAttributes)
      *          representing existing saved attributes
      *          in the browser's preference system.
      * @return  {string} The encoded list of attributes.
      */
     getEncodedAttributesList : function(domain,
-                                        siteAttributesList,
+                                        customOverrides,
                                         savedAttributes,
                                         proposedAttributes,
                                         attributes) {
@@ -353,16 +353,16 @@ var AttributesCodec = {
         }
 
         console.info(AUX.logCategory +
-                     "customAttributes=" + encodedAttributes);
+                     "customOverrides=" + encodedAttributes);
 
         // Create new, or update existing
-        siteAttributesList[domain] = encodedAttributes;
-        console.debug(AUX.logCategory + "Saving siteAttributesList=" +
-                      JSON.stringify(siteAttributesList,
+        customOverrides[domain] = encodedAttributes;
+        console.debug(AUX.logCategory + "Saving customOverrides=" +
+                      JSON.stringify(customOverrides,
                                      null,
                                      AUX.indentation));
 
-        var encodedAttributesList = JSON.stringify(siteAttributesList);
+        var encodedAttributesList = JSON.stringify(customOverrides);
         console.debug(AUX.logCategory +
                       "encodedAttributesList=" + encodedAttributesList);
         return encodedAttributesList;

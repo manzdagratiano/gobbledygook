@@ -2,7 +2,7 @@
 # @brief        GNU Makefile for the 'Gobbledygook' project.
 #               This Makefile facilitates the assembly of
 #               the various components of each target plugin from
-#               the source directories into the target directories.
+#               the source directories into the build directories.
 #
 # @author       Manjul Apratim (manjul.apratim@gmail.com)
 # @date         Dec 14, 2014
@@ -13,27 +13,33 @@
 # =========================================================================
 # VARIABLES
 
-# Locations for components
+# Source locations
 ROOT = ../..
+
 LIB = ./libs
 HTML = ./html
-ANDROID = $(HTML)/android
 ICON = ./gobbledygook/icon
-CHROME_GOBBLEDYGOOK = ./gobbledygook/chrome
-FIREFOX_GOBBLEDYGOOK = ./gobbledygook/firefox
-TARGET_DIR = ./target
 SJCL = $(ROOT)/sjcl
-SJCL_MEGALITH = $(TARGET_DIR)/sjcl_megalith.js
+
+CHROME = ./gobbledygook/chrome
+FIREFOX = ./gobbledygook/firefox
+
+# -------------------------------------------------------------------------
+# BUILD ARTEFACTS
+
+BUILDDIR = ./build
+BASEDIR = ./build/base
+SJCL_MEGALITH = $(BUILDDIR)/sjcl_megalith.js
 
 # -------------------------------------------------------------------------
 # BUILD TAG
 
-# Firefox addons are versioned as major[.minor[.patch[.build]]]
+# Firefox addons are versioned as major[.minor[.patch[build]]]
 # where "major" and "patch" are integers and "minor" and "build" are strings.
 # In our case:
-#	* the major is 1 (until we change it),
+#	* the major is 2 (until we change it),
 #	* the minor is the date YYYYMMDD
-#	* the patch is always 0 (no need based on the minor convention)
+#	* the patch is the build in our case, and
 #	* the build is the git commit SHA of the repository
 
 # Chrome extensions are versioned with x.y.w.z
@@ -42,29 +48,14 @@ SJCL_MEGALITH = $(TARGET_DIR)/sjcl_megalith.js
 # chrome also has a "version_name" attribute which is a string and is used for
 # display purposes, so we shall use the same string as Firefox.
 
-BUILDTAG = 1.`date +'%Y%m%d'`.0.`git rev-parse --short HEAD`
+MAJOR = 2
+BUILDTAG = $(MAJOR).`date +'%Y%m%d'`.`git rev-parse --short HEAD`
 BUILD_REGEX = "s/\@BUILDTAG/$(BUILDTAG)/"
 
 # We shall use the number of commits in the master branch
 # to create a version for the chrome extension.
-CHROME_VERSION = 1.`git rev-list --count HEAD`.0
+CHROME_VERSION = $(MAJOR).`git rev-list --count HEAD`.0
 CHROME_VERSION_REGEX = "s/\@BUILDVER/$(CHROME_VERSION)/"
-
-# -------------------------------------------------------------------------
-# MISCELLANEOUS
-
-# The chrome version of "gobbledygook.html" requires that
-# the JS scripts be included inside the html using the "script" directive
-# (unlike firefox, where passing down contentScriptFiles handles scope).
-# To maintain a common version of the HTML, for the chrome target,
-# we will directly inject the "script" directives into the HTML
-# once it is copied over to the target directory.
-CHROME_HTML_REGEX = "s/<\/footer>/<\/footer>\n\n"
-CHROME_HTML_REGEX += "   <script src=\"workhorse.js\"><\/script>\n"
-CHROME_HTML_REGEX += "   <script src=\"workhorsefunctions.js\"><\/script>\n"
-CHROME_HTML_REGEX += "   <script src=\"hasher.js\"><\/script>\n"
-CHROME_HTML_REGEX += "   <script src=\"keygen.js\"><\/script>\n"
-CHROME_HTML_REGEX += "   <script src=\"sjcl\/sjcl_megalith.js\"><\/script>/"
 
 # =========================================================================
 # TARGETS
@@ -72,48 +63,35 @@ CHROME_HTML_REGEX += "   <script src=\"sjcl\/sjcl_megalith.js\"><\/script>/"
 # Declare all targets to be 'PHONY',
 # since the recipes are merely a series of commands to be executed.
 
-.PHONY: all firefox chrome target-dir clean firefox-clean chrome-clean
+.PHONY: all firefox chrome builddir clean clean-firefox-build clean-chrome-build
 
 # -------------------------------------------------------------------------
 # 'BUILD' TARGETS
 
 all: chrome firefox
 
-chrome: TARGET = $(TARGET_DIR)/chrome
-chrome: chrome-clean sjcl
-	cp -r $(CHROME_GOBBLEDYGOOK) $(TARGET_DIR)/
+chrome: BUILD = $(BUILDDIR)/chrome
+chrome: clean-chrome-build $(SJCL_MEGALITH) base
+	cp -r $(CHROME) $(BUILDDIR)/
 	perl -p -i -e $(subst " ", ,$(BUILD_REGEX)) \
-		$(TARGET)/manifest.json
+		$(BUILD)/manifest.json
 	perl -p -i -e $(subst " ", ,$(CHROME_VERSION_REGEX)) \
-		$(TARGET)/manifest.json
-	cp $(ROOT)/README.md $(TARGET)/
-	cp $(HTML)/* $(TARGET)/
-	cp $(ANDROID)/* $(TARGET)/
-	perl -p -i -e $(subst " ", ,$(CHROME_HTML_REGEX)) \
-		$(TARGET)/gobbledygook.html
-	cp $(LIB)/{hasher,keygen,workhorsefunctions}.js $(TARGET)/
-	mkdir $(TARGET)/{icon,sjcl}
-	cp $(ICON)/icon-{16,19,32,38,48,64,128}.png $(TARGET)/icon/
-	cp -r $(SJCL)/README{,.md} $(TARGET)/sjcl/
-	cp $(SJCL_MEGALITH) $(TARGET)/sjcl/
+		$(BUILD)/manifest.json
+	mv $(BASEDIR)/* $(BUILD)/
 	echo "Success!"
 
-firefox: TARGET = $(TARGET_DIR)/firefox
-firefox: firefox-clean sjcl
-	cp -r $(FIREFOX_GOBBLEDYGOOK) ./target/
+firefox: BUILD = $(BUILDDIR)/firefox
+firefox: clean-firefox-build $(SJCL_MEGALITH) base
+	cp -r $(FIREFOX) ./build/
 	perl -p -i -e $(subst " ", ,$(BUILD_REGEX)) \
-		$(TARGET)/package.json
-	cp $(ROOT)/README.md $(TARGET)/
-	cp $(HTML)/*.html $(TARGET)/data/
-	cp $(ANDROID)/* $(TARGET)/data/
-	cp $(LIB)/{hasher,keygen,workhorsefunctions}.js $(TARGET)/data/
-	mkdir $(TARGET)/data/{icon,sjcl}
-	cp $(ICON)/icon-{16,32,48,64}.png $(TARGET)/data/icon/
-	cp -r $(SJCL)/README{,.md} $(TARGET)/data/sjcl/
-	cp $(SJCL_MEGALITH) $(TARGET)/data/sjcl/
+		$(BUILD)/manifest.json
+	mv $(BASEDIR)/* $(BUILD)/
 	echo "Success!"
 
-sjcl: target-dir
+# The target name is the same as the filename,
+# so that we can touch the file and inform "make"
+# that this step is complete.
+$(SJCL_MEGALITH): builddir
 	cat $(LIB)/sjcl_megalith_header.js \
 		$(SJCL)/core/sjcl.js \
 		$(SJCL)/core/aes.js \
@@ -129,19 +107,38 @@ sjcl: target-dir
 		$(SJCL)/core/pbkdf2.js \
 		$(SJCL)/core/random.js \
 		$(SJCL)/core/convenience.js > $(SJCL_MEGALITH)
+	touch $@
 
-target-dir:
-	if [ ! -d $(TARGET_DIR) ]; then mkdir $(TARGET_DIR); fi
+base: basedir
+	cp $(ROOT)/README.md $(BASEDIR)/
+	cp -r $(HTML)/{*.html,android} $(BASEDIR)/
+	cp $(LIB)/{eventpage,hasher,keygen,options,profile,workhorse,workhorsefunctions}.js $(BASEDIR)/
+	mkdir $(BASEDIR)/{icon,sjcl}
+	cp $(ICON)/icon-{16,19,32,38,48,64,128}.png $(BASEDIR)/icon/
+	cp -r $(SJCL)/README{,.md} $(BASEDIR)/sjcl/
+	cp $(SJCL_MEGALITH) $(BASEDIR)/sjcl/
+
+builddir:
+	if [ ! -d $(BUILDDIR) ]; then mkdir $(BUILDDIR); fi
+
+basedir:
+	if [ ! -d $(BASEDIR) ]; then mkdir $(BASEDIR); fi
 
 # -------------------------------------------------------------------------
 # 'CLEAN' TARGETS
 
-clean: firefox-clean chrome-clean
+clean: clean-firefox-build clean-chrome-build
 
-chrome-clean: TARGET = $(TARGET_DIR)/chrome
-chrome-clean:
-	if [ -d $(TARGET) ]; then rm -r $(TARGET); fi
+clean-chrome-build: BUILD = $(BUILDDIR)/chrome
+clean-chrome-build: clean-base clean-sjcl-megalith
+	if [ -d $(BUILD) ]; then rm -r $(BUILD); fi
 
-firefox-clean: TARGET = $(TARGET_DIR)/firefox
-firefox-clean:
-	if [ -d $(TARGET) ]; then rm -r $(TARGET); fi
+clean-firefox-build: BUILD = $(BUILDDIR)/firefox
+clean-firefox-build: clean-base clean-sjcl-megalith
+	if [ -d $(BUILD) ]; then rm -r $(BUILD); fi
+
+clean-base:
+	if [ -d $(BASEDIR) ]; then rm -r $(BASEDIR); fi
+
+clean-sjcl-megalith:
+	rm -f $(SJCL_MEGALITH)

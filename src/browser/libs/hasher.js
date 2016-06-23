@@ -24,7 +24,7 @@
  * @namespace
  * @summary A global namespace for miscellaneous "environment variables".
  */
-var HASHER_ENV      = {
+var HASHER          = {
 
     /**
      * @summary The actionable events for interacting with the calling code.
@@ -49,7 +49,7 @@ var HASHER_ENV      = {
 
 // Avoid "ReferenceError: importScripts is not defined"
 // when hasher.js is loaded by the main addon code as well.
-if (HASHER_ENV.types.FUNCTION === typeof(importScripts)) {
+if (HASHER.types.FUNCTION === typeof(importScripts)) {
     importScripts("./sjcl/sjcl_megalith.js");
 }
 
@@ -159,7 +159,7 @@ self.onmessage = function(oEvent) {
     var eventData = oEvent.data;
 
     // Check if this is a message to close self.
-    if (eventData.hasOwnProperty(HASHER_ENV.events.DONE)) {
+    if (eventData.hasOwnProperty(HASHER.events.DONE)) {
         self.postMessage({msg : "Terminating self..."})
         self.close();
         return;
@@ -182,6 +182,6 @@ self.onmessage = function(oEvent) {
                                         eventData.attributes.truncation);
     self.postMessage({
         password        : passwdStr,
-        done            : HASHER_ENV.events.DONE
+        done            : HASHER.events.DONE
     });
 };

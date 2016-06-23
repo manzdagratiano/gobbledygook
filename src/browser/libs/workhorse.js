@@ -113,10 +113,10 @@ document.addEventListener(ENV.events.DOM_CONTENT_LOADED,
         var url = activeTab.url;
         console.info(ENV.logCategory + "url=" + url);
 
-        chrome.storage.sync.get({
+        Quirks.getSyncMethod().get({
             saltKey             : "",
             defaultIterations   : ENV.defaultIterations,
-            siteAttributesList  : ""
+            customOverrides     : ""
         }, function(items) {
             if (chrome.runtime.lastError) {
                 console.error(ENV.logCategory +
@@ -131,7 +131,7 @@ document.addEventListener(ENV.events.DOM_CONTENT_LOADED,
                 url                         : url,
                 saltKey                     : items.saltKey,
                 defaultIterations           : items.defaultIterations,
-                encodedAttributesList       : items.siteAttributesList
+                encodedAttributesList       : items.customOverrides
             };
 
             if (ENV.types.OBJECT === typeof(DOM)) {
@@ -150,7 +150,7 @@ document.addEventListener(ENV.events.DOM_CONTENT_LOADED,
  */
 function onGenerateSaltKey(key) {
     console.info(ENV.logCategory + "Saving salt key to the sync system...");
-    chrome.storage.sync.set({
+    Quirks.getSyncMethod().set({
         saltKey             : key
     }, function() {
         // Check if the options were successfully saved
@@ -210,8 +210,8 @@ function finalize(doneData) {
     // Save the attributes list string, if non-empty, to sync.
     if ("" !== doneData.attributesListString) {
         console.info(ENV.logCategory + "Saving site attributes...");
-        chrome.storage.sync.set({
-            siteAttributesList  : doneData.attributesListString
+        Quirks.getSyncMethod().set({
+            customOverrides : doneData.attributesListString
         }, function() {
             // Check if the options were successfully saved.
             var success = false;
