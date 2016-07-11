@@ -1,0 +1,23 @@
+# Swap Files #
+# ########## #
+
+*.swp
+*~
+
+# gobbledygook browser "target" #
+# ############################# #
+src/browser/target/
+
+# Android build #
+# ############# #
+src/android/*/bin
+src/android/*/gen
+src/android/build
+
+# Java libraries #
+# ############## #
+src/android/libs/*.jar
+
+# Gradle Artefacts #
+# ################ #
+src/android/.gradle
