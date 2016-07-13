@@ -28,9 +28,9 @@
          in the sense it is not editable like an EditTextPreference
          (its value is modified by other interfaces, just not directly). -->
     <Preference
-        android:key="@string/pref_siteAttributesList_key"
-        android:title="@string/pref_siteAttributesList_name"
-        android:summary="@string/pref_siteAttributesList_summary"
+        android:key="@string/pref_customOverrides_key"
+        android:title="@string/pref_customOverrides_name"
+        android:summary="@string/pref_customOverrides_summary"
         android:editable="false"
         android:ellipsize="end"
         />

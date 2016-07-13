@@ -249,27 +249,27 @@ public class PrefsFragment extends PreferenceFragment
              * @return  
              */
             public void
-            configureCustomAttributes(SharedPreferences sharedPreferences) {
-                Log.i(LOG_CATEGORY, "configureCustomAttributes(): " +
+            configureCustomOverrides(SharedPreferences sharedPreferences) {
+                Log.i(LOG_CATEGORY, "configureCustomOverrides(): " +
                       "Setting value...");
 
-                Preference customAttributesPref =
+                Preference customOverridesPref =
                     (Preference)findPreference(
-                            getString(R.string.pref_siteAttributesList_key));
+                            getString(R.string.pref_customOverrides_key));
 
                 // Set the summary with the value
-                String customAttributes =
+                String customOverrides =
                     sharedPreferences.getString(
-                            getString(R.string.pref_siteAttributesList_key), "");
-                if (customAttributes.isEmpty()) {
-                    Log.i(LOG_CATEGORY, "configureCustomAttributes(): " +
+                            getString(R.string.pref_customOverrides_key), "");
+                if (customOverrides.isEmpty()) {
+                    Log.i(LOG_CATEGORY, "configureCustomOverrides(): " +
                           "The list of custom attributes is empty");
-                    customAttributesPref.setSummary(EMPTY_CUSTOM_ATTRS_INDICATOR);
+                    customOverridesPref.setSummary(EMPTY_CUSTOM_ATTRS_INDICATOR);
                 } else {
-                    Log.i(LOG_CATEGORY, "configureCustomAttributes(): " +
-                          "Found non-empty customAttributes='" +
-                          customAttributes + "'");
-                    customAttributesPref.setSummary(customAttributes);
+                    Log.i(LOG_CATEGORY, "configureCustomOverrides(): " +
+                          "Found non-empty customOverrides='" +
+                          customOverrides + "'");
+                    customOverridesPref.setSummary(customOverrides);
                 }
             }
 
@@ -284,7 +284,7 @@ public class PrefsFragment extends PreferenceFragment
 
         configurator.configureSaltKey(sharedPreferences);
         configurator.configureDefaultIterations(sharedPreferences);
-        configurator.configureCustomAttributes(sharedPreferences);
+        configurator.configureCustomOverrides(sharedPreferences);
 
         // The OnSharedPreferenceChangedListener for all Preference changes
         Log.i(LOG_CATEGORY, "configurePreferenceElements(): "+

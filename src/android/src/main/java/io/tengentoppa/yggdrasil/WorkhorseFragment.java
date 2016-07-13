@@ -84,7 +84,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
         this.m_url = "";
         this.m_savedAttributes = null;
         this.m_proposedAttributes = null;
-        this.m_siteAttributesList = null;
+        this.m_customOverrides = null;
 
         // Get the input arguments
         Bundle args = this.getArguments();
@@ -452,16 +452,16 @@ public abstract class WorkhorseFragment extends DialogFragment {
         // ----------------------------------------------------------------
         // Saved and Proposed Attributes
 
-        // Obtain the decoded siteAttributesList
+        // Obtain the decoded customOverrides
         // We'll need it later on
-        JSONObject siteAttributesList =
+        JSONObject customOverrides =
             codec.getDecodedAttributesList(
-                    ingredients.encodedAttributesList());
+                    ingredients.encodedOverrides());
 
         // Obtain the saved attributes for this domain, if any
         Attributes savedAttributes =
             codec.getSavedAttributes(domain,
-                                     siteAttributesList);
+                                     customOverrides);
         Log.i(LOG_CATEGORY,
               "savedAttributes='" + codec.encode(savedAttributes) + "'");
 
@@ -484,14 +484,14 @@ public abstract class WorkhorseFragment extends DialogFragment {
         configurator.configureGenerateButton();
 
         // Save the saved and proposed attributes,
-        // as well as the siteAttributes list,
+        // as well as the customOverrides list,
         // in the class for recalling later;
         // need to save state here since the next call will be
         // the invocation of a handler via user interaction
         this.m_saltKey = ingredients.saltKey();
         this.m_savedAttributes = savedAttributes;
         this.m_proposedAttributes = proposedAttributes;
-        this.m_siteAttributesList = siteAttributesList;
+        this.m_customOverrides = customOverrides;
     }
 
     /**
@@ -522,7 +522,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
         // The salt key 
         String saltKey = "";
         Integer defaultIterations = Attributes.DEFAULT_ITERATIONS;
-        String encodedAttributesList = "";
+        String encodedOverrides = "";
         // Catch all exceptions when reading from SharedPreferences
         try {
             saltKey = sharedPrefs.getString(
@@ -542,9 +542,9 @@ public abstract class WorkhorseFragment extends DialogFragment {
             if (!defaultIterationsStr.isEmpty()) {
                 defaultIterations = Integer.parseInt(defaultIterationsStr);
             }
-            // The encoded siteAttributesList
-            encodedAttributesList = sharedPrefs.getString(
-                    getString(R.string.pref_siteAttributesList_key),
+            // The encoded customOverrides
+            encodedOverrides = sharedPrefs.getString(
+                    getString(R.string.pref_customOverrides_key),
                               "");
         } catch (Exception e) {
             Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
@@ -553,7 +553,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
 
         Ingredients ingredients = new Ingredients(saltKey,
                                                   defaultIterations,
-                                                  encodedAttributesList);
+                                                  encodedOverrides);
         return ingredients;
     }
 
@@ -755,15 +755,15 @@ public abstract class WorkhorseFragment extends DialogFragment {
             return;
         }
 
-        // Add this encoded string to the siteAttributesList
+        // Add this encoded string to the customOverrides
         // which, upto this point, could have been null
-        if (null == m_siteAttributesList) {
-            m_siteAttributesList = new JSONObject();
+        if (null == m_customOverrides) {
+            m_customOverrides = new JSONObject();
         }
 
         // Add new or update existing
         try {
-            m_siteAttributesList.put(attributes.domain(),
+            m_customOverrides.put(attributes.domain(),
                                      encodedAttributes);
         } catch (JSONException e) {
             Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
@@ -774,10 +774,10 @@ public abstract class WorkhorseFragment extends DialogFragment {
         }
 
         Log.i(LOG_CATEGORY, "checkAndSaveAttributes(): " +
-              "new siteAttributesList=" + m_siteAttributesList.toString());
+              "new customOverrides=" + m_customOverrides.toString());
 
         // Stringify the JSON for saving in the default SharedPreferences
-        String encodedAttributesList = m_siteAttributesList.toString();
+        String encodedOverrides = m_customOverrides.toString();
 
         // Save the stringified JSON to SharedPreferences
         SharedPreferences preferences =
@@ -785,8 +785,8 @@ public abstract class WorkhorseFragment extends DialogFragment {
                                     getActivity().getApplicationContext());
         SharedPreferences.Editor preferenceEditor = preferences.edit();
         preferenceEditor.putString(
-                getString(R.string.pref_siteAttributesList_key),
-                encodedAttributesList);
+                getString(R.string.pref_customOverrides_key),
+                encodedOverrides);
         preferenceEditor.commit();
         // The OnSharedPreferenceChangedHandler will be called
 
@@ -846,15 +846,15 @@ public abstract class WorkhorseFragment extends DialogFragment {
         public Ingredients() {
             m_saltKey = "";
             m_defaultIterations = Attributes.DEFAULT_ITERATIONS;
-            m_encodedAttributesList = "";
+            m_encodedOverrides = "";
         }
 
         public Ingredients(String saltKey,
                            Integer defaultIterations,
-                           String encodedAttributesList) {
+                           String encodedOverrides) {
             m_saltKey = saltKey;
             m_defaultIterations = defaultIterations;
-            m_encodedAttributesList = encodedAttributesList;
+            m_encodedOverrides = encodedOverrides;
         }
 
         // ================================================================
@@ -868,8 +868,8 @@ public abstract class WorkhorseFragment extends DialogFragment {
             return m_defaultIterations;
         }
 
-        public final String encodedAttributesList() {
-            return m_encodedAttributesList;
+        public final String encodedOverrides() {
+            return m_encodedOverrides;
         }
 
         /**
@@ -886,8 +886,8 @@ public abstract class WorkhorseFragment extends DialogFragment {
                     m_saltKey + "', " +
                     "defaultIterations=" +
                     m_defaultIterations.toString() + ", " +
-                    "siteAttributesList='" +
-                    m_encodedAttributesList + "' ]");
+                    "customOverrides='" +
+                    m_encodedOverrides + "' ]");
         }
 
         // ================================================================
@@ -901,8 +901,8 @@ public abstract class WorkhorseFragment extends DialogFragment {
             m_defaultIterations = defaultIterations;
         }
 
-        public void setEncodedAttributesList(String encodedAttributesList) {
-            m_encodedAttributesList = encodedAttributesList;
+        public void setEncodedAttributesList(String encodedOverrides) {
+            m_encodedOverrides = encodedOverrides;
         }
 
         // ================================================================
@@ -910,7 +910,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
 
         private String  m_saltKey;
         private Integer m_defaultIterations;
-        private String  m_encodedAttributesList;
+        private String  m_encodedOverrides;
     }
 
     /**
@@ -1089,32 +1089,32 @@ public abstract class WorkhorseFragment extends DialogFragment {
                 return attributes;
             }
 
-            String[] siteAttributesArray =
+            String[] customOverridesArray =
                 encodedAttributes.split(AttributesCodec.DELIMITER);
             // Sanity check for length of the split array
-            if (3 != siteAttributesArray.length) {
+            if (3 != customOverridesArray.length) {
                 Log.e(LOG_CATEGORY, "ERROR: Malformed Attributes! " +
                         "(Expected <domain|iterations|truncation>)");
                 return attributes;
             }
 
-            if (siteAttributesArray[0] != "") {
-                attributes.setDomain(siteAttributesArray[0]);
+            if (customOverridesArray[0] != "") {
+                attributes.setDomain(customOverridesArray[0]);
             }
-            if (siteAttributesArray[1] != "") {
+            if (customOverridesArray[1] != "") {
                 try {
                     attributes.setIterations(
-                            Integer.parseInt(siteAttributesArray[1]));
+                            Integer.parseInt(customOverridesArray[1]));
                 } catch (ClassCastException e) {
                     Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
                     e.printStackTrace();
                     attributes.setIterations(Attributes.DEFAULT_ITERATIONS);
                 }
             }
-            if (siteAttributesArray[2] != "") {
+            if (customOverridesArray[2] != "") {
                 try {
                     attributes.setTruncation(
-                            Integer.parseInt(siteAttributesArray[2]));
+                            Integer.parseInt(customOverridesArray[2]));
                 } catch (ClassCastException e) {
                     Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
                     e.printStackTrace();
@@ -1128,30 +1128,29 @@ public abstract class WorkhorseFragment extends DialogFragment {
         /**
          * @brief   Function to decode the saved JSON string of custom
          *          website attributes
-         * @return  The decoded JSONObject if the encodedAttributesList
+         * @return  The decoded JSONObject if the encodedOverrides
          *          was a valid JSON string, else null
          */
         public JSONObject
-        getDecodedAttributesList(final String encodedAttributesList) {
+        getDecodedAttributesList(final String encodedOverrides) {
             Log.i(LOG_CATEGORY, "Decoding saved attributes list...");
 
-            JSONObject siteAttributesList = null;
+            JSONObject customOverrides = null;
 
             // Sanity check - short-circuit evaluation
-            if (null != encodedAttributesList &&
-                !encodedAttributesList.isEmpty()) {
+            if (null != encodedOverrides &&
+                !encodedOverrides.isEmpty()) {
                 try {
-                    siteAttributesList =
-                        new JSONObject(encodedAttributesList);
-                    Log.d(LOG_CATEGORY, "siteAttributesList=" +
-                          siteAttributesList.toString());
+                    customOverrides = new JSONObject(encodedOverrides);
+                    Log.d(LOG_CATEGORY, "customOverrides=" +
+                          customOverrides.toString());
                 } catch (JSONException e) {
                     Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
                     e.printStackTrace();
                 }
             }
 
-            return siteAttributesList;
+            return customOverrides;
         }
 
         /**
@@ -1161,15 +1160,15 @@ public abstract class WorkhorseFragment extends DialogFragment {
          */
         public Attributes
         getSavedAttributes(String domain,
-                           JSONObject siteAttributesList) {
+                           JSONObject customOverrides) {
             Log.i(LOG_CATEGORY, "Fetching saved attributes...");
 
             String encodedAttributes = null;
 
-            if (null != siteAttributesList) {
+            if (null != customOverrides) {
                 try {
-                    if (siteAttributesList.has(domain)) {
-                        encodedAttributes = siteAttributesList.getString(domain);
+                    if (customOverrides.has(domain)) {
+                        encodedAttributes = customOverrides.getString(domain);
                     }
                 } catch (JSONException e) {
                     Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
@@ -1259,8 +1258,8 @@ public abstract class WorkhorseFragment extends DialogFragment {
                                                   * further unmodified
                                                   * by the user
                                                   */
-    protected JSONObject m_siteAttributesList;  /** @brief The saved JSON
+    protected JSONObject m_customOverrides;     /** @brief The saved JSON
                                                   * of custom
-                                                  * website attributes
+                                                  * website overrides
                                                   */
 }

@@ -88,12 +88,21 @@
         10000
     </string>
 
-    <!-- Custom Website Attributes List -->
-    <string name="pref_siteAttributesList_key">siteAttributesList</string>
-    <string name="pref_siteAttributesList_name">Custom Overrides</string>
-    <string name="pref_siteAttributesList_summary">
+    <!-- Custom Website Overrides -->
+    <string name="pref_customOverrides_key">customOverrides</string>
+    <string name="pref_customOverrides_name">Custom Overrides</string>
+    <string name="pref_customOverrides_summary">
         Overridden website attributes (use sparingly!)
     </string>
+
+    <!-- ###### -->
+    <!-- Schema -->
+    <!-- ###### -->
+
+    <string name="schema_default_profile_name">root</string>
+    <string name="schema_profiles_key">profiles</string>
+    <string name="schema_profile_name_key">name</string>
+    <string name="schema_profile_settings_key">settings</string>
 
     <!-- ##### -->
     <!-- About -->

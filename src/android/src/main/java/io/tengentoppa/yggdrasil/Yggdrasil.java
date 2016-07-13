@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 
 // JSON
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -455,38 +456,13 @@ public abstract class Yggdrasil extends AppCompatActivity
         Log.i(LOG_CATEGORY, "exportSettings() handler called...");
 
         // Create a JSON object from the SharedPreferences
-        JSONObject outputPrefs = new JSONObject();
-        SharedPreferences sharedPrefs =
-            PreferenceManager.getDefaultSharedPreferences(
-                                    this.getApplicationContext());
-
-        try {
-            // Salt key; blank on empty retrieval
-            outputPrefs.put(
-                    getString(R.string.pref_saltKey_key),
-                    sharedPrefs.getString(
-                        getString(R.string.pref_saltKey_key),
-                        ""));
-            // Default iterations; the iterations "hint"
-            // (which was the default value) on empty retrieval
-            outputPrefs.put(
-                    getString(R.string.pref_defaultIterations_key),
-                    sharedPrefs.getString(
-                        getString(R.string.pref_defaultIterations_key),
-                        getString(R.string.hint_iterations)));
-            // Custom website attribute list; blank on empty retrieval
-            outputPrefs.put(
-                    getString(R.string.pref_siteAttributesList_key),
-                    sharedPrefs.getString(
-                        getString(R.string.pref_siteAttributesList_key),
-                        ""));
-        } catch (JSONException e) {
-            Log.e(LOG_CATEGORY, "exportSettings() ERROR: " +
-                  "Caught " + e);
+        JSONObject outputPrefs = constructSchema();
+        if (null == outputPrefs) {
+            Log.e(LOG_CATEGORY, "exportSettings(): " +
+                  "ERROR: Schema.Construction.FAILURE");
             Toast.makeText(this.getApplicationContext(),
                            EXPORT_SETTINGS_ERROR,
                            Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
             return;
         }
 
@@ -612,6 +588,71 @@ public abstract class Yggdrasil extends AppCompatActivity
         // The callback "onActivityResult" will be called
     }
 
+    // ====================================================================
+    // PRIVATE METHODS
+
+    /**
+     * @brief   A method to construct a schema object for exporting
+     *          to a file.
+     * @return  {JSONObject} The constructed schema.
+     */
+    private JSONObject constructSchema() {
+        JSONObject outputSchema = new JSONObject();
+        // Obtain a handle to the Shared Preferences in the system.
+        SharedPreferences sharedPrefs =
+            PreferenceManager.getDefaultSharedPreferences(
+                                    this.getApplicationContext());
+
+        try {
+            // Construct the preferences for the profile
+            JSONObject profileSettings = new JSONObject();
+            // Salt key; blank on empty retrieval
+            profileSettings.put(
+                    getString(R.string.pref_saltKey_key),
+                    sharedPrefs.getString(
+                        getString(R.string.pref_saltKey_key),
+                        ""));
+            // Default iterations; the iterations "hint"
+            // (which was the default value) on empty retrieval
+            profileSettings.put(
+                    getString(R.string.pref_defaultIterations_key),
+                    sharedPrefs.getString(
+                        getString(R.string.pref_defaultIterations_key),
+                        getString(R.string.hint_iterations)));
+            // Custom website attribute list; blank on empty retrieval
+            profileSettings.put(
+                    getString(R.string.pref_customOverrides_key),
+                    sharedPrefs.getString(
+                        getString(R.string.pref_customOverrides_key),
+                        ""));
+
+            // Construct the profile itself.
+            JSONObject defaultProfile = new JSONObject();
+            defaultProfile.put(
+                    getString(R.string.schema_profile_name_key),
+                    getString(R.string.schema_default_profile_name));
+            defaultProfile.put(
+                    getString(R.string.schema_profile_settings_key),
+                    profileSettings);
+
+            // Put the profile into an array
+            JSONArray profiles = new JSONArray();
+            profiles.put(defaultProfile);
+
+            // Put the array into the profiles
+            outputSchema.put(
+                    getString(R.string.schema_profiles_key),
+                    profiles);
+
+            return outputSchema;
+        } catch (JSONException e) {
+            Log.e(LOG_CATEGORY, "exportSettings() ERROR: " +
+                  "Caught " + e);
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     /**
      * @brief   
      * @return  
@@ -656,8 +697,17 @@ public abstract class Yggdrasil extends AppCompatActivity
 
         // Parse the JSON string and set the preferences
         try {
-            JSONObject inputPrefs =
+            JSONObject schema =
                 new JSONObject(preferencesFileBuffer.toString());
+            JSONObject inputPrefs =
+                this.validateAndReturnPreferences(schema);
+
+            if (null != inputPrefs) {
+                Toast.makeText(this.getApplicationContext(),
+                               IMPORT_SETTINGS_ERROR,
+                               Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             // Get a handle to the default shared preferences
             // and the corresponding editor
@@ -675,14 +725,14 @@ public abstract class Yggdrasil extends AppCompatActivity
                     inputPrefs.getString(
                         getString(R.string.pref_defaultIterations_key)));
             preferenceEditor.putString(
-                    getString(R.string.pref_siteAttributesList_key),
+                    getString(R.string.pref_customOverrides_key),
                     inputPrefs.getString(
-                        getString(R.string.pref_siteAttributesList_key)));
+                        getString(R.string.pref_customOverrides_key)));
 
             // Commit the changes
             preferenceEditor.commit();
         } catch (JSONException e) {
-            Log.e(LOG_CATEGORY, "ERROR: Malformed JSON! " +
+            Log.e(LOG_CATEGORY, "ERROR: JSON.Malformed, " +
                   "JSON='" + preferencesFileBuffer.toString() + "', " +
                   "Caught " + e);
             Toast.makeText(this.getApplicationContext(),
@@ -695,6 +745,59 @@ public abstract class Yggdrasil extends AppCompatActivity
         Toast.makeText(this.getApplicationContext(),
                        IMPORT_SETTINGS_MESSAGE,
                        Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * @brief   A method to validate if an input schema object
+     *          is valid.
+     * @param   {JSONObject} A schema object.
+     * @return  {JSONObject} The preferences section of the schema
+     */
+    private JSONObject validateAndReturnPreferences(final JSONObject schema) {
+        try {
+            JSONArray profiles = schema.getJSONArray(
+                    getString(R.string.schema_profiles_key));
+            if (1 != profiles.length()) {
+                Log.e(LOG_CATEGORY, "ERROR: JSON.Malformed, " +
+                      "Too.Many.Profiles, Time.Travel.Anomaly, " +
+                      "JSON='" + schema);
+                return null;
+            }
+            JSONObject defaultProfile = (JSONObject)(profiles.get(0));
+
+            if (!(defaultProfile.has(
+                            getString(R.string.schema_profile_name_key)) &&
+                  defaultProfile.has(
+                            getString(R.string.schema_profile_settings_key)) &&
+                  (2 == defaultProfile.length()))) {
+                Log.e(LOG_CATEGORY, "ERROR: JSON.Malformed, " +
+                      "Bad.Profile, " +
+                      "JSON='" + schema);
+                return null;
+            }
+            JSONObject profileSettings = (JSONObject)defaultProfile.get(
+                    getString(R.string.schema_profile_settings_key));
+
+            if (!(profileSettings.has(
+                        getString(R.string.pref_saltKey_key)) &&
+                  profileSettings.has(
+                        getString(R.string.pref_defaultIterations_key)) &&
+                  profileSettings.has(
+                        getString(R.string.pref_customOverrides_key)) &&
+                  (3 == profileSettings.length()))) {
+                Log.e(LOG_CATEGORY, "ERROR: JSON.Malformed, " +
+                      "Bad.Profile.Settings, " +
+                      "JSON='" + schema);
+                return null;
+            }
+
+            return profileSettings;
+        } catch (JSONException e) {
+            Log.e(LOG_CATEGORY, "ERROR: JSON.Malformed, " +
+                  "JSON='" + schema);
+            e.printStackTrace();
+            return null;
+        }
     }
 
     // --------------------------------------------------------------------
