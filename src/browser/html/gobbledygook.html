@@ -125,7 +125,7 @@
     <!-- The user's actual password -->
     <label for="password" class="inputLabel">Password</label>
     <input type="password" name="password" id="password" class="textBox"
-    title="The One True Password, which only you will ever know"/>
+    title="The One True Password, which only you will ever know."/>
 
     <br/>
     <!-- The generated proxy password -->
@@ -133,10 +133,10 @@
         Proxy Password
     </label>
     <input type="password" name="hash" id="hash" class="textBox"
-    title="The generated proxy password will appear here (masked)"/>
+    title="The generated proxy password will appear here (masked)."/>
 
     <input type="checkbox" name="showHash" id="showHash"
-    title="Use this checkbox to toggle the visibility of the generated password"/>
+    title="Toggle the visibility of the generated password."/>
     <label for="showHash" class="actionLabel">
         Show
     </label>
@@ -147,7 +147,7 @@
           not edit on vanilla runs. This section is collapsed and
           can be expanded on demand. -->
     <input type="checkbox" name="showAdvanced" id="showAdvanced"
-    title="Use this checkbox to toggle advanced configuration visibility"/>
+    title="Toggle advanced configuration visibility."/>
     <label for="showAdvanced" class="actionLabel">
         Advanced...
     </label>
@@ -158,7 +158,7 @@
              set equal to the # of defaultIterations by default -->
         <label for="iterations" class="inputLabel">Iterations</label>
         <input type="number" name="iterations" id="iterations" min="1"
-        title="The 'work factor'; more is better, with a performance tradeoff. Change affects this run only"
+        title="The 'work factor'; more is better, with a performance tradeoff. Change affects this run only."
         class="numberBox"/>
 
         <br/>
@@ -168,13 +168,22 @@
         title="Check this box if you want to truncate the generated password"/>
         <label for="truncate" class="inputLabel">Truncate</label>
         <input type="number" name="truncation" id="truncation" min="-1"
-        title="The number of characters to truncate the generated password to"
+        title="The number of characters to truncate the generated password to."
         class="numberBox"/>
 
         <br/>
+        <!-- Whether to not use special characters. -->
+        <input type="checkbox" name="noSpecialChars" id="noSpecialChars"
+        title="Do you not want special characters?"/>
+        <label for="noSpecialChars" class="attributesLabel">
+            No special characters
+        </label>
+
+        <br/>
+        <br/>
         <!-- Whether to save an overridden configuration or not. -->
         <input type="checkbox" name="saveAttributes" id="saveAttributes"
-        title="Check this box if you need your custom changes for future use"/>
+        title="Do you wish to save your custom changes for future use?"/>
         <label for="saveAttributes" class="attributesLabel">
             Save custom changes
         </label>

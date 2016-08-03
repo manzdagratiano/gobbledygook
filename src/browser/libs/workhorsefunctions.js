@@ -117,14 +117,19 @@ var AUX                             = {
  *          (default null).
  * @param   {int} truncation - The number of characters to truncate to
  *          (default Attributes.NO_TRUNCATION).
+ * @param   {boolean} specialCharsFlag - Whether to allow special characters
+ *          (represented as (0, 1) for encoding/decoding purposes;
+ *          default 1).
  */
-var Attributes = function(domain, iterations, truncation) {
+var Attributes = function(domain, iterations, truncation, specialCharsFlag) {
     this.domain     = (AUX.types.UNDEFINED === typeof(domain) ?
                        null : domain);
     this.iterations = (AUX.types.UNDEFINED === typeof(iterations) ?
                        null : iterations);
     this.truncation = (AUX.types.UNDEFINED === typeof(truncation) ?
                        Attributes.NO_TRUNCATION : truncation);
+    this.specialCharsFlag = (AUX.types.UNDEFINED === typeof(specialCharsFlag) ?
+                       1 : specialCharsFlag);
 };
 
 /**
@@ -142,7 +147,8 @@ Attributes.NO_TRUNCATION = -1;
 Attributes.prototype.attributesExist = function() {
     return (null !== this.domain &&
             null !== this.iterations &&
-            Attributes.NO_TRUNCATION !== this.truncation);
+            Attributes.NO_TRUNCATION !== this.truncation &&
+            1 !== this.specialCharsFlag);
 };
 
 // ------------------------------------------------------------------------
@@ -155,13 +161,13 @@ Attributes.prototype.attributesExist = function() {
  */
 var AttributesCodec = {
 
-    delimiter : "|",
+    DELIMITER : "|",
 
     /**
      * @summary A function to parse the string representing
      *          the list of site attributes stored in the browser
      *          preferences system.
-     * @param   {string} encodedAttributesList - The encoded string
+     * @param   {string} encodedOverridesList - The encoded string
      *          containing a stringified version
      *          of the JSON object representing
      *          the (domain, encoded Attributes) pair.
@@ -170,14 +176,17 @@ var AttributesCodec = {
      *          Values are of the form <salt|iterations|truncation>,
      *          where at most two of those may be empty.
      */
-    getDecodedAttributesList : function(encodedAttributesList) {
+    getDecodedOverridesList : function(encodedOverridesList) {
+        console.debug(AUX.logCategory +
+                      "encodedOverridesList=" + encodedOverridesList);
+
         var customOverrides = {};
 
         // JSON.parse will fail if the input string is empty;
         // catch any exceptions and leave it to the user to proceed or not
         // (Empty attributes will be returned in this case).
         try {
-            customOverrides = JSON.parse(encodedAttributesList);
+            customOverrides = JSON.parse(encodedOverridesList);
         } catch (e) {
             console.info(AUX.logCategory +
                          "WARN Failed to parse customOverrides" +
@@ -195,7 +204,7 @@ var AttributesCodec = {
     /**
      * @summary A function to parse the attributes string for a domain
      *          into an object of the Attributes class.
-     * @param   {string} encodedAttributes - The encoded attribute string,
+     * @param   {string} encodedOverrides - The encoded attribute string,
      *          of the form <salt|iterations|truncation>,
      *          where any number of the three may be empty.
      *          This format is chosen to eliminate storing redundant
@@ -205,34 +214,39 @@ var AttributesCodec = {
      *          If decoding fails,
      *          a default initialized object is returned.
      */
-    getDecodedAttributes : function(encodedAttributes) {
+    getDecodedOverrides : function(encodedOverrides) {
         // Create a "default-initialized" object of type "Attributes"
         var attributes = new Attributes();
 
-        if (AUX.types.UNDEFINED !== typeof(encodedAttributes)) {
-            var siteAttributesArray =
-                encodedAttributes.split(AttributesCodec.delimiter);
+        if (AUX.types.UNDEFINED !== typeof(encodedOverrides)) {
+            var customOverrides =
+                encodedOverrides.split(AttributesCodec.DELIMITER);
             // Sanity check
-            if (3 !== siteAttributesArray.length) {
+            if (4 !== customOverrides.length) {
                 console.error(AUX.logCategory +
-                              "ERROR: Malformed Attributes! " +
-                              "(Expected <salt|iterations|truncation>)");
+                              "ERROR: Malformed Attributes! Expected "+
+                              "<salt|iterations|truncation|specialCharsFlag>");
                 return attributes;
             }
 
             // Check if the salt is non-empty
-            if (siteAttributesArray[0] !== "") {
-                attributes.domain = siteAttributesArray[0];
+            if (customOverrides[0] !== "") {
+                attributes.domain = customOverrides[0];
             }
 
             // Check if the number of iterations is non-empty
-            if (siteAttributesArray[1] !== "") {
-                attributes.iterations = parseInt(siteAttributesArray[1]);
+            if (customOverrides[1] !== "") {
+                attributes.iterations = parseInt(customOverrides[1]);
             }
 
             // Check if the truncation parameter is non-empty
-            if (siteAttributesArray[2] !== "") {
-                attributes.truncation = parseInt(siteAttributesArray[2]);
+            if (customOverrides[2] !== "") {
+                attributes.truncation = parseInt(customOverrides[2]);
+            }
+
+            // Check if special characters were disabled
+            if (customOverrides[3] !== "") {
+                attributes.specialCharsFlag = 0;
             }
         }
 
@@ -244,16 +258,16 @@ var AttributesCodec = {
      *          corresonding to a site domain.
      * @param   {string} domain - The site domain to obtain
      *          the saved attributes for.
-     * @param   {object} savedAttributesList - The JSON object containing
-     *          (domain, encoded Attributes) pairs.
-     * @return  {Attributes} The saved attributes. If no saved attributes
+     * @param   {object} savedOverridesList - The JSON object containing
+     *          (domain, encodedOverrides) pairs.
+     * @return  {Attributes} The saved overrides. If no saved overrides
      *          exist, a default initialized object is returned.
      */
-    getSavedAttributes : function(domain, savedAttributesList) {
-        var savedAttributes =
-            (savedAttributesList.hasOwnProperty(domain) ?
-             savedAttributesList[domain] : undefined);
-        return this.getDecodedAttributes(savedAttributes);
+    getSavedOverrides : function(domain, savedOverridesList) {
+        var savedOverrides =
+            (savedOverridesList.hasOwnProperty(domain) ?
+             savedOverridesList[domain] : undefined);
+        return this.getDecodedOverrides(savedOverrides);
     },
 
     /**
@@ -265,7 +279,7 @@ var AttributesCodec = {
      *          overridden attribute is reset to the default value, it
      *          will still be saved, since this module can only compare
      *          differences and does not know about defaults.
-     * @param   {Attributes} savedAttributes - The existing
+     * @param   {Attributes} savedOverrides - The existing
      *          saved attributes for a domain (default if none existed).
      * @param   {Attributes} proposedAttributes - The proposed attributes
      *          following the application of the algorithm
@@ -276,30 +290,37 @@ var AttributesCodec = {
      *          which will encompass any custom changes the user made.
      * @return  {string} The encoded attributes to save, if asked so.
      */
-    getEncodedAttributes : function(savedAttributes,
-                                    proposedAttributes,
-                                    attributes) {
-        var encodedAttributes = "";
+    getEncodedOverrides : function(savedOverrides,
+                                   proposedAttributes,
+                                   attributes) {
+        var encodedOverrides = "";
 
         var domainToSave = "";
         var iterationsToSave = "";
         var truncationToSave = "";
-        if (savedAttributes.attributesExist()) {
+        var specialCharsFlagToSave = "";
+        if (savedOverrides.attributesExist()) {
             domainToSave =
                 (proposedAttributes.domain !== attributes.domain) ?
                 attributes.domain :
-                (null !== savedAttributes.domain ?
-                 savedAttributes.domain : "");
+                (null !== savedOverrides.domain ?
+                 savedOverrides.domain : "");
             iterationsToSave =
                 (proposedAttributes.iterations !== attributes.iterations) ?
                 attributes.iterations :
-                (null !== savedAttributes.iterations ?
-                 ("" + savedAttributes.iterations) : "");
+                (null !== savedOverrides.iterations ?
+                 ("" + savedOverrides.iterations) : "");
             truncationToSave =
                 (proposedAttributes.truncation !== attributes.truncation) ?
                 attributes.truncation :
-                (Attributes.NO_TRUNCATION !== savedAttributes.truncation ?
-                 ("" + savedAttributes.truncation) : "");
+                (Attributes.NO_TRUNCATION !== savedOverrides.truncation ?
+                 ("" + savedOverrides.truncation) : "");
+            specialCharsFlagToSave =
+                (proposedAttributes.specialCharsFlag !==
+                 attributes.specialCharsFlag) ?
+                attributes.specialCharsFlag :
+                (1 !== savedOverrides.specialCharsFlag ?
+                 ("" + savedOverrides.specialCharsFlag) : "");
         } else {
             domainToSave =
                 (proposedAttributes.domain !== attributes.domain) ?
@@ -310,62 +331,68 @@ var AttributesCodec = {
             truncationToSave =
                 (proposedAttributes.truncation !== attributes.truncation) ?
                 ("" + attributes.truncation) : "";
+            specialCharsFlagToSave =
+                (proposedAttributes.specialCharsFlag !==
+                 attributes.specialCharsFlag) ?
+                ("" + attributes.specialCharsFlag) : "";
         }
 
         // A saved attributes entry is created IFF
         // at least one of the three elements is not empty.
         if (!(("" === domainToSave) &&
               ("" === iterationsToSave) &&
-              ("" === truncationToSave))) {
-            encodedAttributes =
-                domainToSave + AttributesCodec.delimiter +
-                iterationsToSave + AttributesCodec.delimiter +
-                truncationToSave;
+              ("" === truncationToSave) &&
+              ("" === specialCharsFlagToSave))) {
+            encodedOverrides =
+                domainToSave + AttributesCodec.DELIMITER +
+                iterationsToSave + AttributesCodec.DELIMITER +
+                truncationToSave + AttributesCodec.DELIMITER +
+                specialCharsFlagToSave;
         }
 
-        return encodedAttributes;
+        return encodedOverrides;
     },
 
     /**
-     * @summary A function to encode the JSON (domain, encodedAttributes)
+     * @summary A function to encode the JSON (domain, encodedOverrides)
      *          object to the string used for storage in the browser
      *          preference system. The format is just the
      *          JSON stringification of the object.
      * @param   {string} domain - The site domain.
      * @param   {object} customOverrides - A JSON
-     *          (domain, encodedAttributes)
+     *          (domain, encodedOverrides)
      *          representing existing saved attributes
      *          in the browser's preference system.
      * @return  {string} The encoded list of attributes.
      */
-    getEncodedAttributesList : function(domain,
-                                        customOverrides,
-                                        savedAttributes,
-                                        proposedAttributes,
-                                        attributes) {
-        var encodedAttributes =
-            this.getEncodedAttributes(savedAttributes,
+    getEncodedOverridesList : function(domain,
+                                       customOverrides,
+                                       savedOverrides,
+                                       proposedAttributes,
+                                       attributes) {
+        var encodedOverrides =
+            this.getEncodedOverrides(savedOverrides,
                                       proposedAttributes,
                                       attributes);
-        if ("" === encodedAttributes) {
+        if ("" === encodedOverrides) {
             console.info(AUX.logCategory + "No custom changes to save");
             return "";
         }
 
         console.info(AUX.logCategory +
-                     "customOverrides=" + encodedAttributes);
+                     "customOverrides=" + encodedOverrides);
 
         // Create new, or update existing
-        customOverrides[domain] = encodedAttributes;
+        customOverrides[domain] = encodedOverrides;
         console.debug(AUX.logCategory + "Saving customOverrides=" +
                       JSON.stringify(customOverrides,
                                      null,
                                      AUX.indentation));
 
-        var encodedAttributesList = JSON.stringify(customOverrides);
+        var encodedOverridesList = JSON.stringify(customOverrides);
         console.debug(AUX.logCategory +
-                      "encodedAttributesList=" + encodedAttributesList);
-        return encodedAttributesList;
+                      "encodedOverridesList=" + encodedOverridesList);
+        return encodedOverridesList;
     }
 
 };
@@ -387,6 +414,7 @@ var DOM                             = {
         iterationsBox               : "iterations",
         truncateCheckBox            : "truncate",
         truncationBox               : "truncation",
+        noSpecialCharsCheckBox      : "noSpecialChars",
         saveAttributesCheckBox      : "saveAttributes",
         attributesSaveSuccessLabel  : "attributesSaveSuccessLabel",
         showAdvancedCheckBox        : "showAdvanced",
@@ -478,7 +506,10 @@ var DOM                             = {
                                parseInt(document.getElementById(
                                     DOM.elements.iterationsBox).value),
                                parseInt(document.getElementById(
-                                    DOM.elements.truncationBox).value));
+                                    DOM.elements.truncationBox).value),
+                               (document.getElementById(
+                                 DOM.elements.noSpecialCharsCheckBox).checked ?
+                                0 : 1));
             // Note that the script never sees
             // the input password itself at all -
             // it is hashed through SHA256
@@ -495,11 +526,11 @@ var DOM                             = {
                                             DOM.elements.passwordBox).value)),
                 attributes          : attributes,
                 proposedAttributes  : button.proposedAttributes,
-                savedAttributes     : button.savedAttributes,
+                savedOverrides      : button.savedOverrides,
                 saveAttributes      : document.getElementById(
                                       DOM.elements.saveAttributesCheckBox)
                                         .checked,
-                savedAttributesList : button.savedAttributesList
+                savedOverridesList  : button.savedOverridesList
             });
         },
 
@@ -612,7 +643,7 @@ var DOM                             = {
      *                  of PBKDF2 iterations,
      *          @prop   {string} params.saltKey - The saved
      *                  key for generating the salt from the domain name,
-     *          @prop   {string} params.encodedAttributesList - The saved
+     *          @prop   {string} params.encodedOverridesList - The saved
      *                  attributes list for all sites.
      * @return  {undefined}
      */
@@ -773,6 +804,17 @@ var DOM                             = {
         };
 
         /**
+         * @brief   A method to configure the "noSpecialChars" checkbox
+         *          of the DOM (unchecked by default).
+         * @return  {undefined}
+         */
+        var configureNoSpecialChars = function(specialCharsFlag) {
+            var noSpecialCharsCheckBox =
+                document.getElementById(DOM.elements.noSpecialCharsCheckBox);
+            noSpecialCharsCheckBox.checked = (0 === specialCharsFlag);
+        };
+
+        /**
          * @summary A function to configure the "saveAttributes" checkbox
          *          of the DOM (unchecked by default), and the associated
          *          "attributesSaveSuccessLabel".
@@ -813,21 +855,21 @@ var DOM                             = {
          * @param   {string} domain - The site domain.
          * @param   {string} saltKey - The key used for generating
          *          the salt from the domain name.
-         * @param   {Attributes} savedAttributes - The saved attributes
+         * @param   {Attributes} savedOverrides - The saved attributes
          *          of the domain (default if none).
          * @param   {Attributes} proposedAttributes - The proposed
          *          attributes that would be applicable
          *          (after `337-translation etc),
          *          if the user did not make any custom changes.
-         * @param   {string} savedAttributesList - The saved
+         * @param   {string} savedOverridesList - The saved
          *          encoded attributes list for all domains.
          * @return  {undefined}
          */
         var configureGenerateButton = function(domain,
                                                saltKey,
-                                               savedAttributes,
+                                               savedOverrides,
                                                proposedAttributes,
-                                               savedAttributesList) {
+                                               savedOverridesList) {
             var button =
                 document.getElementById(DOM.elements.generateButton);
 
@@ -836,8 +878,8 @@ var DOM                             = {
             // (cf. below).
             button.domain = domain;
             button.saltKey = saltKey;
-            button.savedAttributesList = savedAttributesList;
-            button.savedAttributes = savedAttributes;
+            button.savedOverrides = savedOverrides;
+            button.savedOverridesList = savedOverridesList;
             button.proposedAttributes = proposedAttributes;
 
             // Add an event listener to the "click" action,
@@ -889,33 +931,35 @@ var DOM                             = {
         // Check and extract saved site attributes, if any.
         var domain = extractDomain(params.url);
 
-        var savedAttributesList =
-            AttributesCodec.getDecodedAttributesList(
-                                    params.encodedAttributesList);
-        var savedAttributes =
-            AttributesCodec.getSavedAttributes(domain,
-                                               savedAttributesList);
-        console.info(AUX.logCategory + "savedAttributes=" +
-                     JSON.stringify(savedAttributes,
+        var savedOverridesList =
+            AttributesCodec.getDecodedOverridesList(
+                                    params.encodedOverridesList);
+        var savedOverrides =
+            AttributesCodec.getSavedOverrides(domain,
+                                              savedOverridesList);
+        console.info(AUX.logCategory + "savedOverrides=" +
+                     JSON.stringify(savedOverrides,
                                     null,
                                     AUX.indentation));
 
         var proposedAttributes =
             new Attributes(configureDomain(domain,
-                                           savedAttributes.domain),
+                                           savedOverrides.domain),
                            configureIterations(params.defaultIterations,
-                                               savedAttributes.iterations),
+                                               savedOverrides.iterations),
                            configureTruncation(
-                                         savedAttributes.truncation));
+                                         savedOverrides.truncation),
+                           configureNoSpecialChars(
+                                         savedOverrides.specialCharsFlag));
 
         configureHash();
         configureSaveAttributes();
         configureShowAdvanced();
         configureGenerateButton(domain,
                                 params.saltKey,
-                                savedAttributes,
+                                savedOverrides,
                                 proposedAttributes,
-                                savedAttributesList);
+                                savedOverridesList);
         configureSettingsIcons();
     },
 
@@ -971,8 +1015,8 @@ var Workhorse           = {
      *          @prop {string} params.domain - The site domain,
      *          @prop {string} params.seedSHA - The SHA256 encoded
      *                  actual password,
-     *          @prop {Attributes} params.savedAttributes The saved
-     *                  attributes for the domain (default if none exist),
+     *          @prop {Attributes} params.savedOverrides The saved
+     *                  overrides for the domain (default if none exist),
      *          @prop {Attributes} params.proposedAttributes - The proposed
      *                  attributes that would be applicable
      *                  if the user did not make any custom changes,
@@ -982,7 +1026,7 @@ var Workhorse           = {
      *          @prop {boolean} params.saveAttributes - A flag to determine
      *                  if the user asked to save the current attributes
      *                  for this domain,
-     *          @prop {string} params.savedAttributesList - The encoded
+     *          @prop {string} params.savedOverridesList - The encoded
      *                  list of
      *                  (domain, encoded Attributes) for all domains,
      *                  which will be mutated with the current
@@ -1036,15 +1080,15 @@ var Workhorse           = {
                 DOM.togglers.toggleHashField(AUX.events.DONE,
                                              eventData.password);
 
-                var encodedAttributesList = "";
+                var encodedOverridesList = "";
                 if (params.saveAttributes) {
                     console.info(AUX.logCategory +
                                  "Generating attributes list string...");
-                    encodedAttributesList =
-                        AttributesCodec.getEncodedAttributesList(
+                    encodedOverridesList =
+                        AttributesCodec.getEncodedOverridesList(
                                             params.domain,
-                                            params.savedAttributesList,
-                                            params.savedAttributes,
+                                            params.savedOverridesList,
+                                            params.savedOverrides,
                                             params.proposedAttributes,
                                             params.attributes);
                 }
@@ -1055,7 +1099,7 @@ var Workhorse           = {
                     finalize({
                         domain                  : params.domain,
                         password                : eventData.password,
-                        attributesListString    : encodedAttributesList
+                        encodedOverridesList    : encodedOverridesList
                     });
                 }
 

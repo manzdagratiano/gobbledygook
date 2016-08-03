@@ -131,7 +131,7 @@ document.addEventListener(ENV.events.DOM_CONTENT_LOADED,
                 url                         : url,
                 saltKey                     : items.saltKey,
                 defaultIterations           : items.defaultIterations,
-                encodedAttributesList       : items.customOverrides
+                encodedOverridesList        : items.customOverrides
             };
 
             if (ENV.types.OBJECT === typeof(DOM)) {
@@ -173,7 +173,7 @@ function onGenerateSaltKey(key) {
  *          It has the following properties:
  *          @prop   {string} doneData.password - The generated
  *                  proxy password.
- *          @prop   {string} doneData.attributesListString - The encoded
+ *          @prop   {string} doneData.encodedOverridesList - The encoded
  *                  list of attributes for all urls (modified with data
  *                  from the current url if asked to save).
  *                  If this is empty, the existing attributes list string
@@ -208,10 +208,10 @@ function finalize(doneData) {
     copyPasswordToClipboard(doneData.password);
 
     // Save the attributes list string, if non-empty, to sync.
-    if ("" !== doneData.attributesListString) {
+    if ("" !== doneData.encodedOverridesList) {
         console.info(ENV.logCategory + "Saving site attributes...");
         Quirks.getSyncMethod().set({
-            customOverrides : doneData.attributesListString
+            customOverrides : doneData.encodedOverridesList
         }, function() {
             // Check if the options were successfully saved.
             var success = false;
