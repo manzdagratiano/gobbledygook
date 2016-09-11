@@ -16,6 +16,9 @@
     <style>
     body {
         background-color    : LightGoldenRodYellow;
+        margin-left         : 10px;
+        margin-right        : 10px;
+        width               : 340px;
     }
 
     header {
@@ -42,7 +45,7 @@
         font-variant        : small-caps;
         font-weight         : bold;
     }
-    .attributesLabel {
+    .overridesLabel {
         font-family         : cursive, sans-serif;
         font-style          : italic;
     }
@@ -100,6 +103,10 @@
     .settingsIcon {
         float               : left;
     }
+    .helpIcon {
+        display             : block;
+        float               : right;
+    }
 
     /*
      * Container for the settings icons
@@ -115,6 +122,11 @@
     <header>
         <h2>Gobbledygook</h2>
     </header>
+
+    <input type="image" id="helpIcon"
+                        src="./android/ic_help_black_48dp.png"
+                        class="helpIcon"
+                        title="Help"/>
     <br/>
 
     <!-- The domain name used -->
@@ -175,19 +187,19 @@
         <!-- Whether to not use special characters. -->
         <input type="checkbox" name="noSpecialChars" id="noSpecialChars"
         title="Do you not want special characters?"/>
-        <label for="noSpecialChars" class="attributesLabel">
+        <label for="noSpecialChars" class="overridesLabel">
             No special characters
         </label>
 
         <br/>
         <br/>
         <!-- Whether to save an overridden configuration or not. -->
-        <input type="checkbox" name="saveAttributes" id="saveAttributes"
-        title="Do you wish to save your custom changes for future use?"/>
-        <label for="saveAttributes" class="attributesLabel">
-            Save custom changes
+        <input type="checkbox" name="saveOverrides" id="saveOverrides"
+        title="Do you wish to save your custom overrides for future use?"/>
+        <label for="saveOverrides" class="overridesLabel">
+            Save custom overrides
         </label>
-        <label id="attributesSaveSuccessLabel" for="saveAttributes" class="">
+        <label id="overridesSaveSuccessLabel" for="saveOverrides" class="">
         </label>
         <hr/>
     </div>
@@ -207,14 +219,14 @@
 
     <br/>
     <div id="settingsContainer">
-        <input type="image" id="showSettingsIcon"
-                            src="./android/ic_settings_black_48dp.png"
-                            class="settingsIcon"
-                            title="View/Edit Settings"/>
         <input type="image" id="exportSettingsIcon"
                             src="./android/ic_file_download_black_48dp.png"
                             class="settingsIcon"
                             title="Export Settings"/>
+        <input type="image" id="showSettingsIcon"
+                            src="./android/ic_settings_black_48dp.png"
+                            class="settingsIcon"
+                            title="View/Edit Settings"/>
         <input type="image" id="importSettingsIcon"
                             src="./android/ic_file_upload_black_48dp.png"
                             class="settingsIcon"

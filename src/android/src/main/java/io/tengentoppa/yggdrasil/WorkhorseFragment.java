@@ -82,7 +82,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
         // Initialize the private data members
         this.m_showAsDialog = false;
         this.m_url = "";
-        this.m_savedAttributes = null;
+        this.m_savedOverrides = null;
         this.m_proposedAttributes = null;
         this.m_customOverrides = null;
 
@@ -383,15 +383,15 @@ public abstract class WorkhorseFragment extends DialogFragment {
              * @brief   
              * @return  Does not return a value
              */
-            public void configureSaveCustomAttributesCheckBox() {
-                CheckBox saveAttributesBox =
-                    (CheckBox)getView().findViewById(R.id.saveAttributes);
-                saveAttributesBox.setOnClickListener(new
+            public void configureSaveCustomOverridesCheckBox() {
+                CheckBox saveOverridesBox =
+                    (CheckBox)getView().findViewById(R.id.saveOverrides);
+                saveOverridesBox.setOnClickListener(new
                                                      View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        CheckBox saveAttributesBox = (CheckBox)view; 
-                        if (saveAttributesBox.isChecked()) {
+                        CheckBox saveOverridesBox = (CheckBox)view; 
+                        if (saveOverridesBox.isChecked()) {
                             Toast.makeText(
                                     getActivity().getApplicationContext(),
                                     ATTRIBUTES_OVERRIDE_SPARINGLY_MESSAGE,
@@ -452,18 +452,17 @@ public abstract class WorkhorseFragment extends DialogFragment {
         // ----------------------------------------------------------------
         // Saved and Proposed Attributes
 
-        // Obtain the decoded customOverrides
-        // We'll need it later on
-        JSONObject customOverrides =
-            codec.getDecodedAttributesList(
+        // Obtain the decoded encodedOverridesMap.
+        JSONObject encodedOverridesMap =
+            codec.getEncodedOverridesMap(
                     ingredients.encodedOverrides());
 
         // Obtain the saved attributes for this domain, if any
-        Attributes savedAttributes =
-            codec.getSavedAttributes(domain,
-                                     customOverrides);
+        Attributes savedOverrides =
+            codec.getDomainOverrides(domain,
+                                     encodedOverridesMap);
         Log.i(LOG_CATEGORY,
-              "savedAttributes='" + codec.encode(savedAttributes) + "'");
+              "savedOverrides='" + codec.encode(savedOverrides) + "'");
 
         // The "proposed" attributes,
         // which would be used to generate the proxy password,
@@ -472,15 +471,15 @@ public abstract class WorkhorseFragment extends DialogFragment {
             new Attributes(
                 configurator.configureDomain(
                                     domain,
-                                    savedAttributes.domain()),
+                                    savedOverrides.domain()),
                 configurator.configureIterations(
                                     ingredients.defaultIterations(),
-                                    savedAttributes.iterations()),
+                                    savedOverrides.iterations()),
                 configurator.configureTruncation(
-                                    savedAttributes.truncation()));
+                                    savedOverrides.truncation()));
 
         configurator.configureHash();
-        configurator.configureSaveCustomAttributesCheckBox();
+        configurator.configureSaveCustomOverridesCheckBox();
         configurator.configureGenerateButton();
 
         // Save the saved and proposed attributes,
@@ -489,7 +488,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
         // need to save state here since the next call will be
         // the invocation of a handler via user interaction
         this.m_saltKey = ingredients.saltKey();
-        this.m_savedAttributes = savedAttributes;
+        this.m_savedOverrides = savedOverrides;
         this.m_proposedAttributes = proposedAttributes;
         this.m_customOverrides = customOverrides;
     }
@@ -639,7 +638,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
                 getActivity().runOnUiThread(new Runnable() {
                     public void run() {
                         setPassword(view, password);
-                        checkAndSaveAttributes(attributes);
+                        checkAndSaveOverrides(attributes);
                     }
                 });
             }
@@ -731,26 +730,26 @@ public abstract class WorkhorseFragment extends DialogFragment {
      * @brief   
      * @return  
      */
-    protected void checkAndSaveAttributes(final Attributes attributes) {
-        CheckBox saveAttributesBox =
-            (CheckBox)getView().findViewById(R.id.saveAttributes);
-        if (!saveAttributesBox.isChecked()) {
-            Log.i(LOG_CATEGORY, "checkAndSaveAttributes(): " +
-                  "Not asked to save attributes. Nothing to do...");
+    protected void checkAndSaveOverrides(final Attributes attributes) {
+        CheckBox saveOverridesBox =
+            (CheckBox)getView().findViewById(R.id.saveOverrides);
+        if (!saveOverridesBox.isChecked()) {
+            Log.i(LOG_CATEGORY, "checkAndSaveOverrides(): " +
+                  "Not asked to save overrides. Nothing to do...");
             return;
         }
 
         AttributesCodec codec = new AttributesCodec();
-        Log.i(LOG_CATEGORY, "checkAndSaveAttributes(): " +
+        Log.i(LOG_CATEGORY, "checkAndSaveOverrides(): " +
               "Checking if modified attributes exist...");
-        Attributes attributesToSave =
-            codec.getEncodedAttributesToSave(attributes,
-                                             this.m_savedAttributes,
-                                             this.m_proposedAttributes);
-        String encodedAttributes = codec.encode(attributesToSave);
-        Log.i(LOG_CATEGORY, "attributesToSave='" + encodedAttributes + "'");
+        Attributes overridesToSave =
+            codec.getOverridesToSave(attributes,
+                                     this.m_savedOverrides,
+                                     this.m_proposedAttributes);
+        String encodedOverrides = codec.encode(overridesToSave);
+        Log.i(LOG_CATEGORY, "overridesToSave='" + encodedOverrides + "'");
 
-        if (!attributesToSave.attributesExist()) {
+        if (!overridesToSave.attributesExist()) {
             Log.i(LOG_CATEGORY, "No custom changes to save...");
             return;
         }
@@ -764,7 +763,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
         // Add new or update existing
         try {
             m_customOverrides.put(attributes.domain(),
-                                     encodedAttributes);
+                                  encodedOverrides);
         } catch (JSONException e) {
             Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
             Toast.makeText(getActivity().getApplicationContext(),
@@ -773,11 +772,11 @@ public abstract class WorkhorseFragment extends DialogFragment {
             return;
         }
 
-        Log.i(LOG_CATEGORY, "checkAndSaveAttributes(): " +
+        Log.i(LOG_CATEGORY, "checkAndSaveOverrides(): " +
               "new customOverrides=" + m_customOverrides.toString());
 
         // Stringify the JSON for saving in the default SharedPreferences
-        String encodedOverrides = m_customOverrides.toString();
+        String encodedOverridesList = m_customOverrides.toString();
 
         // Save the stringified JSON to SharedPreferences
         SharedPreferences preferences =
@@ -786,7 +785,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
         SharedPreferences.Editor preferenceEditor = preferences.edit();
         preferenceEditor.putString(
                 getString(R.string.pref_customOverrides_key),
-                encodedOverrides);
+                encodedOverridesList);
         preferenceEditor.commit();
         // The OnSharedPreferenceChangedHandler will be called
 
@@ -814,10 +813,10 @@ public abstract class WorkhorseFragment extends DialogFragment {
             (CheckBox)getView().findViewById(R.id.showHash);
         showHashBox.setOnClickListener(null);
 
-        // "Save Custom Attributes" checkbox
-        CheckBox saveAttributesBox =
-            (CheckBox)getView().findViewById(R.id.saveAttributes);
-        saveAttributesBox.setOnClickListener(null);
+        // "Save custom overrides" checkbox
+        CheckBox saveOverridesBox =
+            (CheckBox)getView().findViewById(R.id.saveOverrides);
+        saveOverridesBox.setOnClickListener(null);
 
         // "Generate" button
         Button generateButton =
@@ -901,7 +900,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
             m_defaultIterations = defaultIterations;
         }
 
-        public void setEncodedAttributesList(String encodedOverrides) {
+        public void setEncodedOverrides(String encodedOverrides) {
             m_encodedOverrides = encodedOverrides;
         }
 
@@ -934,6 +933,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
             m_domain = null;
             m_iterations = null;
             m_truncation = Attributes.NO_TRUNCATION;
+            m_specialCharsFlag = 1;
         }
 
         /**
@@ -945,59 +945,67 @@ public abstract class WorkhorseFragment extends DialogFragment {
             m_iterations = ((opts.length > 0) ? opts[0] : null);
             m_truncation =
                 ((opts.length > 1) ?
-                 ((null == opts[1]) ?
-                  Attributes.NO_TRUNCATION : opts[1]) : null);
+                  opts[1] : Attributes.NO_TRUNCATION);
+            m_specialCharsFlag = ((opts.length > 2) ?  opts[2] : 1);
         }
 
         // ----------------------------------------------------------------
         // Accessors
 
         /**
-         * @brief   
-         * @return  
+         * @brief   Domain accessor
+         * @return  {String}
          */
         public String domain() {
             return m_domain;
         }
 
         /**
-         * @brief   
-         * @return  
+         * @brief   Iterations accessor
+         * @return  {Integer}
          */
         public Integer iterations() {
             return m_iterations;
         }
 
         /**
-         * @brief   
-         * @return  
+         * @brief   Truncation accessor
+         * @return  {Integer}
          */
         public Integer truncation() {
             return m_truncation;
+        }
+
+        /**
+         * @brief   Special Characters Flag accessor
+         * @return  {Integer}
+         */
+        public Integer specialCharsFlag() {
+            return m_specialCharsFlag;
         }
 
         // ----------------------------------------------------------------
         // Mutators
 
         /**
-         * @brief   
-         * @return  
+         * @brief   Domain modifier
+         * @return  {null}
          */
         public void setDomain(String domain) {
             this.m_domain = domain;
         }
 
         /**
-         * @brief   
-         * @return  
+         * @brief   Iterations modifier
+         * @return  {null}
          */
         public void setIterations(Integer iterations) {
             this.m_iterations = iterations;
         }
 
         /**
-         * @brief   
-         * @return  
+         * @brief   Truncation modifier
+         * @return  {null}
          */
         public void setTruncation(Integer truncation) {
             // Sanity check
@@ -1007,6 +1015,14 @@ public abstract class WorkhorseFragment extends DialogFragment {
                 return;
             }
             this.m_truncation = truncation;
+        }
+
+        /**
+         * @brief   Special Characters Flag modifier
+         * @return  {null}
+         */
+        public void setSpecialCharsFlag(Integer specialCharsFlag) {
+            this.m_specialCharsFlag = specialCharsFlag;
         }
 
         // ----------------------------------------------------------------
@@ -1020,20 +1036,28 @@ public abstract class WorkhorseFragment extends DialogFragment {
         public boolean attributesExist() {
             return ((null != m_domain) &&
                     (null != m_iterations) &&
-                    (NO_TRUNCATION != m_truncation));
+                    (NO_TRUNCATION != m_truncation) &&
+                    (1 != m_specialCharsFlag));
         }
 
         // ----------------------------------------------------------------
         // Data Members
 
-        private String  m_domain;       /** @brief The website domain-subdomain
-                                          */
-        private Integer m_iterations;   /** @brief The number of PBKDF2
-                                          * iterations
-                                          */
-        private Integer m_truncation;   /** @brief The truncation size
-                                          * for the generated password
-                                          */
+        private String  m_domain;           /** @brief The website
+                                              * domain-subdomain.
+                                              */
+        private Integer m_iterations;       /** @brief The number of PBKDF2
+                                              * iterations.
+                                              */
+        private Integer m_truncation;       /** @brief The truncation size
+                                              * for the generated password.
+                                              */
+        private Integer m_specialCharsFlag; /** @brief An indicator for
+                                              * whether special characters
+                                              * are allowed. Boolean, but
+                                              * represented as {0, 1} for
+                                              * encoding.
+                                              */
     }
 
     // --------------------------------------------------------------------
@@ -1055,24 +1079,28 @@ public abstract class WorkhorseFragment extends DialogFragment {
          * @return  
          */
         public String encode(Attributes attributes) {
-            if (attributes.attributesExist()) {
-                return
-                    ((null != attributes.domain()) ?
-                     attributes.domain() : "") +
-                     AttributesCodec.DELIMITER +
-                    ((null != attributes.iterations()) ?
-                     attributes.iterations().toString() : "") +
-                    AttributesCodec.DELIMITER +
-                    ((Attributes.NO_TRUNCATION != attributes.truncation()) ?
-                     attributes.truncation().toString() : "");
-            } 
+            if (!attributes.attributesExist()) {
+                return "";
+            }
 
-            return "";
+            return
+                (((null != attributes.domain()) ?
+                  attributes.domain() : "") +
+                 AttributesCodec.DELIMITER +
+                 ((null != attributes.iterations()) ?
+                  attributes.iterations().toString() : "") +
+                 AttributesCodec.DELIMITER +
+                 ((Attributes.NO_TRUNCATION != attributes.truncation()) ?
+                  attributes.truncation().toString() : "") +
+                 AttributesCodec.DELIMITER +
+                 ((1 != attributes.specialCharsFlag()) ?
+                  "0" : ""));
         }
 
         /**
-         * @brief   
-         * @return  
+         * @brief   Method to decoded an encoded Attributes string.
+         * @return  {Attributes} The decoded object; default constructed
+         *          on an error condition.
          */
         public Attributes decode(String encodedAttributes) {
             // Create a default-initialized Attributes object
@@ -1082,93 +1110,94 @@ public abstract class WorkhorseFragment extends DialogFragment {
                    "null" : "'" + encodedAttributes + "'") + " ...");
 
             // Sanity checks
-            if (null == encodedAttributes) {
-                return attributes;
-            }
-            if (encodedAttributes.isEmpty()) {
+            // ("short-circuit")
+            if (null == encodedAttributes || encodedAttributes.isEmpty()) {
                 return attributes;
             }
 
-            String[] customOverridesArray =
+            String[] attributesArray =
                 encodedAttributes.split(AttributesCodec.DELIMITER);
             // Sanity check for length of the split array
-            if (3 != customOverridesArray.length) {
-                Log.e(LOG_CATEGORY, "ERROR: Malformed Attributes! " +
-                        "(Expected <domain|iterations|truncation>)");
+            if (4 != attributesArray.length) {
+                Log.e(LOG_CATEGORY, "ERROR: Malformed Attributes! Expected " +
+                      "<domain|iterations|truncation|noSpecialChars>");
                 return attributes;
             }
 
-            if (customOverridesArray[0] != "") {
-                attributes.setDomain(customOverridesArray[0]);
+            if (attributesArray[0] != "") {
+                attributes.setDomain(attributesArray[0]);
             }
-            if (customOverridesArray[1] != "") {
+            if (attributesArray[1] != "") {
                 try {
                     attributes.setIterations(
-                            Integer.parseInt(customOverridesArray[1]));
+                            Integer.parseInt(attributesArray[1]));
                 } catch (ClassCastException e) {
                     Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
                     e.printStackTrace();
                     attributes.setIterations(Attributes.DEFAULT_ITERATIONS);
                 }
             }
-            if (customOverridesArray[2] != "") {
+            if (attributesArray[2] != "") {
                 try {
                     attributes.setTruncation(
-                            Integer.parseInt(customOverridesArray[2]));
+                            Integer.parseInt(attributesArray[2]));
                 } catch (ClassCastException e) {
                     Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
                     e.printStackTrace();
                     attributes.setTruncation(Attributes.NO_TRUNCATION);
                 }
             }
+            if (attributesArray[3] != "") {
+                attributes.setSpecialCharsFlag(0);
+            }
 
             return attributes;
         }
 
         /**
-         * @brief   Function to decode the saved JSON string of custom
-         *          website attributes
+         * @brief   Function to read the saved JSON string of custom
+         *          website attributes into a JSON object.
          * @return  The decoded JSONObject if the encodedOverrides
          *          was a valid JSON string, else null
          */
         public JSONObject
-        getDecodedAttributesList(final String encodedOverrides) {
+        getEncodedOverridesMap(final String encodedOverrides) {
             Log.i(LOG_CATEGORY, "Decoding saved attributes list...");
 
-            JSONObject customOverrides = null;
+            JSONObject encodedOverridesMap = null;
 
             // Sanity check - short-circuit evaluation
             if (null != encodedOverrides &&
                 !encodedOverrides.isEmpty()) {
                 try {
-                    customOverrides = new JSONObject(encodedOverrides);
-                    Log.d(LOG_CATEGORY, "customOverrides=" +
-                          customOverrides.toString());
+                    encodedOverridesMap = new JSONObject(encodedOverrides);
+                    Log.d(LOG_CATEGORY, "encodedOverridesMap=" +
+                          encodedOverridesMap.toString());
                 } catch (JSONException e) {
                     Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
                     e.printStackTrace();
                 }
             }
 
-            return customOverrides;
+            return encodedOverridesMap;
         }
 
         /**
-         * @brief   
-         * @return  A valid Attributes object
-         * (default initialized if no saved attributes exist)
+         * @brief   Method to retrieve the saved overrides for a domain
+         * @return  {Attributes} The retrieved object, (default constructed
+         *          if no saved attributes exist)
          */
         public Attributes
-        getSavedAttributes(String domain,
+        getDomainOverrides(String domain,
                            JSONObject customOverrides) {
             Log.i(LOG_CATEGORY, "Fetching saved attributes...");
 
-            String encodedAttributes = null;
+            String encodedOverrides = null;
 
             if (null != customOverrides) {
                 try {
                     if (customOverrides.has(domain)) {
-                        encodedAttributes = customOverrides.getString(domain);
+                        encodedOverrides = customOverrides.getString(domain);
                     }
                 } catch (JSONException e) {
                     Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
@@ -1176,8 +1205,8 @@ public abstract class WorkhorseFragment extends DialogFragment {
                 }
             }
 
-            Attributes decodedAttributes = this.decode(encodedAttributes);
-            return decodedAttributes;
+            Attributes decodedOverrides = this.decode(encodedOverrides);
+            return decodedOverrides;
         }
 
         /**
@@ -1185,47 +1214,53 @@ public abstract class WorkhorseFragment extends DialogFragment {
          * @return  A valid Attributes object,
          *          which can be default initialized
          */
-        public Attributes 
-        getEncodedAttributesToSave(final Attributes attributes,
-                                   final Attributes savedAttributes,
-                                   final Attributes proposedAttributes) {
-            Attributes attributesToSave = new Attributes();
+        public Attributes
+        getOverridesToSave(final Attributes attributes,
+                           final Attributes savedOverrides,
+                           final Attributes proposedAttributes) {
+            Attributes overrides = new Attributes();
 
-            if (savedAttributes.attributesExist()) {
-                attributesToSave.setDomain(
+            if (savedOverrides.attributesExist()) {
+                overrides.setDomain(
                     (attributes.domain() !=
                      proposedAttributes.domain()) ?
                     attributes.domain() :
-                    (null != savedAttributes.domain() ?
-                     savedAttributes.domain() : null));
-                attributesToSave.setIterations(
+                    savedOverrides.domain());
+                overrides.setIterations(
                     (attributes.iterations() !=
                      proposedAttributes.iterations()) ?
                     attributes.iterations() :
-                    (null != savedAttributes.iterations() ?
-                     savedAttributes.iterations() : null));
-                attributesToSave.setTruncation(
+                    savedOverrides.iterations());
+                overrides.setTruncation(
                     (attributes.truncation() !=
                      proposedAttributes.truncation()) ?
                     attributes.truncation() :
-                    (Attributes.NO_TRUNCATION != savedAttributes.truncation() ?
-                     savedAttributes.truncation() : Attributes.NO_TRUNCATION));
+                    savedOverrides.truncation());
+                overrides.setSpecialCharsFlag(
+                    (attributes.specialCharsFlag() !=
+                     proposedAttributes.specialCharsFlag()) ?
+                    attributes.specialCharsFlag() :
+                    savedOverrides.specialCharsFlag());
             } else {
-                attributesToSave.setDomain(
+                overrides.setDomain(
                     (attributes.domain() !=
                      proposedAttributes.domain()) ?
                     attributes.domain() : null);
-                attributesToSave.setIterations(
+                overrides.setIterations(
                     (attributes.iterations() !=
                      proposedAttributes.iterations()) ?
                     attributes.iterations() : null);
-                attributesToSave.setTruncation(
+                overrides.setTruncation(
                     (attributes.truncation() !=
                      proposedAttributes.truncation()) ?
                     attributes.truncation() : Attributes.NO_TRUNCATION);
+                overrides.setSpecialCharsFlag(
+                    (attributes.specialCharsFlag() !=
+                     proposedAttributes.specialCharsFlag()) ?
+                    attributes.specialCharsFlag() : 1);
             }
 
-            return attributesToSave;
+            return overrides;
         }
 
     }   // end class AttributesCodec
@@ -1247,7 +1282,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
                                                   * shared preferences/
                                                   * server
                                                   */
-    protected Attributes m_savedAttributes;     /** @brief Attributes saved
+    protected Attributes m_savedOverrides;      /** @brief Attributes saved
                                                   * in the preferences system
                                                   */
     protected Attributes m_proposedAttributes;  /** @brief Proposed

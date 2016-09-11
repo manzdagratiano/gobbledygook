@@ -7,7 +7,7 @@
  * @date        Jul 01, 2016
  *
  * @license     GNU General Public License v3 or Later
- * @copyright   Manjul Apratim, 2014 - 2016
+ * @copyright   Manjul Apratim, 2016
  */
 
 "use strict";
@@ -26,12 +26,14 @@ function getSeedSHA(seed) {
     return sjcl.codec.hex.fromBits(sjcl.hash.sha256.hash(seed));
 }
 
+QUnit.module("Crypto");
+
 QUnit.test("TestSeed", function(assert) {
     var seedSHA = getSeedSHA(ENV.seed);
     assert
         .ok(("2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
-               === seedSHA),
-              "Seed.QED!");
+             === seedSHA),
+            "Seed.QED!");
 });
 
 QUnit.test("TestSalt", function(assert) {
@@ -46,18 +48,39 @@ QUnit.test("TestB64Hash", function(assert) {
 
     // Generate the salt
     var salt = Hasher.generateSalt(ENV.domain, ENV.saltKey, ENV.iterations);
-    var b64Hash = Hasher.generateHash(seedSHA, salt, ENV.iterations);
+    var b64Hash = Hasher.generateHash(seedSHA, salt, ENV.iterations, 0);
     assert.ok("PlntUbsKGDH2Lsp5JMvHljS074mkCFxUgJ3wxBoDg1I=" === b64Hash,
               "B64Hash.QED!");
 });
 
-QUnit.test("TestProxy", function(assert) {
+QUnit.test("TestZ85Hash", function(assert) {
     var seedSHA = getSeedSHA(ENV.seed);
 
     // Generate the salt
     var salt = Hasher.generateSalt(ENV.domain, ENV.saltKey, ENV.iterations);
-    var b64Hash = Hasher.generateHash(seedSHA, salt, ENV.iterations);
-    var proxy = Hasher.getPasswdStr(b64Hash, -1);
+    var z85Hash = Hasher.generateHash(seedSHA, salt, ENV.iterations, 1);
+    assert.ok("k3vnIY9Yxf{aBHkb*jk]g{(.dQZgj8FsVhF8uUQ&" === z85Hash,
+              "Z85Hash.QED!");
+});
+
+QUnit.test("TestB64ProxyPassword", function(assert) {
+    var seedSHA = getSeedSHA(ENV.seed);
+
+    // Generate the salt
+    var salt = Hasher.generateSalt(ENV.domain, ENV.saltKey, ENV.iterations);
+    var b64Hash = Hasher.generateHash(seedSHA, salt, ENV.iterations, 0);
+    var proxy = Hasher.getPasswdStr(b64Hash, -1, 0);
     assert.ok("PlntUbsKGDH2Lsp5JMvHljS074mkCFxUgJ3wxBoDg1I" === proxy,
-              "Proxy.QED!");
+              "B64ProxyPassword.QED!");
+});
+
+QUnit.test("TestZ85ProxyPassword", function(assert) {
+    var seedSHA = getSeedSHA(ENV.seed);
+
+    // Generate the salt
+    var salt = Hasher.generateSalt(ENV.domain, ENV.saltKey, ENV.iterations);
+    var z85Hash = Hasher.generateHash(seedSHA, salt, ENV.iterations, 1);
+    var proxy = Hasher.getPasswdStr(z85Hash, -1, 1);
+    assert.ok("k3vnIY9Yxf{aBHkb*jk]g{(.dQZgj8FsVhF8uUQ&" === proxy,
+              "Z85ProxyPassword.QED!");
 });

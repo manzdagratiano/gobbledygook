@@ -6,7 +6,7 @@
  * @date        Dec 14, 2015
  *
  * @license     GNU General Public License v3 or Later
- * @copyright   Manjul Apratim, 2014, 2015
+ * @copyright   Manjul Apratim, 2015
  */
 
 "use strict";

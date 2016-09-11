@@ -28,6 +28,7 @@ import hashlib
 import json
 import os
 import sys
+import zmq.utils.z85
 
 # =========================================================================
 # GLOBAL CONSTANTS
@@ -71,7 +72,7 @@ def get_seed_SHA():
 
     return hashlib.sha256(str.encode(getpass.getpass("Seed: ")))
 
-def get_hash(seedSHA, saltBuf, iterations):
+def get_hash(seedSHA, saltBuf, iterations, noSpecialChars):
     """Function to obtain a url-safe base64-encoded key-stretched hash of
     the seed and the salt"""
 
@@ -86,20 +87,28 @@ def get_hash(seedSHA, saltBuf, iterations):
             iterations,
             PBKDF2_KEY_SIZE)
 
-    return hashObj
+    hashStr = base64.b64encode(hashObj).decode("utf-8") if noSpecialChars \
+                else zmq.utils.z85.encode(hashObj).decode("utf-8")
 
-def get_passwd_str(hashObj, truncation):
-    """Function to convert a url-safe base64-encoded string to
-    a password string together and truncated to a desired length
-    specified by truncation if supplied."""
+    return hashStr
 
-    # Encode hashObj using base64,
-    # with urlsafe encoding as per RFC 4648: (+, /) -> (-, _),
-    # and convert the resulting ASCII byte-array to utf-8.
-    hashstr64 = base64.urlsafe_b64encode(hashObj).decode("utf-8")
-    print("b64Hash=[ {0} ]".format(hashstr64))
+def get_passwd_str(hashStr, truncation, noSpecialChars):
+    """Function to convert the encoded hash string to
+    a password string truncated to a desired length
+    specified by 'truncation' if supplied."""
 
-    passwdStr = hashstr64.rstrip('=')
+    # In the old avatar of gobbledygook, for base64 encoding,
+    # the final password string would have been made "urlsafe"
+    # as per RFC 4648: (+, /) -> (-, _).
+    # Now, when special characters are allowed, Z85 is the preferred encoding
+    # anyway, and therefore base64 is used in "strict mode", i.e.,
+    # occurrences of (+,/,=) are simply deleted.
+    # Therefore, base64.urlsafe_b64encode() is not necessary anymore.
+    # For Z85 encoding, "/" is still replaced by "_"
+    # (which is not part of the Z85 alphabet) for filename safety.
+    # The resulting ASCII byte-array is converted to utf-8.
+    passwdStr = hashStr.rstrip('=').replace("+", "").replace("/", "") \
+            if noSpecialChars else hashStr.replace("/", "_")
     # Check if the output needs to be truncated
     if truncation is not None:
         print("Truncating to {0} characters...".format(truncation))
@@ -125,6 +134,9 @@ def main():
             "(default: " + str(DEFAULT_ITERATIONS) + ")")
     parser.add_argument("-t", "--truncation", type=int,
             help="the # of truncated characters")
+    parser.add_argument("-x", "--no-special",
+            action="store_true",
+            help="whether to not use special characters")
 
     args = parser.parse_args()
     print("args={0}".format(str(args)))
@@ -137,12 +149,12 @@ def main():
     saltBuf = generate_salt(args.domain, args.key, args.iterations)
     print("salt=[ {0} ]".format(base64.b64encode(saltBuf).decode("utf-8")))
 
-    # Obtain the base64-encoded key-stretched hash
-    hashObj = get_hash(seedSHA, saltBuf, args.iterations)
-    print("hash=[ {0} ]".format(base64.b64encode(hashObj).decode("utf-8")))
+    # Obtain the raw key-stretched hash
+    hashStr = get_hash(seedSHA, saltBuf, args.iterations, args.no_special)
+    print("hash=[ {0} ]".format(hashStr))
 
     # Obtain the final password string
-    passwdStr = get_passwd_str(hashObj, args.truncation)
+    passwdStr = get_passwd_str(hashStr, args.truncation, args.no_special)
     print("password=[ {0} ], len={1}".format(passwdStr, len(passwdStr)))
 
 if __name__ == "__main__":

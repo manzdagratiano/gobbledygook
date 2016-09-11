@@ -7,7 +7,7 @@
  * @date        Nov 15, 2014
  *
  * @license     GNU General Public License v3 or Later
- * @copyright   Manjul Apratim, 2014, 2015
+ * @copyright   Manjul Apratim, 2014
  */
 
 "use strict";
@@ -173,10 +173,10 @@ function onGenerateSaltKey(key) {
  *          It has the following properties:
  *          @prop   {string} doneData.password - The generated
  *                  proxy password.
- *          @prop   {string} doneData.encodedOverridesList - The encoded
- *                  list of attributes for all urls (modified with data
- *                  from the current url if asked to save).
- *                  If this is empty, the existing attributes list string
+ *          @prop   {string} doneData.modifiedEncodedOverrides - The encoded
+ *                  list of overrides for all domains modified with data
+ *                  from the current url if asked to save.
+ *                  If this is empty, the existing encoded overrides list
  *                  in the browser's preference system is left untouched.
  * @return  {undefined}
  */
@@ -208,28 +208,30 @@ function finalize(doneData) {
     copyPasswordToClipboard(doneData.password);
 
     // Save the attributes list string, if non-empty, to sync.
-    if ("" !== doneData.encodedOverridesList) {
-        console.info(ENV.logCategory + "Saving site attributes...");
-        Quirks.getSyncMethod().set({
-            customOverrides : doneData.encodedOverridesList
-        }, function() {
-            // Check if the options were successfully saved.
-            var success = false;
-            if (chrome.runtime.lastError) {
-                console.error(ENV.logCategory +
-                              "ERROR saving attributes" +
-                              ", errorMsg=" + chrome.runtime.lastError);
-            } else {
-                console.info(ENV.logCategory +
-                             "Attributes saved successfully");
-                success = true;
-            }
-
-            if (ENV.types.OBJECT === typeof(DOM)) {
-                DOM.togglers.toggleAttributesSaveSuccess(success);
-            }
-        });
+    if ("" === doneData.modifiedEncodedOverrides) {
+        return;
     }
+
+    console.info(ENV.logCategory + "Saving site attributes...");
+    Quirks.getSyncMethod().set({
+        customOverrides : doneData.modifiedEncodedOverrides
+    }, function() {
+        // Check if the options were successfully saved.
+        var success = false;
+        if (chrome.runtime.lastError) {
+            console.error(ENV.logCategory +
+                          "ERROR saving overrides" +
+                          ", errorMsg=" + chrome.runtime.lastError);
+        } else {
+            console.info(ENV.logCategory +
+                         "Attributes saved successfully");
+            success = true;
+        }
+
+        if (ENV.types.OBJECT === typeof(DOM)) {
+            DOM.togglers.toggleOverridesSaveSuccess(success);
+        }
+    });
 }
 
 // ------------------------------------------------------------------------

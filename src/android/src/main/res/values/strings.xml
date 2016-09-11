@@ -42,7 +42,8 @@
     <string name="checkBox_showHash">Show</string>
     <string name="checkBox_truncate">Truncate</string>
     <string name="hint_truncation">-1</string>
-    <string name="checkBox_saveAttributes">Save custom changes</string>
+    <string name="checkBox_noSpecialChars">No special characters</string>
+    <string name="checkBox_saveOverrides">Save custom overrides</string>
     <string name="button_generate">Generate!</string>
 
     <!-- ############# -->

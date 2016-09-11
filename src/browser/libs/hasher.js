@@ -8,7 +8,7 @@
  * @date        Sep 07, 2014
  *
  * @license     GNU General Public License v3 or Later
- * @copyright   Manjul Apratim, 2014, 2015
+ * @copyright   Manjul Apratim, 2014
  */
 
 // ========================================================================
@@ -108,7 +108,7 @@ var Hasher = {
         // If special characters are allowed for,
         // encode the hash using Z85 encoding.
         if (1 === specialCharsFlag) {
-            //return sjcl.codec.z85.fromBits(hashObj);
+            return sjcl.codec.z85.fromBits(hashObj);
         }
 
         // Use the default base64 encoding otherwise.
@@ -130,20 +130,31 @@ var Hasher = {
     getPasswdStr : function(hash, truncation, specialCharsFlag) {
         var passwdStr = hash;
 
-        // For the case of base64 (selected when no special chars),
-        // make the base64 hash "URL and filename safe",
-        // i.e., strip off trailing "="
-        // and replace the special characters (+, /)
-        // with the characters (-, _) respectively
-        // (RFC 4648).
         if (1 !== specialCharsFlag) {
+            // For the case of base64 (selected when no special chars),
+            // RFC 4648 specifies how to make the encoded string
+            // "URL and filename safe" -
+            // strip off any trailing "=",
+            // and replace the special characters (+, /)
+            // with the characters (-, _) respectively.
+            // This was used in the old avatar of Gobbledygook.
+            // In the present form, if special characters are allowed,
+            // Z85 is the preferred encoding anyway, therefore base64
+            // will be used in "strict mode" with only [a-z][A-Z][0-9].
             passwdStr = hash.replace(
                             /=/g, '').replace(
-                            /\+/g, '-').replace(
-                            /\//g, '_');
+                            /\+/g, '').replace(
+                            /\//g, '');
+        } else {
+            // For the case of Z85, replace "/" with "_"
+            // (the latter is not part of the Z85 alphabet),
+            // to make the hash filename-safe.
+            passwdStr = hash.replace(/\//g, '_');
         }
+
         // Truncate, if the parameter is supplied.
-        // Truncation is done after to account for removal of trailing "="s,
+        // Truncation is done after to account for
+        // the removal of any special characters,
         // since that may already have brought the length
         // to within the desired range.
         if (truncation >= 0) {

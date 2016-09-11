@@ -6,7 +6,7 @@
  * @date        Jun 20, 2016
  *
  * @license     GNU General Public License v3 or Later
- * @copyright   Manjul Apratim, 2014-2016
+ * @copyright   Manjul Apratim, 2016
  */
 
 // ========================================================================

@@ -99,6 +99,7 @@ $(SJCL_MEGALITH): builddir
 		$(SJCL)/core/codecString.js \
 		$(SJCL)/core/codecHex.js \
 		$(SJCL)/core/codecBase64.js \
+		$(SJCL)/core/codecZ85.js \
 		$(SJCL)/core/sha256.js \
 		$(SJCL)/core/ccm.js \
 		$(SJCL)/core/ocb2.js \
