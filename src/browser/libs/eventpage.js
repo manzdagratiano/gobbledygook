@@ -21,17 +21,6 @@
 var BACKGROUND              = {
 
     /**
-     * @summary The actionable events that could be triggered when
-     *          interacting with the UI.
-     * @enum    {string}
-     */
-    events                  : {
-        DOM_CONTENT_LOADED  : "DOMContentLoaded",
-        EXPORT              : "Export",
-        IMPORT              : "Import"
-    },
-
-    /**
      * @summary A "category" to log with, to identify which component
      *          the log is coming from.
      */

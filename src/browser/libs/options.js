@@ -22,77 +22,15 @@
 var OPTIONS             = {
 
     /**
-     * @summary The default number of iterations of PBKDF2 (when unset).
-     */
-    defaultIterations       : 10000,
-
-    /**
-     * @summary The modes of display for a panel that can be shown/hidden.
-     */
-    display                 : {
-        NONE                : "none"
-    },
-
-    /**
-     * @summary The actionable events that could be triggered when
-     *          interacting with the UI.
-     * @enum    {string}
-     */
-    events                  : {
-        DOM_CONTENT_LOADED  : "DOMContentLoaded",
-        CHANGE              : "change",
-        CLICK               : "click",
-        EXPORT              : "Export",
-        IMPORT              : "Import"
-    },
-
-    /**
-     * @summary The indentation for "pretty-printing" JSON objects.
-     */
-    indentation             : 4,
-
-    /**
      * @summary A "category" to log with, to identify which component
      *          the log is coming from.
      */
     logCategory             : "OPTIONS: ",
 
     /**
-     * @summary The list of all the user "preferences" stored in the
-     *          browser's preferences system.
-     */
-    preferences             : {
-        defaultIterations   : "defaultIterations",
-        saltKey             : "saltKey",
-        customOverrides     : "customOverrides"
-    },
-
-    /**
      * @summary The name of the settings file when exporting
      */
-    settingsFile            : "gobbledygook.json",
-
-    /**
-     * @summary The UTF-8 code used to identify "success" or "failure"
-     *          when communicating back to the user (in this case when
-     *          saving site attributes).
-     *          SUCCESS would show up as a "check mark", and
-     *          FAILURE would show up as a "cross".
-     * @enum    {string}
-     */
-    successString           : {
-        SUCCESS             : "\u2713",
-        FAILURE             : "\u2717"
-    },
-
-    /**
-     * @summary Types referenced for the "typeof" command.
-     * @enum    {string}
-     */
-    types                   : {
-        OBJECT              : "object",
-        UNDEFINED           : "undefined"
-    }
+    settingsFile            : "gobbledygook.json"
 
 };  // end namepace OPTIONS
 
@@ -139,12 +77,12 @@ function toggleSaltKey() {
         generateKeyButton.disabled = false;
 
         // Generate a key when the "Generate Key" button is clicked
-        generateKeyButton.addEventListener(OPTIONS.events.CLICK,
+        generateKeyButton.addEventListener(ENV.events.CLICK,
                                            generateKey);
     } else {
         console.info(OPTIONS.logCategory +
                      "Locking the salt key...");
-        generateKeyButton.removeEventListener(OPTIONS.events.CLICK,
+        generateKeyButton.removeEventListener(ENV.events.CLICK,
                                               generateKey);
         generateKeyButton.disabled = true;
     }
@@ -164,9 +102,9 @@ function generateKey() {
     saltBox.value = "<Generating...>";
 
     var keyGenerated = false;
-    if (OPTIONS.types.OBJECT === typeof(Keygen)) {
+    if (ENV.types.OBJECT === typeof(Keygen)) {
         var key = Keygen.generate();
-        if (OPTIONS.types.UNDEFINED !== typeof(key)) {
+        if (ENV.types.UNDEFINED !== typeof(key)) {
             keyGenerated = true;
         }
     } else {
@@ -200,14 +138,14 @@ function saveOptions() {
                           ", errorMsg=" + chrome.runtime.lastError);
             document.getElementById(
                         OPT_DOM.optionsSaveSuccessLabel).textContent =
-                OPTIONS.successString.FAILURE;
+                ENV.successString.FAILURE;
             return;
         }
 
         console.info(OPTIONS.logCategory + "Options saved");
         document.getElementById(
                     OPT_DOM.optionsSaveSuccessLabel).textContent =
-            OPTIONS.successString.SUCCESS;
+            ENV.successString.SUCCESS;
     });
 }
 
@@ -231,7 +169,7 @@ function loadOptions() {
     // Restore options from the preferences system
     Quirks.getSyncMethod().get({
         saltKey             : "",
-        defaultIterations   : OPTIONS.defaultIterations,
+        defaultIterations   : ENV.defaultIterations,
         customOverrides     : ""
     }, function(items) {
         if (chrome.runtime.lastError) {
@@ -278,9 +216,9 @@ function loadOptions() {
 
             });
 
-            if (OPTIONS.events.EXPORT === action) {
+            if (ENV.events.EXPORT === action) {
                 exportSettings();
-            } else if (OPTIONS.events.IMPORT === action) {
+            } else if (ENV.events.IMPORT === action) {
                 importSettings();
             }
         });
@@ -297,7 +235,7 @@ function loadOptions() {
  */
 function setDomElements(settings) {
     // Sanity check
-    var ids = OPTIONS.preferences;
+    var ids = ENV.preferences;
     if (!(settings.hasOwnProperty(ids.saltKey) &&
           settings.hasOwnProperty(ids.defaultIterations) &&
           settings.hasOwnProperty(ids.customOverrides) &&
@@ -323,7 +261,7 @@ function exportSettings() {
     console.info(OPTIONS.logCategory + "exportSettings() handler called.");
     Quirks.getSyncMethod().get({
         saltKey             : "",
-        defaultIterations   : OPTIONS.defaultIterations,
+        defaultIterations   : ENV.defaultIterations,
         customOverrides     : ""
     }, function(items) {
         if (chrome.runtime.lastError) {
@@ -331,7 +269,7 @@ function exportSettings() {
                           "ERROR loading default options, " +
                           "errorMsg=" + chrome.runtime.lastError);
             // Nothing to export, return
-            notifyUser("Failed to export application settings :-(");
+            env.notifyUser("Failed to export application settings :-(");
             return;
         }
 
@@ -350,12 +288,12 @@ function exportSettings() {
         a.href = window.URL.createObjectURL(new Blob([
                                     JSON.stringify(settings,
                                                    null,
-                                                   OPTIONS.indentation)
+                                                   ENV.indentation)
         ],{
             type    : "application/json"
         }));
         a.download = OPTIONS.settingsFile;
-        a.style.display = OPTIONS.display.NONE;
+        a.style.display = ENV.display.NONE;
         // Append the anchor to the body, simulate a click, and remove it
         document.body.appendChild(a);
         a.click();
@@ -392,7 +330,8 @@ function importSettings() {
                     Profile.validateAndReturnPreferences(settings);
                 if (!profileSettings) {
                     console.info(ENV.logCategory + "Malformed settings file!");
-                    notifyUser("Failed to import application settings :-(");
+                    env.notifyUser(
+                        "Failed to import application settings :-(");
                     return;
                 }
 
@@ -401,7 +340,8 @@ function importSettings() {
 
                 // Do not save the imported settings automatically!
                 // Let the user make a conscious decision to save.
-                notifyUser("Settings imported! You'd probably want to save them!");
+                env.notifyUser(
+                    "Settings imported! You'd probably want to save them!");
             };
         })(settingsFile);
 
@@ -413,37 +353,21 @@ function importSettings() {
     document.body.removeChild(fileInput);
 }
 
-/**
- * @brief   A method to show a notification to the user.
- * @param   {string} The message to display
- * @return  {undefined}
- */
-function notifyUser(message) {
-    console.info(OPTIONS.logCategory +
-                 "notifyUser(): message=" + message);
-    chrome.notifications.create({
-        "type"      : "basic",
-        "iconUrl"   : "icon/icon-48.png",
-        "title"     : "Gobbledygook",
-        "message"   : message
-    });
-}
-
 // ========================================================================
 // EVENT HANDLERS
 
 // Restore options on loading the "Options" page
-document.addEventListener(OPTIONS.events.DOM_CONTENT_LOADED,
+document.addEventListener(ENV.events.DOM_CONTENT_LOADED,
                           loadOptions);
 
 // Enable/disable editing the salt key
 document.getElementById(OPT_DOM.editSaltKeyCheckBox).addEventListener(
-                                                        OPTIONS.events.CHANGE,
+                                                        ENV.events.CHANGE,
                                                         toggleSaltKey);
 
 // Save options when the "Save" button is clicked
 document.getElementById(OPT_DOM.saveButton).addEventListener(
-                                                OPTIONS.events.CLICK,
+                                                ENV.events.CLICK,
                                                 saveOptions);
 
 // Configure "optionsSaveSuccessLabel"
@@ -451,8 +375,8 @@ document.getElementById(OPT_DOM.optionsSaveSuccessLabel).textContent = "";
 
 // Settings Export/Import
 document.getElementById(OPT_DOM.exportSettingsIcon).addEventListener(
-                                                        OPTIONS.events.CLICK,
+                                                        ENV.events.CLICK,
                                                         exportSettings);
 document.getElementById(OPT_DOM.importSettingsIcon).addEventListener(
-                                                        OPTIONS.events.CLICK,
+                                                        ENV.events.CLICK,
                                                         importSettings);

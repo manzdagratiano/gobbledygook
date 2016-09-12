@@ -28,78 +28,12 @@
 var AUX                             = {
 
     /**
-     * @summary The default number of iterations of PBKDF2 (when unset).
-     */
-    defaultIterations               : 10000,
-
-    /**
-     * @summary The modes of display for a panel that can be shown/hidden.
-     *          In the present case, it is the "Advanced" settings container.
-     */
-    display                         : {
-        BLOCK                       : "block",
-        NONE                        : "none"
-    },
-
-    /**
-     * @summary The actionable events that could be triggered when
-     *          interacting with the UI.
-     * @enum    {string}
-     */
-    events                          : {
-        CHANGE                      : "change",
-        CLICK                       : "click",
-        DONE                        : "done",
-        ERROR                       : "error",
-        GENERATE                    : "generate"
-    },
-
-    /**
-     * @summary The indentation for "pretty-printing" JSON objects.
-     */
-    indentation                     : 4,
-
-    /**
-     * @summary The text field input type;
-     *          when "text", the text field shows its contents,
-     *          when "password", the text field contents are not visible.
-     * @enum    {string}
-     */
-    inputType                       : {
-        PASSWORD                    : "password",
-        TEXT                        : "text"
-    },
-
-    /**
      * @summary A "category" to log with, to identify which component
      *          the log is coming from; for instance,
      *          if a log is coming from within the main thread or
      *          a worker thread.
      */
-    logCategory                     : "WORKHORSE: ",
-
-    /**
-     * @summary The UTF-8 code used to identify "success" or "failure"
-     *          when communicating back to the user (in this case when
-     *          saving site attributes).
-     *          SUCCESS would show up as a "check mark", and
-     *          FAILURE would show up as a "cross".
-     * @enum    {string}
-     */
-    successString                   : {
-        SUCCESS                     : "\u2713",
-        FAILURE                     : "\u2717"
-    },
-
-    /**
-     * @summary Types referenced for the "typeof" command.
-     * @enum    {string}
-     */
-    types                           : {
-        FUNCTION                    : "function",
-        STRING                      : "string",
-        UNDEFINED                   : "undefined"
-    }
+    logCategory                     : "WORKHORSE: "
 
 };  // end namepace AUX
 
@@ -122,13 +56,13 @@ var AUX                             = {
  *          default 1).
  */
 var Attributes = function(domain, iterations, truncation, specialCharsFlag) {
-    this.domain     = (AUX.types.UNDEFINED === typeof(domain) ?
+    this.domain     = (ENV.types.UNDEFINED === typeof(domain) ?
                        null : domain);
-    this.iterations = (AUX.types.UNDEFINED === typeof(iterations) ?
+    this.iterations = (ENV.types.UNDEFINED === typeof(iterations) ?
                        null : iterations);
-    this.truncation = (AUX.types.UNDEFINED === typeof(truncation) ?
+    this.truncation = (ENV.types.UNDEFINED === typeof(truncation) ?
                        Attributes.NO_TRUNCATION : truncation);
-    this.specialCharsFlag = (AUX.types.UNDEFINED === typeof(specialCharsFlag) ?
+    this.specialCharsFlag = (ENV.types.UNDEFINED === typeof(specialCharsFlag) ?
                        1 : specialCharsFlag);
 };
 
@@ -203,7 +137,7 @@ var AttributesCodec = {
         // Create a "default-initialized" object of type "Attributes"
         var attributes = new Attributes();
 
-        if (AUX.types.UNDEFINED !== typeof(encodedAttributes)) {
+        if (ENV.types.UNDEFINED !== typeof(encodedAttributes)) {
             var attributesArray =
                 encodedAttributes.split(AttributesCodec.DELIMITER);
             // Sanity check
@@ -272,7 +206,7 @@ var AttributesCodec = {
         console.debug(AUX.logCategory + "encodedOverridesMap=" +
                       JSON.stringify(encodedOverridesMap,
                                      null,
-                                     AUX.indentation));
+                                     ENV.indentation));
         return encodedOverridesMap;
     },
 
@@ -402,9 +336,9 @@ var DOM                             = {
                 document.getElementById(DOM.elements.showHashCheckBox);
             var hashField = document.getElementById(DOM.elements.hashBox);
             if (checkBox.checked) {
-                hashField.type = AUX.inputType.TEXT;
+                hashField.type = ENV.inputType.TEXT;
             } else {
-                hashField.type = AUX.inputType.PASSWORD;
+                hashField.type = ENV.inputType.PASSWORD;
             }
         },
 
@@ -419,9 +353,9 @@ var DOM                             = {
             var advancedConfigContainer =
                 document.getElementById(DOM.elements.advancedConfigContainer);
             if (checkBox.checked) {
-                advancedConfigContainer.style.display = AUX.display.BLOCK; 
+                advancedConfigContainer.style.display = ENV.display.BLOCK; 
             } else {
-                advancedConfigContainer.style.display = AUX.display.NONE; 
+                advancedConfigContainer.style.display = ENV.display.NONE; 
             }
         },
 
@@ -512,7 +446,7 @@ var DOM                             = {
         showSettingsListener        : function() {
             console.info(AUX.logCategory +
                          "showSettings() handler called...");
-            if (AUX.types.FUNCTION === typeof(onShowSettings)) {
+            if (ENV.types.FUNCTION === typeof(onShowSettings)) {
                 onShowSettings();
             }
         },
@@ -524,7 +458,7 @@ var DOM                             = {
         exportSettingsListener      : function() {
             console.info(AUX.logCategory +
                          "exportSettings() handler called...");
-            if (AUX.types.FUNCTION === typeof(onExportSettings)) {
+            if (ENV.types.FUNCTION === typeof(onExportSettings)) {
                 onExportSettings();
             }
         },
@@ -536,7 +470,7 @@ var DOM                             = {
         importSettingsListener      : function() {
             console.info(AUX.logCategory +
                          "importSettings() handler called...");
-            if (AUX.types.FUNCTION === typeof(onImportSettings)) {
+            if (ENV.types.FUNCTION === typeof(onImportSettings)) {
                 onImportSettings();
             }
         }
@@ -564,20 +498,20 @@ var DOM                             = {
          */
         toggleHashField : function(eventType, message) {
             var hashField = document.getElementById(DOM.elements.hashBox);
-            if (eventType === AUX.events.CLICK) {
+            if (eventType === ENV.events.CLICK) {
                 hashField.disabled = false;
-                hashField.type = AUX.inputType.TEXT;
-            } else if (eventType === AUX.events.DONE) {
+                hashField.type = ENV.inputType.TEXT;
+            } else if (eventType === ENV.events.DONE) {
                 hashField.disabled = false;
-                hashField.type = AUX.inputType.PASSWORD;
-            } else if (eventType === AUX.events.ERROR) {
+                hashField.type = ENV.inputType.PASSWORD;
+            } else if (eventType === ENV.events.ERROR) {
                 hashField.disabled = false;
-                hashField.type = AUX.inputType.TEXT;
-            } else if (eventType === AUX.events.GENERATE) {
+                hashField.type = ENV.inputType.TEXT;
+            } else if (eventType === ENV.events.GENERATE) {
                 hashField.disabled = true;
             }
 
-            if (AUX.types.STRING === typeof(message)) {
+            if (ENV.types.STRING === typeof(message)) {
                 hashField.value = message;
             }
         },
@@ -593,8 +527,8 @@ var DOM                             = {
         toggleOverridesSaveSuccess : function(success) {
             document.getElementById(
                 DOM.elements.overridesSaveSuccessLabel).textContent =
-                (success ?  AUX.successString.SUCCESS :
-                            AUX.successString.FAILURE);
+                (success ?  ENV.successString.SUCCESS :
+                            ENV.successString.FAILURE);
         }
 
     },  // end namespace "togglers"
@@ -621,9 +555,9 @@ var DOM                             = {
     configure : function(options, params) {
         console.info(AUX.logCategory +
                      "workhorseOptions=" +
-                     JSON.stringify(options, null, AUX.indentation) +
+                     JSON.stringify(options, null, ENV.indentation) +
                      ",\nworkhorseParams=" +
-                     JSON.stringify(params, null, AUX.indentation));
+                     JSON.stringify(params, null, ENV.indentation));
 
         // ----------------------------------------------------------------
         // Private Methods
@@ -715,7 +649,7 @@ var DOM                             = {
                 iterations = defaultIterations;
             }
             if (!iterations) {
-                iterations = AUX.defaultIterations;
+                iterations = ENV.defaultIterations;
             }
             console.info(AUX.logCategory + "iterations=" + iterations);
             iterationBox.value = iterations;
@@ -740,7 +674,7 @@ var DOM                             = {
 
             // Add an event listener to the "click" action,
             // which toggles the visibility of the generated hash.
-            checkBox.addEventListener(AUX.events.CHANGE,
+            checkBox.addEventListener(ENV.events.CHANGE,
                                       DOM.listeners.showHashListener);
         };
 
@@ -768,7 +702,7 @@ var DOM                             = {
 
             // Add an event listener to the "click" action,
             // which toggles the editability of the truncation parameter.
-            checkBox.addEventListener(AUX.events.CHANGE,
+            checkBox.addEventListener(ENV.events.CHANGE,
                                       DOM.listeners.truncateListener);
 
             return truncation;
@@ -813,10 +747,10 @@ var DOM                             = {
                 document.getElementById(DOM.elements.advancedConfigContainer);
             // Uncheck the checkbox and hide the "Advanced" panel
             checkBox.checked = false;
-            advancedConfigContainer.style.display = AUX.display.NONE; 
+            advancedConfigContainer.style.display = ENV.display.NONE; 
             // Add an event listener to the "click" action,
             // which toggles the editability of the truncation parameter.
-            checkBox.addEventListener(AUX.events.CHANGE,
+            checkBox.addEventListener(ENV.events.CHANGE,
                                       DOM.listeners.showAdvancedListener);
         }
 
@@ -856,7 +790,7 @@ var DOM                             = {
             // Add an event listener to the "click" action,
             // whose purpose is to gather the values of the elements
             // when "Generate" is hit (the input to the algorithm).
-            button.addEventListener(AUX.events.CLICK,
+            button.addEventListener(ENV.events.CLICK,
                                     DOM.listeners.generateListener);
         };
 
@@ -866,16 +800,16 @@ var DOM                             = {
          */
         var configureSettingsIcons = function() {
                 document.getElementById(DOM.elements.helpIcon).
-                    addEventListener(AUX.events.CLICK,
+                    addEventListener(ENV.events.CLICK,
                                      DOM.listeners.helpListener);
                 document.getElementById(DOM.elements.showSettingsIcon).
-                    addEventListener(AUX.events.CLICK,
+                    addEventListener(ENV.events.CLICK,
                                       DOM.listeners.showSettingsListener);
                 document.getElementById(DOM.elements.exportSettingsIcon).
-                    addEventListener(AUX.events.CLICK,
+                    addEventListener(ENV.events.CLICK,
                                      DOM.listeners.exportSettingsListener);
                 document.getElementById(DOM.elements.importSettingsIcon).
-                    addEventListener(AUX.events.CLICK,
+                    addEventListener(ENV.events.CLICK,
                                      DOM.listeners.importSettingsListener);
         };
 
@@ -892,7 +826,7 @@ var DOM                             = {
             // Send an event to set the salt key to SimplePrefs.
             // We do not need to wait for returning from this
             // asynchronous operation, as this is only for future usage.
-            if (AUX.types.FUNCTION === typeof(onGenerateSaltKey)) {
+            if (ENV.types.FUNCTION === typeof(onGenerateSaltKey)) {
                 onGenerateSaltKey(params.key);
             }
         }
@@ -914,7 +848,7 @@ var DOM                             = {
         console.info(AUX.logCategory + "savedOverrides=" +
                      JSON.stringify(savedOverrides,
                                     null,
-                                    AUX.indentation));
+                                    ENV.indentation));
 
         var proposedAttributes =
             new Attributes(configureDomain(domain,
@@ -946,30 +880,30 @@ var DOM                             = {
         console.info(AUX.logCategory + "Cleaning up resources...");
         // Remove all the event listeners
         document.getElementById(DOM.elements.generateButton).
-            removeEventListener(AUX.events.CLICK,
+            removeEventListener(ENV.events.CLICK,
                                 DOM.listeners.generateListener);
         document.getElementById(DOM.elements.truncateCheckBox).
-            removeEventListener(AUX.events.CHANGE,
+            removeEventListener(ENV.events.CHANGE,
                                 DOM.listeners.truncateListener);
         document.getElementById(DOM.elements.showHashCheckBox).
-            removeEventListener(AUX.events.CHANGE,
+            removeEventListener(ENV.events.CHANGE,
                                 DOM.listeners.showHashListener);
         // Advanced settings
         document.getElementById(DOM.elements.showAdvancedCheckBox).
-            removeEventListener(AUX.events.CHANGE,
+            removeEventListener(ENV.events.CHANGE,
                                 DOM.listeners.showAdvancedListener);
         // Settings icons
         document.getElementById(DOM.elements.helpIcon).
-            removeEventListener(AUX.events.CLICK,
+            removeEventListener(ENV.events.CLICK,
                                 DOM.listeners.helpListener);
         document.getElementById(DOM.elements.showSettingsIcon).
-            removeEventListener(AUX.events.CLICK,
+            removeEventListener(ENV.events.CLICK,
                                 DOM.listeners.showSettingsListener);
         document.getElementById(DOM.elements.exportSettingsIcon).
-            removeEventListener(AUX.events.CLICK,
+            removeEventListener(ENV.events.CLICK,
                                 DOM.listeners.exportSettingsListener);
         document.getElementById(DOM.elements.importSettingsIcon).
-            removeEventListener(AUX.events.CLICK,
+            removeEventListener(ENV.events.CLICK,
                                 DOM.listeners.importSettingsListener);
     }
 
@@ -1018,13 +952,13 @@ var Workhorse           = {
         // Toggle the "show" checkbox
         document.getElementById(DOM.elements.showHashCheckBox).checked =
             false;
-        DOM.togglers.toggleHashField(AUX.events.GENERATE, "");
+        DOM.togglers.toggleHashField(ENV.events.GENERATE, "");
 
         console.debug(AUX.logCategory + "generateParams=" +
-                      JSON.stringify(params, null, AUX.indentation));
+                      JSON.stringify(params, null, ENV.indentation));
 
         // Check if Web Workers are supported
-        if (AUX.types.UNDEFINED === typeof(Worker)) {
+        if (ENV.types.UNDEFINED === typeof(Worker)) {
             // No support for web workers;
             // do nothing,
             // since doing intensive operations here will
@@ -1033,7 +967,7 @@ var Workhorse           = {
             // by chains of the past.
             console.error(AUX.logCategory +
                           "ERROR: No web worker support!");
-            DOM.togglers.toggleHashField(AUX.events.ERROR,
+            DOM.togglers.toggleHashField(ENV.events.ERROR,
                                          "ERROR: " +
                                          "browser.Type === ANCIENT");
             return;
@@ -1047,13 +981,13 @@ var Workhorse           = {
             console.debug(logCategory +
                           JSON.stringify(oEvent.data,
                                          null,
-                                         AUX.indentation));
+                                         ENV.indentation));
             var eventData = oEvent.data;
 
             // Finalize the worker, if this is the "done" signal
-            if (eventData.hasOwnProperty(AUX.events.DONE)) {
+            if (eventData.hasOwnProperty(ENV.events.DONE)) {
                 console.info(AUX.logCategory + "Finalizing worker...");
-                DOM.togglers.toggleHashField(AUX.events.DONE,
+                DOM.togglers.toggleHashField(ENV.events.DONE,
                                              eventData.password);
 
                 var encodedOverridesMap = params.encodedOverridesMap;
@@ -1070,7 +1004,7 @@ var Workhorse           = {
                     console.info(AUX.logCategory, "overridesToSave=" +
                                  JSON.stringify(overridesToSave,
                                                 null,
-                                                AUX.indentation));
+                                                ENV.indentation));
                     if (overridesToSave.attributesExist()) {
                         // Create new, or update existing
                         encodedOverridesMap[params.domain] =
@@ -1079,7 +1013,7 @@ var Workhorse           = {
                                       "Saving customOverrides=" +
                                       JSON.stringify(encodedOverridesMap,
                                                      null,
-                                                     AUX.indentation));
+                                                     ENV.indentation));
                         modifiedEncodedOverrides =
                             JSON.stringify(encodedOverridesMap);
                     } else {
@@ -1090,7 +1024,7 @@ var Workhorse           = {
 
                 // Check if a function "finalize" is defined,
                 // and if so, call it.
-                if (AUX.types.FUNCTION === typeof(finalize)) {
+                if (ENV.types.FUNCTION === typeof(finalize)) {
                     finalize({
                         domain                      : params.domain,
                         password                    : eventData.password,
@@ -1102,7 +1036,7 @@ var Workhorse           = {
                 // DO NOT CALL "hasher.terminate()",
                 // which rudely terminates the web worker
                 // without a chance to clean up.
-                hasher.postMessage({ done : AUX.events.DONE });
+                hasher.postMessage({ done : ENV.events.DONE });
             };
         };
 
@@ -1112,7 +1046,7 @@ var Workhorse           = {
                             ":" + oEvent.lineno + ")");
         };
 
-        DOM.togglers.toggleHashField(AUX.events.CLICK,
+        DOM.togglers.toggleHashField(ENV.events.CLICK,
                                      "<Generating...>");
         var hasherParams = {
             saltKey         : params.saltKey,

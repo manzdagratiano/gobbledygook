@@ -23,6 +23,10 @@
 /**
  * @namespace
  * @summary A global namespace for miscellaneous "environment variables".
+ *          The hasher module does not have access to other content scripts,
+ *          since it is fired in a worker thread.
+ *          Hence, it needs to have its own global variables defined,
+ *          without reusing them from the env.js module.
  */
 var HASHER          = {
 

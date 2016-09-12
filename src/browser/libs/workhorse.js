@@ -15,80 +15,23 @@
 // ========================================================================
 // GLOBAL CONSTANTS
 
+
 /**
  * @namespace
  * @summary A global namespace for miscellaneous "environment" variables.
  */
-var ENV                     = {
-
-    /**
-     * @summary The default number of iterations of PBKDF2 (when unset).
-     */
-    defaultIterations       : 10000,
-
-    /**
-     * @summary The actionable events that could be triggered when
-     *          interacting with the UI.
-     * @enum    {string}
-     */
-    events                  : {
-        DOM_CONTENT_LOADED  : "DOMContentLoaded",
-        EXPORT              : "Export",
-        IMPORT              : "Import"
-    },
-
-    /**
-     * @summary The indentation for "pretty-printing" JSON objects.
-     */
-    indentation             : 4,
+var MAIN        = {
 
     /**
      * @summary A "category" to log with, to identify which component
      *          the log is coming from.
      */
-    logCategory             : "MAIN: ",
-
-    /**
-     * @summary Types referenced for the "typeof" command.
-     * @enum    {string}
-     */
-    types                   : {
-        OBJECT              : "object",
-        UNDEFINED           : "undefined"
-    }
+    logCategory : "MAIN: "
 
 };
 
-/**
- * @namespace
- * @summary A namespace for environment variables related to DOM/HTML.
- */
-var HTML                    = {
-
-    /**
-     * @summary The commands that could be fired on the "document".
-     * @enum    {string}
-     */
-    commands                : {
-        COPY                : "Copy"
-    },
-
-    /**
-     * @summary The event message types the document could listen to.
-     * @enum    {string}
-     */
-    messages                : {
-        COPY                : "copy"
-    },
-
-    /**
-     * @summary The mime types understood by the system clipboard.
-     * @enum    {string}
-     */
-    mimeTypes               : {
-        TEXT                : "text/plain"
-    }
-};
+// ========================================================================
+// METHODS
 
 // ========================================================================
 // EVENT HANDLERS
@@ -102,7 +45,7 @@ var HTML                    = {
  */
 document.addEventListener(ENV.events.DOM_CONTENT_LOADED,
                           function() {
-    console.info(ENV.logCategory +
+    console.info(MAIN.logCategory +
                  "Configuring elements...");
     var tabs = chrome.tabs.query({
         active          : true,
@@ -111,7 +54,7 @@ document.addEventListener(ENV.events.DOM_CONTENT_LOADED,
         // Get the current URL
         var activeTab = arrayOfTabs[0];
         var url = activeTab.url;
-        console.info(ENV.logCategory + "url=" + url);
+        console.info(MAIN.logCategory + "url=" + url);
 
         Quirks.getSyncMethod().get({
             saltKey             : "",
@@ -119,7 +62,7 @@ document.addEventListener(ENV.events.DOM_CONTENT_LOADED,
             customOverrides     : ""
         }, function(items) {
             if (chrome.runtime.lastError) {
-                console.error(ENV.logCategory +
+                console.error(MAIN.logCategory +
                               "ERROR loading default options, " +
                               "errorMsg=" + chrome.runtime.lastError);
                 // No need to return; defaults will be set.
@@ -149,13 +92,13 @@ document.addEventListener(ENV.events.DOM_CONTENT_LOADED,
  * @return  {undefined}
  */
 function onGenerateSaltKey(key) {
-    console.info(ENV.logCategory + "Saving salt key to the sync system...");
+    console.info(MAIN.logCategory + "Saving salt key to the sync system...");
     Quirks.getSyncMethod().set({
         saltKey             : key
     }, function() {
         // Check if the options were successfully saved
         if (chrome.runtime.lastError) {
-            console.error(ENV.logCategory + "ERROR saving saltKey" +
+            console.error(MAIN.logCategory + "ERROR saving saltKey" +
                           ", errorMsg=" + chrome.runtime.lastError);
             return;
         }
@@ -181,7 +124,7 @@ function onGenerateSaltKey(key) {
  * @return  {undefined}
  */
 function finalize(doneData) {
-    console.debug(ENV.logCategory + "Received 'done'..., doneData=" +
+    console.debug(MAIN.logCategory + "Received 'done'..., doneData=" +
                   JSON.stringify(doneData, null, ENV.indentation));
 
     /**
@@ -199,11 +142,12 @@ function finalize(doneData) {
             e.clipboardData.setData(HTML.mimeTypes.TEXT, password);
             // Prevent random selections from interfering with our data
             e.preventDefault();
+            env.notifyUser("Your password is ready to paste!");
         });
         document.execCommand(HTML.commands.COPY, false, null);
     }
 
-    console.info(ENV.logCategory + "Copying to clipboard...");
+    console.info(MAIN.logCategory + "Copying to clipboard...");
     // Copy the generated password to clipboard.
     copyPasswordToClipboard(doneData.password);
 
@@ -212,18 +156,18 @@ function finalize(doneData) {
         return;
     }
 
-    console.info(ENV.logCategory + "Saving site attributes...");
+    console.info(MAIN.logCategory + "Saving site attributes...");
     Quirks.getSyncMethod().set({
         customOverrides : doneData.modifiedEncodedOverrides
     }, function() {
         // Check if the options were successfully saved.
         var success = false;
         if (chrome.runtime.lastError) {
-            console.error(ENV.logCategory +
+            console.error(MAIN.logCategory +
                           "ERROR saving overrides" +
                           ", errorMsg=" + chrome.runtime.lastError);
         } else {
-            console.info(ENV.logCategory +
+            console.info(MAIN.logCategory +
                          "Attributes saved successfully");
             success = true;
         }
@@ -271,7 +215,7 @@ function onShowSettings(action) {
         type    : "background",
         action  : action
     }, function(response) {
-        console.info(ENV.logCategory +
+        console.info(MAIN.logCategory +
                      "response=" + JSON.stringify(response));
     });
 }
