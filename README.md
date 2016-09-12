@@ -2,6 +2,10 @@
 
 T3h Unh@X@b13 P@$$w0rd $01ut10n
 
+## Release Notes
+
+View the full [release notes](https://manzdagratiano.github.io/gobbledygook/release.html). The current version is an **incompatible change**.
+
 ## Houston, We have a Problem!
 
 Tired of having your password compromised on a popular website every
