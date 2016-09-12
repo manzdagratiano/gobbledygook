@@ -112,6 +112,7 @@ $(SJCL_MEGALITH): builddir
 
 base: basedir
 	cp $(ROOT)/README.md $(BASEDIR)/
+	cp $(ROOT)/LICENSE $(BASEDIR)/
 	cp -r $(HTML)/{*.html,android} $(BASEDIR)/
 	cp $(LIB)/{env,eventpage,hasher,keygen,options,profile,workhorse,workhorsefunctions}.js $(BASEDIR)/
 	mkdir $(BASEDIR)/{icon,sjcl}
