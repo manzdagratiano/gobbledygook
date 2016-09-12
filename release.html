@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Gobbledygook : T3h Unh@X@b13 P@$$w0rd $01ut10n">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Gobbledygook Release Notes</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/manzdagratiano/gobbledygook">View on GitHub</a>
+
+          <h1 id="project_title">Gobbledygook</h1>
+          <h2 id="project_tagline"><strong>T3h Unh@X@b13 P@$$w0rd $01ut10n</strong></h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/manzdagratiano/gobbledygook/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/manzdagratiano/gobbledygook/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<h1>
+<a id="release-notes" class="anchor" href="#release-notes" aria-hidden="true"><span class="octicon octicon-link"></span></a>Release Notes</h1>
+
+<h2>2.20160912.64c83fd</h2>
+
+<p>Let's face it.</p>
+
+<p>You <strong>cannot</strong> use Gobbledygook without having a mobile version.</p>
+
+<p><strong>Neither can I!</strong> So I decided to write Gobbledygook for Android!</p>
+
+<p>In preparation for the release for Android, this update brings <strong>incompatible changes</strong> to Gobbledygook.</p>
+
+<h3>Changelog</h3>
+
+<ul>
+    <li><strong>Domain Names:</strong> The domain field is dropping the "www." etc from the front.</li>
+    <li><strong>Automatic SaltKey Generation:</strong> Gobbledygook automatically generates the salt key on first run (i.e. when none exists), without forcing the user to do so.</li>
+    <li><strong>Hide Advanced Options:</strong> The options for iterations/truncation/saving custom overrides have been moved to an "Advanced..." collapsible, since they are not expected to be touched often. Having them in the main view just made the UI clunkier.</li>
+    <li><strong>Z85-encoding by default:</strong> The default scheme for encoding the final password now is <a href="http://rfc.zeromq.org/spec:32/Z85/">Z85</a> (ZeroMQ implementation of Base85-encoding), which provides special characters in the password and therefore makes it stronger. To switch back to the old Base64-encoding for websites that don't allow special characters in password, check the "No special characters" checkbox under "Advanced..."</li>
+    <li><strong>Import/export settings:</strong> Settings can now be exported/imported between browsers - between two Firefox instances, between Firefox and Chrome, and eventually between mobile and browser, as all versions will be compatible with each other. For Firefox, the storage API now uses local storage instead of the sync system - a limitation of the current webextension API support in Firefox at this time; the export/import options provide a workaround for this.</li>
+    <li><strong>Options UI:</strong> The Firefox options UI is now the same one as in the Chrome version. The older list version in Firefox was dangerously buggy, since things like the saltKey could be edited by hand and would automatically save (a feeble attempt to "unlock" it using another preference element was at best an exercise in delusion).</li>
+    <li><strong>Under the Hood:</strong> The Firefox version of the addon is now a <strong>webextension</strong>, which unifies it with the Chrome implementation. While the core of the codebase was always the same with browser quirks being abstracted into an outermost layer, the outermost layer is now vanishingly thin, and there's less chance of blunder.</li>
+</ul>
+
+<h3>What should I do as an Existing User?</h3>
+
+<p>Due to the humongous number of changes, for websites where you've already been using Gobbledygook, it is recommended that you simply <strong>reset</strong> your password by choosing the "Forgot password" option. Please take note that the password reset page may have a <strong>different domain name</strong> from the usual login page, so be sure to generate the new password on the <strong>usual login page</strong> and use it on the reset page.</p>
+
+<p><em>While there was the possibility of generating the old password given the same salt key by plugging in the domain name with the "www." qualifier and using base64 encoding, the truly incompatible change is the removal of the "_" and "-" from base64-encoded passwords. These were the two special characters in the base64 alphabet (in urlsafe mode), and allowed to remain in the old encoding when there was only one mode for password generation. In the current avatar, the default mode is to include special characters through Z85 encoding, and therefore the "fallback" mode without special characters, which uses base64 encoding, must truly not contain any special characters, and is intended to provide a pure fallback when faced with an appalling site with poor password practices. Given the many such out there still as of 2016, the small inconvenience caused by this incompatibility is probably dwarfed by the usability benefit this mode provides.</em></p>
