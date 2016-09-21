@@ -4,3 +4,6 @@
 [submodule "spongycastle"]
 	path = spongycastle
 	url = https://github.com/rtyley/spongycastle
+[submodule "curvezmq-java"]
+	path = curvezmq-java
+	url = https://github.com/zeromq/curvezmq-java
