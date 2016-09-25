@@ -1,0 +1,24 @@
+language: android
+
+android:
+    components:
+        - android-23
+        - build-tools-24.0.0
+        - extra-android-m2repository
+        - platform-tools
+        - tools
+
+env:
+    - BUILDDIR=src/android
+
+before_cache:
+    - rm -f $BUILDDIR/.gradle/caches/modules-2/modules-2.lock
+
+cache:
+    directories:
+        - $BUILDDIR/.gradle/caches/
+        - $BUILDDIR/.gradle/wrapper/
+
+script:
+    - cd $BUILDDIR
+    - ./gradlew assembleDebug

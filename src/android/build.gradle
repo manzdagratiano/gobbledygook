@@ -29,13 +29,14 @@ def computeVersionCode() {
 /**
   * @brief Method to compute the android:versionName attribute,
   *        which is a string.
-  *        The versionName is computed as 1.YYYYMMDD.gitCommitSHA
+  *        The versionName is computed as 2.YYYYMMDD.gitCommitSHA
   *        in order to uniquely identify the version.
+  *        Major 2 to maintain compatibility with the browser version.
   */
 def computeVersionName() {
     def gitCommand = "git rev-parse --short HEAD"
     def proc = gitCommand.execute()
-    def versionName = "1." + \
+    def versionName = "2." + \
                       Integer.toString(computeVersionCode()) + "." + \
                       proc.text.trim()
     return versionName
