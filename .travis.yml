@@ -2,11 +2,13 @@ language: android
 
 android:
     components:
-        - android-23
-        - build-tools
-        - extra-android-m2repository
-        - platform-tools
+        # "tools" goes first, allowing fetching the latest version
+        # of the android-sdk as well as the android API
         - tools
+        - android-24
+        - build-tools-24.0.2
+        - platform-tools
+        - extra-android-m2repository
 
 env:
     - BUILDDIR=src/android
