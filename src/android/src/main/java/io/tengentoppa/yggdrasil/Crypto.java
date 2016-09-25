@@ -29,6 +29,9 @@ import org.spongycastle.util.encoders.Hex;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.util.encoders.Base64;
 
+// ZeroMQ
+import org.zeromq.codec.Z85;
+
 /**
  * @brief   The crypto workhorse, which does all the crypto magic
  */
@@ -96,11 +99,12 @@ public class Crypto {
     /**
      * @brief   Method to generate a key-stretched password from
      *          a seed password (hashed) and a salt.
-     * @return  {String} The base64-encoded generated key-stretched password
+     * @return  {String} The encoded generated key-stretched password.
      */
-    public static String generateHash(byte[] seedSHA,
-                                      byte[] salt,
-                                      Integer iterations) {
+    public static String generateHash(final byte[] seedSHA,
+                                      final byte[] salt,
+                                      final Integer iterations,
+                                      final Integer specialCharsFlag) {
         byte[] hash = null;
         PKCS5S2ParametersGenerator generator =
             new PKCS5S2ParametersGenerator(new SHA256Digest());
@@ -112,28 +116,53 @@ public class Crypto {
         hash = ((KeyParameter)
                 generator.generateDerivedParameters(256)).getKey();
 
-        String b64Hash = null;
-        try {
-            b64Hash = new String(Base64.encode(hash), UTF8);
-        } catch (UnsupportedEncodingException e) {
-            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
-            e.printStackTrace();
+        String encodedHash = null;
+        if (1 == specialCharsFlag) {
+            encodedHash = Z85.Z85Encoder(hash);
+        } else {
+            try {
+                encodedHash = new String(Base64.encode(hash), UTF8);
+            } catch (UnsupportedEncodingException e) {
+                Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
+                e.printStackTrace();
+            }
         }
 
-        return b64Hash;
+        return encodedHash;
     }
 
     /**
      * @brief   Method to generate the final password string from
-     *          a base64-encoded key-stretched hash.
-     * @return  {String} The kosher key-stretched password string to use
+     *          an encoded key-stretched hash.
+     * @return  {String} The final password string to use.
      */
-    public static String getPasswdStr(String b64Hash,
-                                      Integer truncation) {
-        return b64Hash.replace("=",
-                               "").replace("+",
-                                           "-").replace("/",
-                                                        "_");
+    public static String getPasswdStr(final String encodedHash,
+                                      final Integer truncation,
+                                      final Integer specialCharsFlag) {
+        String password = null;
+        if (1 != specialCharsFlag) {
+            // For the case of base64, which is being used in
+            // the "no special characters" mode, remove the special
+            // characters (+,/,=) to limit the result set to
+            // [a-z][A-Z][0-9].
+            password = encodedHash.replace("=",
+                                           "").replace("+",
+                                                       "-").replace("/",
+                                                                    "_");
+        } else {
+            // For the case of Z85, replace "/" with "_", which is
+            // NOT part of the Z85 alphabet, to make the hash
+            // filename safe.
+            password = encodedHash.replace("/","_");
+        }
+
+        if (truncation > 0) {
+            password = password.substring(0,
+                                          Math.min(password.length(),
+                                                   truncation));
+        }
+
+        return password;
     }
 
     // ===================================================================

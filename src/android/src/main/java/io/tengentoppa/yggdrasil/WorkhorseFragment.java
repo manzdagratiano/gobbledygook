@@ -490,7 +490,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
         this.m_saltKey = ingredients.saltKey();
         this.m_savedOverrides = savedOverrides;
         this.m_proposedAttributes = proposedAttributes;
-        this.m_customOverrides = customOverrides;
+        this.m_customOverrides = encodedOverridesMap;
     }
 
     /**
@@ -618,9 +618,11 @@ public abstract class WorkhorseFragment extends DialogFragment {
                 }
 
                 // Generate the hash (the "proxy password")
-                String b64Hash = Crypto.generateHash(seedSHA,
-                                                     salt,
-                                                     attributes.iterations());
+                String b64Hash =
+                    Crypto.generateHash(seedSHA,
+                                        salt,
+                                        attributes.iterations(),
+                                        attributes.specialCharsFlag());
                 if (null == b64Hash) {
                     String errMsg = "Hash.Generation.Failure";
                     Log.e(LOG_CATEGORY, errMsg);
@@ -630,7 +632,8 @@ public abstract class WorkhorseFragment extends DialogFragment {
                 Log.i(LOG_CATEGORY, "hash=" + b64Hash);
                 final String password =
                     Crypto.getPasswdStr(b64Hash,
-                                        attributes.truncation());
+                                        attributes.truncation(),
+                                        attributes.specialCharsFlag());
                 Log.i(LOG_CATEGORY, "password=" + password);
 
                 // Post the results to the UI thread for manipulation
