@@ -42,6 +42,18 @@ def computeVersionName() {
     return versionName
 }
 
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    /**
+      * Spongycastle
+      */
+    compile "com.madgag.spongycastle:core:1.54.0.0"
+    compile "com.madgag.spongycastle:prov:1.54.0.0"
+}
+
 android {
     compileSdkVersion 24
     buildToolsVersion '24.0.2'
@@ -92,5 +104,9 @@ dependencies {
     compile "com.android.support:appcompat-v7:${supportLibVersion}"
     compile "com.android.support:support-v4:${supportLibVersion}"
     compile "com.android.support:design:${supportLibVersion}"
-    compile fileTree(dir : 'libs', include : ['*.jar'])
+    /**
+      * At this time, there are no jar files that need to be compiled
+      * (now that spongycastle can be fetched from maven central).
+      * compile fileTree(dir : 'libs', include : ['*.jar'])
+      */
 }
