@@ -51,28 +51,50 @@ QUnit.test("TestAttributesExist_NoSpecialChars", function(assert) {
               "AttributesExist_NoSpecialChars.QED!");
 });
 
-QUnit.test("TestOverridesToSave_SavedOverridesExist", function(assert) {
-    var savedOverrides = new Attributes("google.com", null, -1, 0);
-    var proposedAttributes = new Attributes("google.com", null, -1, 0);
-    var attributes = new Attributes("google.com", 10003, -1, 0);
-    var attributesToSave = new Attributes("google.com", 10003, -1, 0);
-    assert.ok(JSON.stringify(
-                AttributesCodec.getOverridesToSave(attributes,
-                                                   proposedAttributes,
-                                                   savedOverrides)) ===
-              JSON.stringify(attributesToSave),
-              "OverridesToSave_SavedOverridesExist.QED!");
-});
-
-QUnit.test("TestOverridesToSave_SavedOverridesDon__tExist", function(assert) {
+QUnit.test("TestOverridesToSave_Don__tExist", function(assert) {
     var savedOverrides = new Attributes();
     var proposedAttributes = new Attributes("google.com", 10000, -1, 1);
+    var attributes = new Attributes("google.com", 10000, -1, 1);
+    assert.ok(!(AttributesCodec.getOverridesToSave(attributes,
+                                                   proposedAttributes,
+                                                   savedOverrides)
+                    .attributesExist()),
+              "OverridesToSave_Don__tExist.QED!");
+});
+
+QUnit.test("TestOverridesToSave_Don__tExistReprise", function(assert) {
+    var savedOverrides = new Attributes(null, 10003, -1, 1);
+    var proposedAttributes = new Attributes("google.com", 10003, -1, 1);
     var attributes = new Attributes("google.com", 10003, -1, 1);
-    var attributesToSave = new Attributes(null, 10003, -1, 1);
+    assert.ok(!(AttributesCodec.getOverridesToSave(attributes,
+                                                   proposedAttributes,
+                                                   savedOverrides)
+                    .attributesExist()),
+              "OverridesToSave_Don__tExistReprise.QED!");
+});
+
+QUnit.test("TestOverridesToSave_Exist", function(assert) {
+    var savedOverrides = new Attributes();
+    var proposedAttributes = new Attributes("google.com", 10000, -1, 1);
+    var attributes = new Attributes("google.com", 10003, -1, 0);
+    var overridesToSave = new Attributes(null, 10003, -1, 0);
     assert.ok(JSON.stringify(
                 AttributesCodec.getOverridesToSave(attributes,
                                                    proposedAttributes,
                                                    savedOverrides)) ===
-              JSON.stringify(attributesToSave),
-              "OverridesToSave_SavedOverridesDon__tExist.QED!");
+              JSON.stringify(overridesToSave),
+              "OverridesToSave_Exist.QED!");
+});
+
+QUnit.test("TestOverridesToSave_ExistReprise", function(assert) {
+    var savedOverrides = new Attributes(null, 10003, -1, 0);
+    var proposedAttributes = new Attributes("google.com", 10003, -1, 0);
+    var attributes = new Attributes("google.com", 10005, -1, 0);
+    var overridesToSave = new Attributes(null, 10005, -1, 0);
+    assert.ok(JSON.stringify(
+                AttributesCodec.getOverridesToSave(attributes,
+                                                   proposedAttributes,
+                                                   savedOverrides)) ===
+              JSON.stringify(overridesToSave),
+              "OverridesToSave_ExistReprise.QED!");
 });

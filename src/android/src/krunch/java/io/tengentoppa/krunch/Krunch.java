@@ -23,6 +23,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 
 /**
@@ -39,6 +40,18 @@ public class Krunch extends Yggdrasil {
     // ACTION BAR
 
     /**
+     * @brief   Called to populate the action bar menu, if it is present.
+     * @return  Returns true on success and false on failure
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        getMenuInflater().inflate(R.menu.krunch_actions,
+                                  menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    /**
      * @brief   Called when an action bar menu item is selected
      * @return  Returns true on success and false on failure
      */
@@ -53,10 +66,10 @@ public class Krunch extends Yggdrasil {
 
         Intent intent = null;
         switch(item.getItemId()) {
-            case R.id.home:
+            case R.id.homePage:
                 this.onActivitySelection(R.id.drawerHome);
                 return true;
-            case R.id.settings:
+            case R.id.settingsPage:
                 this.onActivitySelection(R.id.drawerSettings);
                 return true;
             default:

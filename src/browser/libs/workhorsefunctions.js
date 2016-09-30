@@ -252,6 +252,13 @@ var AttributesCodec = {
                                   savedOverrides) {
         var overridesToSave = new Attributes();
 
+        // If attributes and proposedAttributes are the same,
+        // there is nothing to save.
+        if (JSON.stringify(proposedAttributes) ===
+            JSON.stringify(attributes)) {
+                return overridesToSave;
+        }
+
         if (savedOverrides.attributesExist()) {
             overridesToSave.domain =
                 ((proposedAttributes.domain !== attributes.domain) ?

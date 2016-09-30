@@ -11,7 +11,7 @@
          to a text field while resizing the activity window
          so that the text field is not obscured by the soft keyboard.
          -->
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -38,7 +38,7 @@
             android:lines="5"
             android:minLines="5"
             android:maxLines="10"
-            android:gravity="top|left"
+            android:gravity="top|start"
             android:scrollbars="vertical"
             android:hint="@string/hint_saltKey"
             />

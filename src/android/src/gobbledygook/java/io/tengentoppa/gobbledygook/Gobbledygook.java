@@ -24,6 +24,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.graphics.Typeface;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
@@ -42,6 +43,18 @@ public class Gobbledygook extends Yggdrasil {
     // ACTION BAR
 
     /**
+     * @brief   Called to populate the action bar menu, if it is present.
+     * @return  Returns true on success and false on failure
+     */
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        getMenuInflater().inflate(R.menu.gobbledygook_actions,
+                                  menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    /**
      * @brief   Called when an action bar menu item is selected
      * @return  Returns true on success and false on failure
      */
@@ -55,10 +68,10 @@ public class Gobbledygook extends Yggdrasil {
         }
 
         switch(item.getItemId()) {
-            case R.id.home:
+            case R.id.homePage:
                 this.onActivitySelection(R.id.drawerHome);
                 return true;
-            case R.id.settings:
+            case R.id.settingsPage:
                 this.onActivitySelection(R.id.drawerSettings);
                 return true;
             default:

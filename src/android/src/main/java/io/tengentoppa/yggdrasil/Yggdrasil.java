@@ -189,14 +189,14 @@ public abstract class Yggdrasil extends AppCompatActivity
     // None of the fragments need to revisit these definitions.
 
     /**
-     * @brief   Called to populate the action bar menu, if it is present
+     * @brief   Called to populate the action bar menu, if it is present.
+     *          This is overridden in the derived classes;
+     *          it needs a definition here to call the "super" method
+     *          from the top-level base class.
      * @return  Returns true on success and false on failure
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu items for use in the action bar
-        getMenuInflater().inflate(R.menu.gobbledygook_actions,
-                                  menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -209,8 +209,8 @@ public abstract class Yggdrasil extends AppCompatActivity
         boolean isDrawerOpen = m_drawerLayout.isDrawerOpen(m_drawerView);
         // Hide the actions present in the navigation drawer
         // if the drawer is open
-        menu.findItem(R.id.home).setVisible(!isDrawerOpen);
-        menu.findItem(R.id.settings).setVisible(!isDrawerOpen);
+        menu.findItem(R.id.homePage).setVisible(!isDrawerOpen);
+        menu.findItem(R.id.settingsPage).setVisible(!isDrawerOpen);
 
         return super.onPrepareOptionsMenu(menu);
     }
@@ -414,7 +414,7 @@ public abstract class Yggdrasil extends AppCompatActivity
             SharedPreferences.Editor preferenceEditor = sharedPrefs.edit();
             preferenceEditor.putString(getString(R.string.pref_saltKey_key),
                                        saltKey);
-            preferenceEditor.commit();
+            preferenceEditor.apply();
         }
     }
 
@@ -730,7 +730,7 @@ public abstract class Yggdrasil extends AppCompatActivity
                         getString(R.string.pref_customOverrides_key)));
 
             // Commit the changes
-            preferenceEditor.commit();
+            preferenceEditor.apply();
         } catch (JSONException e) {
             Log.e(LOG_CATEGORY, "ERROR: JSON.Malformed, " +
                   "JSON='" + preferencesFileBuffer.toString() + "', " +

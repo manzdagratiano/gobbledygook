@@ -5,7 +5,7 @@
      with the appropriate "gravity" (bottom|right) -->
 <android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/lib-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/loginFragmentFrame"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -17,14 +17,14 @@
     <RelativeLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         >
         <SearchView
             android:id="@+id/homeSearchView"
             android:queryHint="@string/hint_search"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
             />
 
         <!-- Place the WebView explicitly below the SearchView

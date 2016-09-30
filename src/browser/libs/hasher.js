@@ -52,7 +52,6 @@ var HASHER          = {
 // IMPORT SCRIPTS
 
 // Avoid "ReferenceError: importScripts is not defined"
-// when hasher.js is loaded by the main addon code as well.
 if (HASHER.types.FUNCTION === typeof(importScripts)) {
     importScripts("./sjcl/sjcl_megalith.js");
 }
@@ -162,7 +161,7 @@ var Hasher = {
         // since that may already have brought the length
         // to within the desired range.
         if (truncation >= 0) {
-            passwdStr = passwdStr.substring(0, truncation + 1);
+            passwdStr = passwdStr.substring(0, truncation);
         }
 
         return passwdStr;

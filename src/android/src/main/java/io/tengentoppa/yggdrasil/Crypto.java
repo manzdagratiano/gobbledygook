@@ -45,6 +45,27 @@ public class Crypto {
     // PUBLIC METHODS
 
     /**
+     * @brief   A routine to calculate the SHA256 hash of the user's
+     *          one true password.
+     *          This is the only routine that sees the user's password;
+     *          for security, it is not even passed around.
+     * @return  The SHA256 hash of the user's password
+     */
+    public static byte[] getSeedSHA(final String seed) {
+        byte[] seedSHA = null;
+        MessageDigest hash = null;
+        try {
+            hash = MessageDigest.getInstance(SHA256);
+            seedSHA = hash.digest(seed.getBytes());
+        } catch (NoSuchAlgorithmException e) {
+            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
+            e.printStackTrace();
+        }
+
+        return seedSHA;
+    }
+
+    /**
      * @brief   Method to generate a new salt key
      * @return  {String} The newly generated salt key
      */
@@ -117,7 +138,7 @@ public class Crypto {
                 generator.generateDerivedParameters(256)).getKey();
 
         String encodedHash = null;
-        if (1 == specialCharsFlag) {
+        if (specialCharsFlag.equals(1)) {
             encodedHash = Z85.Z85Encoder(hash);
         } else {
             try {

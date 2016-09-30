@@ -145,7 +145,7 @@ public class SaltKeyActionsFragment extends DialogFragment {
 
         this.deconfigureElements();
 
-        super.onStop();
+        super.onPause();
     }
 
     /**
@@ -358,7 +358,7 @@ public class SaltKeyActionsFragment extends DialogFragment {
         SharedPreferences.Editor preferenceEditor = preferences.edit();
         preferenceEditor.putString(getString(R.string.pref_saltKey_key),
                                    saltKey);
-        preferenceEditor.commit();
+        preferenceEditor.apply();
         // On this commit,
         // the onSharedPreferenceChanged handler will be called
         // This may happen AFTER onStart() and onResume(),

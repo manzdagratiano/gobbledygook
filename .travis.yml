@@ -26,3 +26,4 @@ cache:
 script:
     - cd $BUILDDIR
     - ./gradlew assembleDebug
+    - ./gradlew test

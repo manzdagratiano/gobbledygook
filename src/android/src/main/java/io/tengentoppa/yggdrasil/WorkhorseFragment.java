@@ -43,7 +43,6 @@ import java.lang.ClassCastException;
 import java.lang.Exception;
 import java.lang.Runnable;
 import java.lang.Thread;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 
@@ -326,7 +325,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
 
                 // If the truncation value is NO_TRUNCATION,
                 // then this option is as good as inactive
-                if (Attributes.NO_TRUNCATION == truncation) {
+                if (truncation.equals(Attributes.NO_TRUNCATION)) {
                     truncationField.setEnabled(false);
                     truncateBox.setChecked(false);
                 }
@@ -433,7 +432,6 @@ public abstract class WorkhorseFragment extends DialogFragment {
         // ----------------------------------------------------------------
         // Create the "actors"
 
-        AttributesCodec codec = new AttributesCodec();
         Configurator configurator = new Configurator();
 
         // ----------------------------------------------------------------
@@ -454,15 +452,16 @@ public abstract class WorkhorseFragment extends DialogFragment {
 
         // Obtain the decoded encodedOverridesMap.
         JSONObject encodedOverridesMap =
-            codec.getEncodedOverridesMap(
-                    ingredients.encodedOverrides());
+            AttributesCodec.getEncodedOverridesMap(
+                                ingredients.encodedOverrides());
 
         // Obtain the saved attributes for this domain, if any
         Attributes savedOverrides =
-            codec.getDomainOverrides(domain,
-                                     encodedOverridesMap);
+            AttributesCodec.getDomainOverrides(domain,
+                                               encodedOverridesMap);
         Log.i(LOG_CATEGORY,
-              "savedOverrides='" + codec.encode(savedOverrides) + "'");
+              "savedOverrides='" +
+              AttributesCodec.encode(savedOverrides) + "'");
 
         // The "proposed" attributes,
         // which would be used to generate the proxy password,
@@ -564,12 +563,14 @@ public abstract class WorkhorseFragment extends DialogFragment {
      */
     protected void generate(final View view) {
         Log.i(LOG_CATEGORY, "Generating proxy password...");
-        AttributesCodec codec = new AttributesCodec();
         final Attributes attributes = getAttributes(view);
         Log.i(LOG_CATEGORY,
-              "attributes='" + codec.encode(attributes) + "'");
+              "attributes='" + AttributesCodec.encode(attributes) + "'");
 
-        final byte[] seedSHA = getSeedSHA(view);
+        final byte[] seedSHA =
+            Crypto.getSeedSHA(
+                ((EditText)view.findViewById(R.id.password))
+                                    .getText().toString());
         if (null == seedSHA) {
             Log.e(LOG_CATEGORY, "ERROR: seedSHA.generation.failure");
             return;
@@ -696,29 +697,6 @@ public abstract class WorkhorseFragment extends DialogFragment {
     }
 
     /**
-     * @brief   A routine to calculate the SHA256 hash of the user's
-     *          one true password.
-     *          This is the only routine that sees the user's password;
-     *          for security, it is not even passed around.
-     * @return  The SHA256 hash of the user's password
-     */
-    protected byte[] getSeedSHA(View view) {
-        EditText password = (EditText)getView().findViewById(R.id.password);
-        byte[] seedSHA = null;
-        MessageDigest hash = null;
-        try {
-            hash = MessageDigest.getInstance(SHA256);
-            seedSHA =
-                hash.digest(password.getText().toString().getBytes());
-        } catch (NoSuchAlgorithmException e) {
-            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
-            e.printStackTrace();
-        }
-
-        return seedSHA;
-    }
-
-    /**
      * @brief   
      * @return  
      */
@@ -742,14 +720,13 @@ public abstract class WorkhorseFragment extends DialogFragment {
             return;
         }
 
-        AttributesCodec codec = new AttributesCodec();
         Log.i(LOG_CATEGORY, "checkAndSaveOverrides(): " +
               "Checking if modified attributes exist...");
         Attributes overridesToSave =
-            codec.getOverridesToSave(attributes,
-                                     this.m_savedOverrides,
-                                     this.m_proposedAttributes);
-        String encodedOverrides = codec.encode(overridesToSave);
+            AttributesCodec.getOverridesToSave(attributes,
+                                               this.m_savedOverrides,
+                                               this.m_proposedAttributes);
+        String encodedOverrides = AttributesCodec.encode(overridesToSave);
         Log.i(LOG_CATEGORY, "overridesToSave='" + encodedOverrides + "'");
 
         if (!overridesToSave.attributesExist()) {
@@ -789,7 +766,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
         preferenceEditor.putString(
                 getString(R.string.pref_customOverrides_key),
                 encodedOverridesList);
-        preferenceEditor.commit();
+        preferenceEditor.apply();
         // The OnSharedPreferenceChangedHandler will be called
 
         Toast.makeText(getActivity().getApplicationContext(),
@@ -914,359 +891,6 @@ public abstract class WorkhorseFragment extends DialogFragment {
         private Integer m_defaultIterations;
         private String  m_encodedOverrides;
     }
-
-    /**
-     * @brief   
-     */
-    protected class Attributes {
-
-        // ================================================================
-        // Static Members
-
-        public static final int DEFAULT_ITERATIONS = 10000;
-        public static final int NO_TRUNCATION      = -1;
-
-        // ================================================================
-        // Public Methods
-
-        // ----------------------------------------------------------------
-        // Constructors
-
-        public Attributes() {
-            m_domain = null;
-            m_iterations = null;
-            m_truncation = Attributes.NO_TRUNCATION;
-            m_specialCharsFlag = 1;
-        }
-
-        /**
-         * @brief   
-         * @return  
-         */
-        public Attributes(String domain, Integer... opts) {
-            m_domain     = domain;
-            m_iterations = ((opts.length > 0) ? opts[0] : null);
-            m_truncation =
-                ((opts.length > 1) ?
-                  opts[1] : Attributes.NO_TRUNCATION);
-            m_specialCharsFlag = ((opts.length > 2) ?  opts[2] : 1);
-        }
-
-        // ----------------------------------------------------------------
-        // Accessors
-
-        /**
-         * @brief   Domain accessor
-         * @return  {String}
-         */
-        public String domain() {
-            return m_domain;
-        }
-
-        /**
-         * @brief   Iterations accessor
-         * @return  {Integer}
-         */
-        public Integer iterations() {
-            return m_iterations;
-        }
-
-        /**
-         * @brief   Truncation accessor
-         * @return  {Integer}
-         */
-        public Integer truncation() {
-            return m_truncation;
-        }
-
-        /**
-         * @brief   Special Characters Flag accessor
-         * @return  {Integer}
-         */
-        public Integer specialCharsFlag() {
-            return m_specialCharsFlag;
-        }
-
-        // ----------------------------------------------------------------
-        // Mutators
-
-        /**
-         * @brief   Domain modifier
-         * @return  {null}
-         */
-        public void setDomain(String domain) {
-            this.m_domain = domain;
-        }
-
-        /**
-         * @brief   Iterations modifier
-         * @return  {null}
-         */
-        public void setIterations(Integer iterations) {
-            this.m_iterations = iterations;
-        }
-
-        /**
-         * @brief   Truncation modifier
-         * @return  {null}
-         */
-        public void setTruncation(Integer truncation) {
-            // Sanity check
-            if (null == truncation) {
-                Log.e(LOG_CATEGORY, "ERROR: " +
-                      "Thwarted attempt to set truncation to null!");
-                return;
-            }
-            this.m_truncation = truncation;
-        }
-
-        /**
-         * @brief   Special Characters Flag modifier
-         * @return  {null}
-         */
-        public void setSpecialCharsFlag(Integer specialCharsFlag) {
-            this.m_specialCharsFlag = specialCharsFlag;
-        }
-
-        // ----------------------------------------------------------------
-        // Utilities
-
-        /**
-         * @brief   A method to check if this Attributes object is not the
-         *          default initialized object
-         * @return  Returns true or false
-         */
-        public boolean attributesExist() {
-            return ((null != m_domain) &&
-                    (null != m_iterations) &&
-                    (NO_TRUNCATION != m_truncation) &&
-                    (1 != m_specialCharsFlag));
-        }
-
-        // ----------------------------------------------------------------
-        // Data Members
-
-        private String  m_domain;           /** @brief The website
-                                              * domain-subdomain.
-                                              */
-        private Integer m_iterations;       /** @brief The number of PBKDF2
-                                              * iterations.
-                                              */
-        private Integer m_truncation;       /** @brief The truncation size
-                                              * for the generated password.
-                                              */
-        private Integer m_specialCharsFlag; /** @brief An indicator for
-                                              * whether special characters
-                                              * are allowed. Boolean, but
-                                              * represented as {0, 1} for
-                                              * encoding.
-                                              */
-    }
-
-    // --------------------------------------------------------------------
-    // AttributesCodec
-
-    /**
-     * @brief   
-     * @return  
-     */
-    protected class AttributesCodec {
-
-        /**
-         * @brief   
-         */
-        static final String DELIMITER = "|";
-
-        /**
-         * @brief   
-         * @return  
-         */
-        public String encode(Attributes attributes) {
-            if (!attributes.attributesExist()) {
-                return "";
-            }
-
-            return
-                (((null != attributes.domain()) ?
-                  attributes.domain() : "") +
-                 AttributesCodec.DELIMITER +
-                 ((null != attributes.iterations()) ?
-                  attributes.iterations().toString() : "") +
-                 AttributesCodec.DELIMITER +
-                 ((Attributes.NO_TRUNCATION != attributes.truncation()) ?
-                  attributes.truncation().toString() : "") +
-                 AttributesCodec.DELIMITER +
-                 ((1 != attributes.specialCharsFlag()) ?
-                  "0" : ""));
-        }
-
-        /**
-         * @brief   Method to decoded an encoded Attributes string.
-         * @return  {Attributes} The decoded object; default constructed
-         *          on an error condition.
-         */
-        public Attributes decode(String encodedAttributes) {
-            // Create a default-initialized Attributes object
-            Attributes attributes = new Attributes();
-            Log.d(LOG_CATEGORY, "AttributesCodec.decode(): Decoding " +
-                  ((null == encodedAttributes) ?
-                   "null" : "'" + encodedAttributes + "'") + " ...");
-
-            // Sanity checks
-            // ("short-circuit")
-            if (null == encodedAttributes || encodedAttributes.isEmpty()) {
-                return attributes;
-            }
-
-            String[] attributesArray =
-                encodedAttributes.split(AttributesCodec.DELIMITER);
-            // Sanity check for length of the split array
-            if (4 != attributesArray.length) {
-                Log.e(LOG_CATEGORY, "ERROR: Malformed Attributes! Expected " +
-                      "<domain|iterations|truncation|noSpecialChars>");
-                return attributes;
-            }
-
-            if (attributesArray[0] != "") {
-                attributes.setDomain(attributesArray[0]);
-            }
-            if (attributesArray[1] != "") {
-                try {
-                    attributes.setIterations(
-                            Integer.parseInt(attributesArray[1]));
-                } catch (ClassCastException e) {
-                    Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
-                    e.printStackTrace();
-                    attributes.setIterations(Attributes.DEFAULT_ITERATIONS);
-                }
-            }
-            if (attributesArray[2] != "") {
-                try {
-                    attributes.setTruncation(
-                            Integer.parseInt(attributesArray[2]));
-                } catch (ClassCastException e) {
-                    Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
-                    e.printStackTrace();
-                    attributes.setTruncation(Attributes.NO_TRUNCATION);
-                }
-            }
-            if (attributesArray[3] != "") {
-                attributes.setSpecialCharsFlag(0);
-            }
-
-            return attributes;
-        }
-
-        /**
-         * @brief   Function to read the saved JSON string of custom
-         *          website attributes into a JSON object.
-         * @return  The decoded JSONObject if the encodedOverrides
-         *          was a valid JSON string, else null
-         */
-        public JSONObject
-        getEncodedOverridesMap(final String encodedOverrides) {
-            Log.i(LOG_CATEGORY, "Decoding saved attributes list...");
-
-            JSONObject encodedOverridesMap = null;
-
-            // Sanity check - short-circuit evaluation
-            if (null != encodedOverrides &&
-                !encodedOverrides.isEmpty()) {
-                try {
-                    encodedOverridesMap = new JSONObject(encodedOverrides);
-                    Log.d(LOG_CATEGORY, "encodedOverridesMap=" +
-                          encodedOverridesMap.toString());
-                } catch (JSONException e) {
-                    Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
-                    e.printStackTrace();
-                }
-            }
-
-            return encodedOverridesMap;
-        }
-
-        /**
-         * @brief   Method to retrieve the saved overrides for a domain
-         * @return  {Attributes} The retrieved object, (default constructed
-         *          if no saved attributes exist)
-         */
-        public Attributes
-        getDomainOverrides(String domain,
-                           JSONObject customOverrides) {
-            Log.i(LOG_CATEGORY, "Fetching saved attributes...");
-
-            String encodedOverrides = null;
-
-            if (null != customOverrides) {
-                try {
-                    if (customOverrides.has(domain)) {
-                        encodedOverrides = customOverrides.getString(domain);
-                    }
-                } catch (JSONException e) {
-                    Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
-                    e.printStackTrace();
-                }
-            }
-
-            Attributes decodedOverrides = this.decode(encodedOverrides);
-            return decodedOverrides;
-        }
-
-        /**
-         * @brief   
-         * @return  A valid Attributes object,
-         *          which can be default initialized
-         */
-        public Attributes
-        getOverridesToSave(final Attributes attributes,
-                           final Attributes savedOverrides,
-                           final Attributes proposedAttributes) {
-            Attributes overrides = new Attributes();
-
-            if (savedOverrides.attributesExist()) {
-                overrides.setDomain(
-                    (attributes.domain() !=
-                     proposedAttributes.domain()) ?
-                    attributes.domain() :
-                    savedOverrides.domain());
-                overrides.setIterations(
-                    (attributes.iterations() !=
-                     proposedAttributes.iterations()) ?
-                    attributes.iterations() :
-                    savedOverrides.iterations());
-                overrides.setTruncation(
-                    (attributes.truncation() !=
-                     proposedAttributes.truncation()) ?
-                    attributes.truncation() :
-                    savedOverrides.truncation());
-                overrides.setSpecialCharsFlag(
-                    (attributes.specialCharsFlag() !=
-                     proposedAttributes.specialCharsFlag()) ?
-                    attributes.specialCharsFlag() :
-                    savedOverrides.specialCharsFlag());
-            } else {
-                overrides.setDomain(
-                    (attributes.domain() !=
-                     proposedAttributes.domain()) ?
-                    attributes.domain() : null);
-                overrides.setIterations(
-                    (attributes.iterations() !=
-                     proposedAttributes.iterations()) ?
-                    attributes.iterations() : null);
-                overrides.setTruncation(
-                    (attributes.truncation() !=
-                     proposedAttributes.truncation()) ?
-                    attributes.truncation() : Attributes.NO_TRUNCATION);
-                overrides.setSpecialCharsFlag(
-                    (attributes.specialCharsFlag() !=
-                     proposedAttributes.specialCharsFlag()) ?
-                    attributes.specialCharsFlag() : 1);
-            }
-
-            return overrides;
-        }
-
-    }   // end class AttributesCodec
 
     // --------------------------------------------------------------------
     // DATA MEMBERS

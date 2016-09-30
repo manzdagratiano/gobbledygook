@@ -9,10 +9,12 @@
     >
 
     <!-- Temporary filler with layout_weight=1 to push the TextView
-         to the bottom of the LinearLayout -->
+         to the bottom of the LinearLayout.
+         "layout_height" recommended to be set to 0dp for better performance
+         (by the linter). -->
     <Space
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:layout_weight="1"/>
 
     <TextView
