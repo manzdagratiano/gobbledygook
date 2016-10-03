@@ -8,7 +8,7 @@
 
     "manifest_version"  : 2,
     "name"              : "Gobbledygook",
-    "version"           : "@BUILDTAG",
+    "version"           : "@BUILDVER",
 
     "description"       : "T3h Unh@X@b13 P@$$w0rd $01ut10n",
 

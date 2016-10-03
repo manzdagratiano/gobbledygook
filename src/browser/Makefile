@@ -34,28 +34,47 @@ SJCL_MEGALITH = $(BUILDDIR)/sjcl_megalith.js
 # -------------------------------------------------------------------------
 # BUILD TAG
 
-# Firefox addons are versioned as major[.minor[.patch[build]]]
+# Addons are versioned as major[.minor[.patch[.build]]]
 # where "major" and "patch" are integers and "minor" and "build" are strings.
 # In our case:
-#	* the major is 2 (until we change it),
+#	* the major is 2 (until we change it)
 #	* the minor is the date YYYYMMDD
-#	* the patch is the build in our case, and
-#	* the build is the git commit SHA of the repository
+#	* the patch is always "0" (unnecessary with the minor being the date)
+#	* the build is the git commit SHA of the repository (and branch)
+
+MAJOR=2
+DATE=`date +'%Y%m%d'`
+BRANCH=`git rev-parse --abbrev-ref HEAD`
+SHA=`git rev-parse --short HEAD`
+COMMITS=`git rev-list --count HEAD`
+
+BUILDTAG=$(MAJOR).$(DATE).0.$(BRANCH)\@$(SHA)
+BUILD_REGEX="s/\@BUILDTAG/$(BUILDTAG)/"
+
+# Firefox extensions follow the "toolkit version format",
+# which consists of one or more version parts, separated by dots.
+# Each version part itself is interpreted as a sequence of four parts
+# <number><string><number><string>, where strings are strictly non-numeric.
+# However, it seems with the latest revision of the extension linter,
+# the last part MUST have a string suffix, followed by an optional "-<string>",
+# which can mix numbers and letters:
+# /^(\d+\.?){1,3}\.(\d+([A-z]+(\-?[\dA-z]+)?))$/
+# https://github.com/mozilla/addons-linter/blob/master/src/schema/formats.js
+# Therefore, we'll concoct the version using the number of commits,
+# the name of the branch, and the git SHA.
+FIREFOX_VERSION=$(MAJOR).$(DATE).$(COMMITS)$(BRANCH)-$(SHA)
+FIREFOX_VERSION_REGEX="s/\@BUILDVER/$(FIREFOX_VERSION)/"
 
 # Chrome extensions are versioned with x.y.w.z
 # where x, y, w, z are non-negative integers less than 65535.
 # This convention is problematic for us, but luckily,
 # chrome also has a "version_name" attribute which is a string and is used for
-# display purposes, so we shall use the same string as Firefox.
-
-MAJOR = 2
-BUILDTAG = $(MAJOR).`date +'%Y%m%d'`.`git rev-parse --short HEAD`
-BUILD_REGEX = "s/\@BUILDTAG/$(BUILDTAG)/"
-
-# We shall use the number of commits in the master branch
+# display purposes, which shall be set to the BUILDTAG.
+# Since neither the date nor the SHA can be used in the version,
+# we shall use the number of commits in the master branch
 # to create a version for the chrome extension.
-CHROME_VERSION = $(MAJOR).`git rev-list --count HEAD`.0
-CHROME_VERSION_REGEX = "s/\@BUILDVER/$(CHROME_VERSION)/"
+CHROME_VERSION=$(MAJOR).$(COMMITS).0
+CHROME_VERSION_REGEX="s/\@BUILDVER/$(CHROME_VERSION)/"
 
 # =========================================================================
 # TARGETS
@@ -70,20 +89,20 @@ CHROME_VERSION_REGEX = "s/\@BUILDVER/$(CHROME_VERSION)/"
 
 all: chrome firefox
 
-chrome: BUILD = $(BUILDDIR)/chrome
+chrome: BUILD=$(BUILDDIR)/chrome
 chrome: clean-chrome-build $(SJCL_MEGALITH) base
 	cp -r $(CHROME) $(BUILDDIR)/
-	perl -p -i -e $(subst " ", ,$(BUILD_REGEX)) \
-		$(BUILD)/manifest.json
 	perl -p -i -e $(subst " ", ,$(CHROME_VERSION_REGEX)) \
+		$(BUILD)/manifest.json
+	perl -p -i -e $(subst " ", ,$(BUILD_REGEX)) \
 		$(BUILD)/manifest.json
 	mv $(BASEDIR)/* $(BUILD)/
 	echo "Success!"
 
-firefox: BUILD = $(BUILDDIR)/firefox
+firefox: BUILD=$(BUILDDIR)/firefox
 firefox: clean-firefox-build $(SJCL_MEGALITH) base
 	cp -r $(FIREFOX) ./build/
-	perl -p -i -e $(subst " ", ,$(BUILD_REGEX)) \
+	perl -p -i -e $(subst " ", ,$(FIREFOX_VERSION_REGEX)) \
 		$(BUILD)/manifest.json
 	mv $(BASEDIR)/* $(BUILD)/
 	echo "Success!"
@@ -131,11 +150,11 @@ basedir:
 
 clean: clean-firefox-build clean-chrome-build
 
-clean-chrome-build: BUILD = $(BUILDDIR)/chrome
+clean-chrome-build: BUILD=$(BUILDDIR)/chrome
 clean-chrome-build: clean-base clean-sjcl-megalith
 	if [ -d $(BUILD) ]; then rm -r $(BUILD); fi
 
-clean-firefox-build: BUILD = $(BUILDDIR)/firefox
+clean-firefox-build: BUILD=$(BUILDDIR)/firefox
 clean-firefox-build: clean-base clean-sjcl-megalith
 	if [ -d $(BUILD) ]; then rm -r $(BUILD); fi
 
