@@ -13,6 +13,7 @@ package io.tengentoppa.yggdrasil;
 
 // Standard Java
 import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 
 // JUnit Classes
@@ -67,14 +68,20 @@ public class CryptoTest {
      */
     @Test
     public void cryptoTest_testB64Hash_asserts() {
-        Assert.assertEquals(
-            Crypto.generateHash(Crypto.getSeedSHA(SEED),
-                                Crypto.generateSalt(DOMAIN,
-                                                    SALTKEY,
-                                                    ITERATIONS),
-                                ITERATIONS,
-                                0),
-            "PlntUbsKGDH2Lsp5JMvHljS074mkCFxUgJ3wxBoDg1I=");
+        try {
+            Assert.assertEquals(
+                Crypto.generateHash(Crypto.getSeedSHA(SEED),
+                                    Crypto.generateSalt(DOMAIN,
+                                                        SALTKEY,
+                                                        ITERATIONS),
+                                    ITERATIONS,
+                                    0),
+                "PlntUbsKGDH2Lsp5JMvHljS074mkCFxUgJ3wxBoDg1I=");
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+            Assert.fail(EXCEPTION_NOALGO + "|" +
+                        EXCEPTION_NOENCODE);
+        }
     }
 
     /**
@@ -84,14 +91,20 @@ public class CryptoTest {
      */
     @Test
     public void cryptoTest_testZ85Hash_asserts() {
-        Assert.assertEquals(
-            Crypto.generateHash(Crypto.getSeedSHA(SEED),
-                                Crypto.generateSalt(DOMAIN,
-                                                    SALTKEY,
-                                                    ITERATIONS),
-                                ITERATIONS,
-                                1),
-            "k3vnIY9Yxf{aBHkb*jk]g{(.dQZgj8FsVhF8uUQ&");
+        try {
+            Assert.assertEquals(
+                Crypto.generateHash(Crypto.getSeedSHA(SEED),
+                                    Crypto.generateSalt(DOMAIN,
+                                                        SALTKEY,
+                                                        ITERATIONS),
+                                    ITERATIONS,
+                                    1),
+                "k3vnIY9Yxf{aBHkb*jk]g{(.dQZgj8FsVhF8uUQ&");
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+            Assert.fail(EXCEPTION_NOALGO + "|" +
+                        EXCEPTION_NOENCODE);
+        }
     }
 
     /**
@@ -102,17 +115,23 @@ public class CryptoTest {
      */
     @Test
     public void cryptoTest_testB64ProxyPasswordNoTruncation_asserts() {
-        Assert.assertEquals(
-            Crypto.getPasswdStr(
-                Crypto.generateHash(Crypto.getSeedSHA(SEED),
-                                    Crypto.generateSalt(DOMAIN,
-                                                        SALTKEY,
-                                                        ITERATIONS),
-                                    ITERATIONS,
-                                    0),
-                -1,
-                0),
-            "PlntUbsKGDH2Lsp5JMvHljS074mkCFxUgJ3wxBoDg1I");
+        try {
+            Assert.assertEquals(
+                Crypto.getPasswdStr(
+                    Crypto.generateHash(Crypto.getSeedSHA(SEED),
+                                        Crypto.generateSalt(DOMAIN,
+                                                            SALTKEY,
+                                                            ITERATIONS),
+                                        ITERATIONS,
+                                        0),
+                    -1,
+                    0),
+                "PlntUbsKGDH2Lsp5JMvHljS074mkCFxUgJ3wxBoDg1I");
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+            Assert.fail(EXCEPTION_NOALGO + "|" +
+                        EXCEPTION_NOENCODE);
+        }
     }
 
     /**
@@ -123,17 +142,23 @@ public class CryptoTest {
      */
     @Test
     public void cryptoTest_testZ85ProxyPasswordNoTruncation_asserts() {
-        Assert.assertEquals(
-            Crypto.getPasswdStr(
-                Crypto.generateHash(Crypto.getSeedSHA(SEED),
-                                    Crypto.generateSalt(DOMAIN,
-                                                        SALTKEY,
-                                                        ITERATIONS),
-                                    ITERATIONS,
-                                    1),
-                -1,
-                1),
-            "k3vnIY9Yxf{aBHkb*jk]g{(.dQZgj8FsVhF8uUQ&");
+        try {
+            Assert.assertEquals(
+                Crypto.getPasswdStr(
+                    Crypto.generateHash(Crypto.getSeedSHA(SEED),
+                                        Crypto.generateSalt(DOMAIN,
+                                                            SALTKEY,
+                                                            ITERATIONS),
+                                        ITERATIONS,
+                                        1),
+                    -1,
+                    1),
+                "k3vnIY9Yxf{aBHkb*jk]g{(.dQZgj8FsVhF8uUQ&");
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+            Assert.fail(EXCEPTION_NOALGO + "|" +
+                        EXCEPTION_NOENCODE);
+        }
     }
 
     /**
@@ -144,17 +169,23 @@ public class CryptoTest {
      */
     @Test
     public void cryptoTest_testB64ProxyPasswordWithTruncation_asserts() {
-        Assert.assertEquals(
-            Crypto.getPasswdStr(
-                Crypto.generateHash(Crypto.getSeedSHA(SEED),
-                                    Crypto.generateSalt(DOMAIN,
-                                                        SALTKEY,
-                                                        ITERATIONS),
-                                    ITERATIONS,
-                                    0),
-                TRUNCATION,
-                0),
-            "PlntUbsKGDH2Lsp5");
+        try {
+            Assert.assertEquals(
+                Crypto.getPasswdStr(
+                    Crypto.generateHash(Crypto.getSeedSHA(SEED),
+                                        Crypto.generateSalt(DOMAIN,
+                                                            SALTKEY,
+                                                            ITERATIONS),
+                                        ITERATIONS,
+                                        0),
+                    TRUNCATION,
+                    0),
+                "PlntUbsKGDH2Lsp5");
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+            Assert.fail(EXCEPTION_NOALGO + "|" +
+                        EXCEPTION_NOENCODE);
+        }
     }
 
     /**
@@ -165,17 +196,23 @@ public class CryptoTest {
      */
     @Test
     public void cryptoTest_testZ85ProxyPasswordWithTruncation_asserts() {
-        Assert.assertEquals(
-            Crypto.getPasswdStr(
-                Crypto.generateHash(Crypto.getSeedSHA(SEED),
-                                    Crypto.generateSalt(DOMAIN,
-                                                        SALTKEY,
-                                                        ITERATIONS),
-                                    ITERATIONS,
-                                    1),
-                TRUNCATION,
-                1),
-            "k3vnIY9Yxf{aBHkb");
+        try {
+            Assert.assertEquals(
+                Crypto.getPasswdStr(
+                    Crypto.generateHash(Crypto.getSeedSHA(SEED),
+                                        Crypto.generateSalt(DOMAIN,
+                                                            SALTKEY,
+                                                            ITERATIONS),
+                                        ITERATIONS,
+                                        1),
+                    TRUNCATION,
+                    1),
+                "k3vnIY9Yxf{aBHkb");
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+            Assert.fail(EXCEPTION_NOALGO + "|" +
+                        EXCEPTION_NOENCODE);
+        }
     }
 
     // ===================================================================
@@ -184,13 +221,19 @@ public class CryptoTest {
     // --------------------------------------------------------------------
     // CONSTANTS
 
-    private static final String     DOMAIN      = "google.com";
-    private static final Integer    ITERATIONS  = 10000;
-    private static final String     SEED        = "foo";
-    private static final String     UTF8        = "UTF-8";
-    private static final Integer    TRUNCATION  = 16;
-    private static final String     SALTKEY     =
+    private static final String     DOMAIN                  = "google.com";
+    private static final Integer    ITERATIONS              = 10000;
+    private static final String     SEED                    = "foo";
+    private static final String     UTF8                    = "UTF-8";
+    private static final Integer    TRUNCATION              = 16;
+    private static final String     SALTKEY                 =
         "np/hF+PCxK25Unqao/wq2+ybZcpxoeRubXcezOU6nhE0CejUYcCFzLBtR/PW8zZMvt6+IySIF7LTJfEoD91M6J+tPaqsb3flDUyolwLxMqT2fRmgPjZoLHLW3/zGy4xm01jqoxwUrQ5obBaLeVPofx6ev3ukFJpLiNScVS/ng+QaP/pEjXz0q8v0iPiskhee8lfjZK7mG+FxDHYDmtsGaLv0SKBH6joN1i7srXjyAzCFRrjCoP4q09IHwnbR/A56TC5vhKIYul6/L2gG+6JIjF7XrRWX+pMx8DjMV0lU6cPDMHtygQyEZJ92NnJ40rBvFKgkTJq8E8TjyFBYxlKuWDW/DdLy89LdzzDByMOyVamPBodN8gTrrMsWawTm0sBvwwcy5/hdo4cQE/XECZmryHUmvgQ+PEjBd+99hMezrA0wLX86UQ8kh8x2WhPz3w244kcfKqsiwPRniz4W6pw1084lM+hqM/oRZJSNfjGtlB2xfjVONRgjgLxMkTPnHdEWoleAi3zIHbVhn1ZgLgbvcjoSGSkIUHmC7+GupLTPSqZb+i53yJMGBPLfk5Uqk9/FfxjRvgcnlOmc3sRzMoLXnTzF13saEtiPbTW8MaY4KOSAbaC0If/3Ak7I2br+zaUQvD0E8W6uuxjRI3ZlN+GBZxmJLMNvzrhPNyR4F3cI9sk=";
+
+    // Exception Messages
+    private static final String     EXCEPTION_NOALGO        =
+        "Exception.NoSuchAlgorithm.Thrown!";
+    private static final String     EXCEPTION_NOENCODE      =
+        "Exception.UnsupportedEncoing.Thrown!";
 
     // --------------------------------------------------------------------
     // METHODS
@@ -205,7 +248,7 @@ public class CryptoTest {
         try {
             seedSHAHex = new String(Hex.encode(Crypto.getSeedSHA(SEED)),
                                     UTF8);
-        } catch (UnsupportedEncodingException e) {
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
             e.printStackTrace();
         }
 
@@ -225,7 +268,7 @@ public class CryptoTest {
                                                              SALTKEY,
                                                              ITERATIONS)),
                                  UTF8);
-        } catch (UnsupportedEncodingException e) {
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
             e.printStackTrace();
         }
 
