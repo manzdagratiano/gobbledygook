@@ -310,9 +310,14 @@ public abstract class HomeFragment extends Fragment {
     // NESTED CLASSES
 
     /**
-     * @brief   
+     * @brief   A utility class to encapsulate methods for manipulating
+     *          the Webview.
+     *          For some reason, Android freaks out if this class is
+     *          declared private, with a static public method.
+     *          "Uncaught translation error:
+     *           com.android.dex.util.ExceptionWithContext"
      */
-    private static class WebViewHelper {
+    public static class WebViewHelper {
 
         /**
          * @brief   
