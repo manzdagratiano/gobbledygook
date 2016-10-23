@@ -15,7 +15,7 @@ package io.tengentoppa.krunch;
 import io.tengentoppa.yggdrasil.WorkhorseFragment;
 
 // Android
-
+import android.os.Bundle;
 
 /**
  * @brief   The KrunchWorkhorseFragment class
@@ -25,33 +25,37 @@ import io.tengentoppa.yggdrasil.WorkhorseFragment;
  */
 public class KrunchWorkhorseFragment extends WorkhorseFragment {
 
+    /**
+     * @brief   Method to return a new instance of the
+     *          concrete implementation of the workhorse fragment.
+     * @return  {KrunchWorkhorseFragment} Returns an instance
+     *          of the KrunchWorkhorseFragment class
+     */
+    static KrunchWorkhorseFragment
+    newInstance(final String url,
+                final boolean showAsDialog) {
+        KrunchWorkhorseFragment workhorse =
+            new KrunchWorkhorseFragment();
+        Bundle args = new Bundle();
+
+        fillBundle(args,
+                   url,
+                   showAsDialog);
+        workhorse.setArguments(args);
+
+        return workhorse;
+    }
+
     // ====================================================================
     // PRIVATE MEMBERS
 
-    // --------------------------------------------------------------------
-    // METHODS
-
     /**
-     * @brief   Method to retrieve the ingredients for the recipe from the
-     *          appropriate source, in this case the SharedPreferences in
-     *          the system.
-     * @return  {Ingredients} Returns the populated ingredients object.
+     * @brief   Method to return the log category.
+     * @return  {String} The log category
      */
-    protected Ingredients retrieveIngredients() {
-        // Allocate memory
-        Ingredients ingredients = new Ingredients();
-
-        // Retrieve ingredients from shared preferences
-        this.retrieveIngredientsFromServer(ingredients);
-
-        return ingredients;
-    }
-
-    /**
-     * @brief   Method to retrieve the ingredients from the server.
-     * @return  Does not return a value, but does populates the ingredients.
-     */
-    private void retrieveIngredientsFromServer(Ingredients ingredients) {
+    @Override
+    protected String getLogCategory() {
+        return Logger.getCategory();
     }
 
 }

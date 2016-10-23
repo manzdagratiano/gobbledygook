@@ -12,6 +12,7 @@
 package io.tengentoppa.gobbledygook;
 
 // Libraries
+import io.tengentoppa.yggdrasil.R;
 import io.tengentoppa.yggdrasil.WorkhorseFragment;
 
 // Android
@@ -19,24 +20,25 @@ import android.os.Bundle;
 
 /**
  * @brief   The GobbledygookWorkhorseFragment class
- *          This class extends the WorkhorseFragment class to
- *          provide specific implementations of the
- *          retrieveIngredients method.
+ *          This class extends the WorkhorseFragment class.
  */
 public class GobbledygookWorkhorseFragment extends WorkhorseFragment {
 
     /**
-     * @brief   
+     * @brief   Method to return a new instance of the
+     *          concrete implementation of the workhorse fragment.
      * @return  {GobbledygookWorkhorseFragment} Returns an instance
      *          of the GobbledygookWorkhorseFragment class
      */
-    static GobbledygookWorkhorseFragment newInstance(String url,
-                                                     boolean showAsDialog) {
+    static GobbledygookWorkhorseFragment
+    newInstance(final String url,
+                final boolean showAsDialog) {
         GobbledygookWorkhorseFragment workhorse =
             new GobbledygookWorkhorseFragment();
         Bundle args = new Bundle();
-        args.putString(PARAM_URL, url);
-        args.putBoolean(PARAM_DIALOG, showAsDialog);
+        fillBundle(args,
+                   url,
+                   showAsDialog);
         workhorse.setArguments(args);
 
         return workhorse;
@@ -45,18 +47,13 @@ public class GobbledygookWorkhorseFragment extends WorkhorseFragment {
     // ====================================================================
     // PRIVATE MEMBERS
 
-    // --------------------------------------------------------------------
-    // METHODS
-
     /**
-     * @brief   Method to retrieve the ingredients for the recipe from the
-     *          appropriate source, in this case the SharedPreferences in
-     *          the system
-     * @return  {Ingredients} Returns the populated ingredients object
+     * @brief   Method to return the log category.
+     * @return  {String} The log category
      */
-    protected Ingredients retrieveIngredients() {
-        // Retrieve ingredients from shared preferences
-        return this.retrieveIngredientsFromSharedPreferences();
+    @Override
+    protected String getLogCategory() {
+        return Logger.getCategory();
     }
 
 }

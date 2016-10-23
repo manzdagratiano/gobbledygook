@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -46,6 +47,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.RuntimeException;
 import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.TreeMap;
@@ -100,12 +102,8 @@ public abstract class Yggdrasil extends AppCompatActivity
         // If this is the first launch, create a "Salt Key"
         this.checkAndCreateSaltKey();
 
-        // If there is no saved state,
-        // launch the "home" fragment
-        // (guaranteed to be at position 0 in the drawer)
-        if (null == savedInstanceState) {
-            this.onActivitySelection(R.id.drawerHome);
-        }
+        // Selecting a default state should be left
+        // to the concrete implementations.
     }
 
     /**
@@ -115,8 +113,9 @@ public abstract class Yggdrasil extends AppCompatActivity
      */
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
-        Log.i(LOG_CATEGORY,
-              "onPostCreate(): Configuring ActionBarDrawerToggle...");
+        final String FUNC = "onPostCreate(): ";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Configuring ActionBarDrawerToggle...");
         super.onPostCreate(savedInstanceState);
         // Sync the drawer toggle state after onRestoreInstanceState
         // has been called
@@ -189,14 +188,14 @@ public abstract class Yggdrasil extends AppCompatActivity
     // None of the fragments need to revisit these definitions.
 
     /**
-     * @brief   Called to populate the action bar menu, if it is present.
-     *          This is overridden in the derived classes;
-     *          it needs a definition here to call the "super" method
-     *          from the top-level base class.
+     * @brief   Called to populate the action bar menu, if it is present
      * @return  Returns true on success and false on failure
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        getMenuInflater().inflate(R.menu.action_menu,
+                                  menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -217,16 +216,27 @@ public abstract class Yggdrasil extends AppCompatActivity
 
     /**
      * @brief   Called when an action bar menu item is selected
-     *          This method will be appropriately overridden by the subclass.
-     *          It needs to exist here for the proper "super" handling
-     *          of this override through the Activity inheritance tree.
-     *          (The subclass calls its "super" method, and this class
-     *          calls its own in turn, calling the one from "Activity")
      * @return  Returns true on success and false on failure
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        return super.onOptionsItemSelected(item);
+
+        // The Action Bar home/up button should open/close the drawer;
+        // ActionBarDrawerToggle handles that
+        if (m_drawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+
+        switch(item.getItemId()) {
+            case R.id.homePage:
+                this.onActivitySelection(R.id.drawerHome);
+                return true;
+            case R.id.settingsPage:
+                this.onActivitySelection(R.id.drawerSettings);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     // --------------------------------------------------------------------
@@ -240,10 +250,11 @@ public abstract class Yggdrasil extends AppCompatActivity
     public void onActivityResult(int requestCode,
                                  int resultCode,
                                  Intent resultData) {
-        Log.i(LOG_CATEGORY, "onActivityResult() handler called...");
+        final String FUNC = "onActivityResult(): ";
+        Log.i(getLogCategory(), FUNC);
         if (READ_SETTINGS_FILE_CODE == requestCode &&
             Activity.RESULT_OK == resultCode) {
-            Log.i(LOG_CATEGORY, "onActivityResult(): " +
+            Log.i(getLogCategory(), getLogPrefix(FUNC) +
                   "Calling onSettingsFileSelection()...");
             this.onSettingsFileSelection(resultData.getData());
         }
@@ -254,11 +265,23 @@ public abstract class Yggdrasil extends AppCompatActivity
     // ====================================================================
     // PROTECTED METHODS
 
+    /**
+     * @brief   An method to obtain the log category,
+     *          suitably overridden in the concrete implementation.
+     * @return  {String} The log category.
+     */
+    protected abstract String getLogCategory();
+
+    /**
+     * @brief   A method to get a prefix for the log.
+     * @return  {String} The log prefix
+     */
+    protected String getLogPrefix(String FUNC) {
+        return FUNC + ": ";
+    }
+
     // --------------------------------------------------------------------
     // CONSTANTS
-
-    protected static final String LOG_CATEGORY                            =
-        "YGGDRASIL";
 
     // Output file constants
     private static final String OUTPUT_DIRECTORY_NAME                     =
@@ -281,7 +304,7 @@ public abstract class Yggdrasil extends AppCompatActivity
     protected static final String EXPORT_SETTINGS_ERROR                   =
         "ERROR exporting settings to file :(";
     protected static final String EXTERNAL_STORAGE_ERROR                  =
-        "ERROR exporting settings! The external storage is not mounted :(";
+        "ERROR exporting settings! External storage not mounted :(";
     protected static final String FILE_MANAGER_MISSING_ERROR              =
         "ERROR importing file! Please install a file manager " +
         "to be able to browse to a file";
@@ -314,7 +337,8 @@ public abstract class Yggdrasil extends AppCompatActivity
      * @return  
      */
     protected void createNavigationDrawer() {
-        Log.i(LOG_CATEGORY, "createNavigationDrawer(): " +
+        final String FUNC = "createNavigationDrawer(): ";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
               "Configuring the navigation drawer...");
 
         m_drawerLayout = (DrawerLayout)findViewById(
@@ -371,12 +395,16 @@ public abstract class Yggdrasil extends AppCompatActivity
     }
 
     /**
-     * @brief   A method to set the text in the navigation drawer header.
-     *          This will be appropriately overridden in each flavor.
+     * @brief   Set the text in the navigation drawer header.
      * @return  Does not return a value
      */
     protected void setNavigationDrawerHeader() {
-        // Do nothing
+        View drawerHeaderView = m_drawerView.getHeaderView(0);
+        TextView drawerHeader = (TextView)drawerHeaderView.findViewById(
+                R.id.drawerHeaderText);
+        drawerHeader.setText(R.string.drawer_header_text,
+                             TextView.BufferType.NORMAL);
+        drawerHeader.setTypeface(null, Typeface.BOLD);
     }
 
     /**
@@ -385,7 +413,8 @@ public abstract class Yggdrasil extends AppCompatActivity
      * @return  Does not return a value
      */
     protected void checkAndCreateSaltKey() {
-        Log.i(LOG_CATEGORY, "checkAndCreateSaltKey(): " +
+        final String FUNC = "checkAndCreateSaltKey(): ";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
               "Checking for salt key...");
 
         SharedPreferences sharedPrefs =
@@ -398,19 +427,33 @@ public abstract class Yggdrasil extends AppCompatActivity
                     getString(R.string.pref_saltKey_key),
                               "");
         } catch (Exception e) {
-            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
+            Log.i(getLogCategory(), getLogPrefix(FUNC) +
+                  "ERROR: Caught " + e);
             e.printStackTrace();
         }
 
         if (saltKey.isEmpty()) {
-            Log.i(LOG_CATEGORY, "checkAndCreateSaltKey(): " +
+            Log.i(getLogCategory(), getLogPrefix(FUNC) +
                     "saltKey=null, Creating new key...");
             // Since this may take a few seconds,
             // inform the user
             Toast.makeText(this.getApplicationContext(),
                            INIT_MESSAGE,
                            Toast.LENGTH_SHORT).show();
-            saltKey = Crypto.generateSaltKey();
+
+            saltKey = null;
+            try {
+                saltKey = Crypto.generateSaltKey();
+            } catch (UnsupportedEncodingException e) {
+                Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                      "ERROR: Caught " + e);
+                e.printStackTrace();
+                // We cannot proceed.
+                throw new RuntimeException("SaltKey.Generation.Failure");
+            }
+            Log.i(getLogCategory(), getLogPrefix(FUNC) +
+                  "Generated saltKey='" + saltKey + "'");
+
             SharedPreferences.Editor preferenceEditor = sharedPrefs.edit();
             preferenceEditor.putString(getString(R.string.pref_saltKey_key),
                                        saltKey);
@@ -421,11 +464,28 @@ public abstract class Yggdrasil extends AppCompatActivity
     /**
      * @brief   A function to launch the activity selected in the
      *          navigation drawer.
-     * @return  Does not return a value
+     *          This is done by replacing the framelayout with the
+     *          appropriate fragment.
+     *          This method may be overridden in the concrete derived classes.
+     * @return  Does not return a value.
      */
     protected void onActivitySelection(int itemId) {
-        // Do nothing
-        // The subclass will override this method appropriately
+        final String FUNC =  "onActivitySelection(): ";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Selecting activity id=" + itemId);
+
+        switch(itemId) {
+            case R.id.drawerSettingsExport:
+                // Export settings
+                this.exportSettings();
+                break;
+            case R.id.drawerSettingsImport:
+                // Import settings
+                this.importSettings();
+                break;
+            default:
+                // Do nothing
+        }
     }
 
     /**
@@ -453,12 +513,13 @@ public abstract class Yggdrasil extends AppCompatActivity
      * @return  Does not return a value
      */
     protected void exportSettings() {
-        Log.i(LOG_CATEGORY, "exportSettings() handler called...");
+        final String FUNC = "exportSettings(): ";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) + ">>");
 
         // Create a JSON object from the SharedPreferences
         JSONObject outputPrefs = constructSchema();
         if (null == outputPrefs) {
-            Log.e(LOG_CATEGORY, "exportSettings(): " +
+            Log.e(getLogCategory(), getLogPrefix(FUNC) +
                   "ERROR: Schema.Construction.FAILURE");
             Toast.makeText(this.getApplicationContext(),
                            EXPORT_SETTINGS_ERROR,
@@ -466,7 +527,7 @@ public abstract class Yggdrasil extends AppCompatActivity
             return;
         }
 
-        Log.i(LOG_CATEGORY, "exportSettings(): " +
+        Log.e(getLogCategory(), getLogPrefix(FUNC) +
               "outputPrefs='" + outputPrefs.toString() + "'");
 
         // Obtain a file handle for output in the external storage;
@@ -474,8 +535,8 @@ public abstract class Yggdrasil extends AppCompatActivity
         // the output file
         String state = Environment.getExternalStorageState();
         if (!Environment.MEDIA_MOUNTED.equals(state)) {
-            Log.e(LOG_CATEGORY, "exportSettings() ERROR: " +
-                  "External.Storage.NOT_MOUNTED");
+            Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                  "ERROR: External.Storage.NOT_MOUNTED");
             Toast.makeText(this.getApplicationContext(),
                            EXTERNAL_STORAGE_ERROR,
                            Toast.LENGTH_SHORT).show();
@@ -492,16 +553,16 @@ public abstract class Yggdrasil extends AppCompatActivity
         // create it if it does not exist
         if (!outputDir.exists()) {
             if (!outputDir.mkdirs()) {
-                Log.e(LOG_CATEGORY, "exportSettings() ERROR: " +
-                      "Directory.Creation.Failure");
+                Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                      "ERROR: Directory.Creation.Failure");
                 Toast.makeText(this.getApplicationContext(),
                                EXPORT_SETTINGS_ERROR,
                                Toast.LENGTH_SHORT).show();
                 return;
             }
         } else if (!outputDir.isDirectory()) {
-            Log.e(LOG_CATEGORY, "exportSettings() ERROR: " +
-                  "File.Exists.InPlaceOf.Directory");
+            Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                  "ERROR: File.Exists.InPlaceOf.Directory");
             Toast.makeText(this.getApplicationContext(),
                            DOPPELGANGER_FILE_ERROR,
                            Toast.LENGTH_SHORT).show();
@@ -517,16 +578,16 @@ public abstract class Yggdrasil extends AppCompatActivity
             outputStream.write(
                     outputPrefs.toString(JSON_INDENT_FACTOR).getBytes());
         } catch (JSONException e) {
-            Log.e(LOG_CATEGORY, "exportSettings() ERROR: " +
-                  "Caught " + e);
+            Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                  "ERROR: Caught " + e);
             Toast.makeText(this.getApplicationContext(),
                            EXPORT_SETTINGS_ERROR,
                            Toast.LENGTH_SHORT).show();
             e.printStackTrace();
             return;
         } catch (IOException e) {
-            Log.e(LOG_CATEGORY, "exportSettings() ERROR: " +
-                  "Caught " + e);
+            Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                  "ERROR: Caught " + e);
             Toast.makeText(this.getApplicationContext(),
                            EXPORT_SETTINGS_ERROR,
                            Toast.LENGTH_SHORT).show();
@@ -536,9 +597,9 @@ public abstract class Yggdrasil extends AppCompatActivity
             try {
                 outputStream.close();
             } catch (IOException e) {
-                Log.e(LOG_CATEGORY, "exportSettings() ERROR: " +
-                      "Memory Leak! Could not close FileOutputStream. " +
-                      "Caught " + e);
+                Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                      "ERROR: Memory Leak! Could not close FileOutputStream." +
+                      " Caught " + e);
                 e.printStackTrace();
                 // No need to return
             }
@@ -554,7 +615,8 @@ public abstract class Yggdrasil extends AppCompatActivity
      * @return  Does not return a value
      */
     protected void importSettings() {
-        Log.i(LOG_CATEGORY, "importSettings() handler called...");
+        final String FUNC = "importSettings(): ";
+        Log.e(getLogCategory(), getLogPrefix(FUNC) + ">>");
 
         // Open the file picker dialog to select the key file.
         // This requires creating a new "Intent".
@@ -568,7 +630,8 @@ public abstract class Yggdrasil extends AppCompatActivity
         intent.setType("application/json");
 
         // Start the activity
-        Log.i(LOG_CATEGORY, "importSettings(): Opening File Picker UI...");
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Opening File Picker UI...");
         // Start the activity, but through a "chooser"
         // for available Content Providers instead of the intent directly,
         // since the user may prefer a different one each time.
@@ -597,6 +660,8 @@ public abstract class Yggdrasil extends AppCompatActivity
      * @return  {JSONObject} The constructed schema.
      */
     private JSONObject constructSchema() {
+        final String FUNC = "constructSchema(): ";
+
         JSONObject outputSchema = new JSONObject();
         // Obtain a handle to the Shared Preferences in the system.
         SharedPreferences sharedPrefs =
@@ -646,8 +711,8 @@ public abstract class Yggdrasil extends AppCompatActivity
 
             return outputSchema;
         } catch (JSONException e) {
-            Log.e(LOG_CATEGORY, "exportSettings() ERROR: " +
-                  "Caught " + e);
+            Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                  "ERROR: Caught " + e);
             e.printStackTrace();
             return null;
         }
@@ -658,7 +723,8 @@ public abstract class Yggdrasil extends AppCompatActivity
      * @return  
      */
     private void onSettingsFileSelection(Uri uri) {
-        Log.i(LOG_CATEGORY, "onSettingsFileSelection(): " +
+        final String FUNC = "onSettingsFileSelection(): ";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
               "Parsing JSON file, uri='" + uri.toString() + "'");
 
         // Read the uri into a string
@@ -675,7 +741,8 @@ public abstract class Yggdrasil extends AppCompatActivity
                 preferencesFileBuffer.append(line + "\n");
             }
         } catch (IOException e) {
-            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
+            Log.i(getLogCategory(), getLogPrefix(FUNC) +
+                  "ERROR: Caught " + e);
             Toast.makeText(this.getApplicationContext(),
                            IMPORT_SETTINGS_ERROR,
                            Toast.LENGTH_SHORT).show();
@@ -686,7 +753,8 @@ public abstract class Yggdrasil extends AppCompatActivity
                 try {
                     bufferedFileReader.close();
                 } catch (IOException e) {
-                    Log.e(LOG_CATEGORY, "ERROR: Memory Leak! " +
+                    Log.i(getLogCategory(), getLogPrefix(FUNC) +
+                          "ERROR: Memory Leak! " +
                           "Couldn't close BufferedReader; " +
                           "uri='" + uri.toString() + "', Caught " + e);
                     e.printStackTrace();
@@ -732,7 +800,8 @@ public abstract class Yggdrasil extends AppCompatActivity
             // Commit the changes
             preferenceEditor.apply();
         } catch (JSONException e) {
-            Log.e(LOG_CATEGORY, "ERROR: JSON.Malformed, " +
+            Log.i(getLogCategory(), getLogPrefix(FUNC) +
+                  "ERROR: Malformed JSON! " +
                   "JSON='" + preferencesFileBuffer.toString() + "', " +
                   "Caught " + e);
             Toast.makeText(this.getApplicationContext(),
@@ -754,11 +823,14 @@ public abstract class Yggdrasil extends AppCompatActivity
      * @return  {JSONObject} The preferences section of the schema
      */
     private JSONObject validateAndReturnPreferences(final JSONObject schema) {
+        final String FUNC = "validateAndReturnPreferences(): ";
+
         try {
             JSONArray profiles = schema.getJSONArray(
                     getString(R.string.schema_profiles_key));
             if (1 != profiles.length()) {
-                Log.e(LOG_CATEGORY, "ERROR: JSON.Malformed, " +
+                Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                      "ERROR: JSON.Malformed, " +
                       "Too.Many.Profiles, Time.Travel.Anomaly, " +
                       "JSON='" + schema);
                 return null;
@@ -770,7 +842,8 @@ public abstract class Yggdrasil extends AppCompatActivity
                   defaultProfile.has(
                             getString(R.string.schema_profile_settings_key)) &&
                   (2 == defaultProfile.length()))) {
-                Log.e(LOG_CATEGORY, "ERROR: JSON.Malformed, " +
+                Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                      "ERROR: JSON.Malformed, " +
                       "Bad.Profile, " +
                       "JSON='" + schema);
                 return null;
@@ -785,7 +858,8 @@ public abstract class Yggdrasil extends AppCompatActivity
                   profileSettings.has(
                         getString(R.string.pref_customOverrides_key)) &&
                   (3 == profileSettings.length()))) {
-                Log.e(LOG_CATEGORY, "ERROR: JSON.Malformed, " +
+                Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                      "ERROR: JSON.Malformed, " +
                       "Bad.Profile.Settings, " +
                       "JSON='" + schema);
                 return null;
@@ -793,7 +867,8 @@ public abstract class Yggdrasil extends AppCompatActivity
 
             return profileSettings;
         } catch (JSONException e) {
-            Log.e(LOG_CATEGORY, "ERROR: JSON.Malformed, " +
+            Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                  "ERROR: JSON.Malformed, " +
                   "JSON='" + schema);
             e.printStackTrace();
             return null;

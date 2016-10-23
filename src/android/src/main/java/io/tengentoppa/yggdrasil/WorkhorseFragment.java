@@ -42,6 +42,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.ClassCastException;
 import java.lang.Exception;
 import java.lang.Runnable;
+import java.lang.RuntimeException;
 import java.lang.Thread;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
@@ -75,7 +76,9 @@ public abstract class WorkhorseFragment extends DialogFragment {
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.i(LOG_CATEGORY, "onCreate(): Creating workhorse fragment...");
+        final String FUNC = "onCreate()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Creating workhorse fragment...");
         super.onCreate(savedInstanceState);
 
         // Initialize the private data members
@@ -87,10 +90,15 @@ public abstract class WorkhorseFragment extends DialogFragment {
 
         // Get the input arguments
         Bundle args = this.getArguments();
-        if (null != args) {
-            this.m_showAsDialog = args.getBoolean(PARAM_DIALOG);
-            this.m_url = args.getString(PARAM_URL);
+        // Sanity check
+        if (null == args) {
+            Log.i(getLogCategory(), getLogPrefix(FUNC) +
+                  "ERROR: Null.Arguments!");
+            throw new RuntimeException("Null.Arguments");
         }
+
+        this.m_showAsDialog = args.getBoolean(PARAM_DIALOG);
+        this.m_url = args.getString(PARAM_URL);
     }
 
     /**
@@ -101,10 +109,13 @@ public abstract class WorkhorseFragment extends DialogFragment {
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the main layout
+        super.onCreateView(inflater,
+                           container,
+                           savedInstanceState);
+        // Inflate the workhorse layout
         return inflater.inflate(R.layout.workhorse,
-                                     container,
-                                     false);
+                                container,
+                                false);
     }
 
     /**
@@ -135,7 +146,9 @@ public abstract class WorkhorseFragment extends DialogFragment {
      */
     @Override
     public void onResume() {
-        Log.i(LOG_CATEGORY, "onResume(): Configuring elements...");
+        final String FUNC = "onResume()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Configuring elements...");
 
         super.onResume();
 
@@ -150,7 +163,8 @@ public abstract class WorkhorseFragment extends DialogFragment {
                                  ViewGroup.LayoutParams.WRAP_CONTENT);
             } else {
                 // This should not happen
-                Log.e(LOG_CATEGORY, "getDialog() returned null!");
+                Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                      "getDialog() returned null!");
             }
         }
 
@@ -170,7 +184,9 @@ public abstract class WorkhorseFragment extends DialogFragment {
     @Override
     public void onPause() {
         // Perform any cleanup here
-        Log.i(LOG_CATEGORY, "onPause(): Deconfiguring elements...");
+        final String FUNC = "onPause()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Deconfiguring elements...");
 
         this.deconfigureElements();
 
@@ -187,30 +203,197 @@ public abstract class WorkhorseFragment extends DialogFragment {
     }
 
     // ====================================================================
+    // PROTECTED METHODS
+
+    /**
+     * @brief   An method to obtain the log category,
+     *          suitably overridden in the concrete implementation.
+     * @return  {String} The log category.
+     */
+    protected abstract String getLogCategory();
+
+    /**
+     * @brief   A method to get a prefix for the log.
+     * @return  {String} The log prefix
+     */
+    protected String getLogPrefix(String FUNC) {
+        final String LOG_TAG = "WORKHORSE";
+        return LOG_TAG + "." + FUNC + ": ";
+    }
+
+    /**
+     * @brief   Method to fill an argument bundle.
+     * @return  Does not even
+     */
+    protected static void fillBundle(Bundle args,
+                                     final String url,
+                                     final boolean showAsDialog) {
+        args.putString(PARAM_URL, url);
+        args.putBoolean(PARAM_DIALOG, showAsDialog);
+    }
+
+    /**
+     * @brief   Routine to generate the "proxy" password
+     *          from the domain name using the user password
+     *          and the salt key
+     * @return  Does not return a value
+     */
+    protected void generate(final View view) {
+        final String FUNC = "generate()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Generating proxy password...");
+        final Attributes attributes = getAttributes(view);
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "attributes='" + AttributesCodec.encode(attributes) + "'");
+
+        byte[] seedSHA = null;
+        try {
+            seedSHA = Crypto.getSeedSHA(
+                            ((EditText)view.findViewById(R.id.password))
+                                    .getText().toString());
+            Log.d(getLogCategory(), getLogPrefix(FUNC) +
+                  "seedSHA=" + (new String(Hex.encode(seedSHA),
+                                           UTF8)));
+        } catch (NoSuchAlgorithmException e) {
+            Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                  "ERROR: seedSHA.generation.failure, Caught " + e);
+            e.printStackTrace();
+            return;
+        } catch (UnsupportedEncodingException e) {
+            Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                  "ERROR: Caught " + e);
+            e.printStackTrace();
+            // Continue; no need to quit on logging failure.
+        }
+
+        // The salt key
+        final String saltKey = m_saltKey;
+        // Sanity check
+        if (saltKey.isEmpty()) {
+            Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                  "FATAL: saltKey=null");
+            // Crash and burn
+            throw new RuntimeException("SaltKey.NULL");
+        }
+
+        // Do the heavy lifting in a separate thread.
+        // This involves:
+        // a) generate the salt from the saltKey and the domain,
+        // b) generate the proxy password from the salt and the password
+        // Create the new Thread object and start it.
+        final byte[] seedSHACopy = seedSHA;
+        new Thread(new Runnable () {
+            public void run() {
+                // Generate the salt
+                byte[] salt = null;
+                try {
+                    salt = Crypto.generateSalt(attributes.domain(),
+                                               saltKey,
+                                               attributes.iterations());
+                    Log.i(getLogCategory(), getLogPrefix(FUNC) +
+                          "salt=" + (new String(Base64.encode(salt),
+                                                UTF8)));
+                } catch (NoSuchAlgorithmException |
+                         UnsupportedEncodingException e) {
+                    // If an UnsupportedEncodingException occurred,
+                    // it will be due to failure to encode while generating,
+                    // rather than only after in the logging statement above.
+                    // Therefore, treat it with severity.
+                    Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                          "ERROR: Salt.Generation.Failure, Caught " + e);
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(
+                                    getActivity().getApplicationContext(),
+                                    SALT_GENERATION_FAILURE_MESSAGE,
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    e.printStackTrace();
+                    return;
+                }
+
+                // Generate the hash (the "proxy password")
+                String encodedHash = null;
+                try {
+                    encodedHash =
+                        Crypto.generateHash(seedSHACopy,
+                                            salt,
+                                            attributes.iterations(),
+                                            attributes.specialCharsFlag());
+                } catch (UnsupportedEncodingException e) {
+                    Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                          "ERROR: Hash.Generation.Failure, Caught " + e);
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(
+                                    getActivity().getApplicationContext(),
+                                    HASH_GENERATION_FAILURE_MESSAGE,
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    e.printStackTrace();
+                    return;
+                }
+
+                Log.i(getLogCategory(), getLogPrefix(FUNC) +
+                      "hash=" + encodedHash);
+                final String password =
+                    Crypto.getPasswdStr(encodedHash,
+                                        attributes.truncation(),
+                                        attributes.specialCharsFlag());
+                Log.i(getLogCategory(), getLogPrefix(FUNC) +
+                      "password=" + password);
+
+                // Post the results to the UI thread for manipulation
+                // (using "runOnUiThread" from the "Activity" class)
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        EditText hashField =
+                            (EditText)getView().findViewById(R.id.hash);
+                        hashField.setEnabled(true);
+                        hashField.setText(password,
+                                          TextView.BufferType.EDITABLE);
+                        checkAndSaveOverrides(attributes);
+                    }
+                });
+            }
+        }).start();
+    }
+
+    // ====================================================================
     // PRIVATE METHODS
 
     // --------------------------------------------------------------------
     // CONSTANTS
 
-    protected static final String LOG_CATEGORY      = "YGGDRASIL.WORKHORSE";
-    protected static final String SHA256            = "SHA-256";
-    protected static final String UTF8              = "UTF-8";
+    private static final String SHA256              = "SHA-256";
+    private static final String UTF8                = "UTF-8";
 
     // Parameter names
-    protected static final String PARAM_DIALOG      = "dialog";
-    protected static final String PARAM_URL         = "url";
+    private static final String PARAM_DIALOG        = "dialog";
+    private static final String PARAM_URL           = "url";
 
     // Toast messages
-    protected static final String ATTRIBUTES_OVERRIDE_SPARINGLY_MESSAGE
+    private static final String ATTRIBUTES_OVERRIDE_SPARINGLY_MESSAGE
                                                     =
         "Please use the custom attributes option sparingly! " +
         "It should only be a last resort.";
-    protected static final String ATTRIBUTES_SAVE_FAILURE_MESSAGE
+    private static final String ATTRIBUTES_SAVE_FAILURE_MESSAGE
                                                     =
         "Alas! Failed to save custom attributes!";
-    protected static final String ATTRIBUTES_SAVE_SUCCESS_MESSAGE
+    private static final String ATTRIBUTES_SAVE_SUCCESS_MESSAGE
                                                     =
         "Successfully saved custom attributes!";
+    private static final String SALT_GENERATION_FAILURE_MESSAGE
+                                                    =
+        "Salt generation failure!";
+    private static final String HASH_GENERATION_FAILURE_MESSAGE
+                                                    =
+        "Hash generation failure!";
 
     // --------------------------------------------------------------------
     // METHODS
@@ -219,7 +402,8 @@ public abstract class WorkhorseFragment extends DialogFragment {
      * @brief   
      * @return  
      */
-    protected void configureElements() {
+    private void configureElements() {
+        final String FUNC = "configureElements()";
 
         // ----------------------------------------------------------------
         // The Configurator class
@@ -231,25 +415,30 @@ public abstract class WorkhorseFragment extends DialogFragment {
         class Configurator {
 
             /**
-             * @brief   
-             * @return  
-             */
-            public String extractUrlFromClipboard() {
-                String url = "";
-                ClipboardManager clipboard =
-                    (ClipboardManager)getActivity().getSystemService(
-                            Context.CLIPBOARD_SERVICE);
-                if (clipboard.hasPrimaryClip()) {
-                    ClipData.Item clipItem =
-                        clipboard.getPrimaryClip().getItemAt(0);
-                    CharSequence clipText = clipItem.getText();
-                    if (null != clipText) {
-                        url = clipText.toString();
-                    }
-                }
+             * @brief   Method to extract the URL from the clipboard.
+             *          Currently, this method is not called,
+             *          since our application now integrates the browser
+             *          within itself rather than having to come back from
+             *          an external browser;
+             *          leaving it here in case it becomes useful again.
+             * @return  {String} The extracted URL.
+             public String extractUrlFromClipboard() {
+                 String url = "";
+                 ClipboardManager clipboard =
+                     (ClipboardManager)getActivity().getSystemService(
+                             Context.CLIPBOARD_SERVICE);
+                 if (clipboard.hasPrimaryClip()) {
+                     ClipData.Item clipItem =
+                         clipboard.getPrimaryClip().getItemAt(0);
+                     CharSequence clipText = clipItem.getText();
+                     if (null != clipText) {
+                         url = clipText.toString();
+                     }
+                 }
 
-                return url;
-            }
+                 return url;
+             }
+             */
 
             /**
              * @brief   
@@ -304,7 +493,8 @@ public abstract class WorkhorseFragment extends DialogFragment {
                 EditText iterationsField =
                     (EditText)getView().findViewById(R.id.iterations);
                 Integer theIterations =
-                    ((null == savedIterations) ? defaultIterations : savedIterations);
+                    ((null == savedIterations) ?
+                     defaultIterations : savedIterations);
                 iterationsField.setText(theIterations.toString(),
                                         TextView.BufferType.EDITABLE);
                 return theIterations;
@@ -427,7 +617,8 @@ public abstract class WorkhorseFragment extends DialogFragment {
         // ----------------------------------------------------------------
         // Retrieve the "ingredients"
         Ingredients ingredients = this.retrieveIngredients();
-        Log.d(LOG_CATEGORY, "ingredients=" + ingredients.toString());
+        Log.d(getLogCategory(), getLogPrefix(FUNC) +
+              "ingredients=" + ingredients.toString());
 
         // ----------------------------------------------------------------
         // Create the "actors"
@@ -437,15 +628,17 @@ public abstract class WorkhorseFragment extends DialogFragment {
         // ----------------------------------------------------------------
         // Read the url from the clipboard
 
-        // Log.i(LOG_CATEGORY, "Reading url from clipboard...");
+        // Log.i(getLogCategory(), "Reading url from clipboard...");
         // String url = configurator.extractUrlFromClipboard();
-        Log.i(LOG_CATEGORY, "url='" + m_url + "'");
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "url='" + m_url + "'");
 
         // ----------------------------------------------------------------
         // Extract the domain from the url
 
         String domain = configurator.extractDomain(m_url);
-        Log.i(LOG_CATEGORY, "domain='" + domain + "'");
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "domain='" + domain + "'");
 
         // ----------------------------------------------------------------
         // Saved and Proposed Attributes
@@ -459,7 +652,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
         Attributes savedOverrides =
             AttributesCodec.getDomainOverrides(domain,
                                                encodedOverridesMap);
-        Log.i(LOG_CATEGORY,
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
               "savedOverrides='" +
               AttributesCodec.encode(savedOverrides) + "'");
 
@@ -494,26 +687,14 @@ public abstract class WorkhorseFragment extends DialogFragment {
 
     /**
      * @brief   Method to retrieve the saved "ingredients"
-     *          for the recipe.
-     *          This method will be suitably overridden in
-     *          the respective flavor implementation.
-     * @return  Does not return a value
+     *          for the recipe from the SharedPreferences.
+     * @return  {Ingredients} The retrieved ingredients.
      */
-    protected Ingredients retrieveIngredients() {
-        // Do nothing; this must be overridden in the appropriate flavor.
-        // Return null to cause an intentional crash if not overridden.
-        return null;
-    }
-
-    /**
-     * @brief   A method to retrieve ingredients from SharedPreferences
-     *          This can either be the default method of retrieving
-     *          ingredients, or the fallback.
-     * @return  Does not return a value
-     */
-    protected Ingredients retrieveIngredientsFromSharedPreferences() {
+    private Ingredients retrieveIngredients() {
         // The SharedPreferences handle
-        Log.i(LOG_CATEGORY, "Reading saved preferences...");
+        final String FUNC = "retrieveIngredients()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Reading saved preferences...");
         SharedPreferences sharedPrefs =
             PreferenceManager.getDefaultSharedPreferences(
                                     getActivity().getApplicationContext());
@@ -545,7 +726,8 @@ public abstract class WorkhorseFragment extends DialogFragment {
                     getString(R.string.pref_customOverrides_key),
                               "");
         } catch (Exception e) {
-            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
+            Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                  "ERROR: Caught " + e);
             e.printStackTrace();
         }
 
@@ -556,107 +738,15 @@ public abstract class WorkhorseFragment extends DialogFragment {
     }
 
     /**
-     * @brief   Routine to generate the "proxy" password
-     *          from the domain name using the user password
-     *          and the salt key
-     * @return  Does not return a value
-     */
-    protected void generate(final View view) {
-        Log.i(LOG_CATEGORY, "Generating proxy password...");
-        final Attributes attributes = getAttributes(view);
-        Log.i(LOG_CATEGORY,
-              "attributes='" + AttributesCodec.encode(attributes) + "'");
-
-        final byte[] seedSHA =
-            Crypto.getSeedSHA(
-                ((EditText)view.findViewById(R.id.password))
-                                    .getText().toString());
-        if (null == seedSHA) {
-            Log.e(LOG_CATEGORY, "ERROR: seedSHA.generation.failure");
-            return;
-        }
-        try {
-            Log.d(LOG_CATEGORY,
-                  "seedSHA=" + (new String(Hex.encode(seedSHA),
-                                           UTF8)));
-        } catch (UnsupportedEncodingException e) {
-            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
-            e.printStackTrace();
-        }
-
-        // The salt key
-        final String saltKey = m_saltKey;
-        // Sanity check
-        if (saltKey.isEmpty()) {
-            Log.e(LOG_CATEGORY, "FATAL: saltKey=null");
-            // Continue, but the results will be bogus.
-        }
-
-        // Do the heavy lifting in a separate thread.
-        // This involves:
-        // a) generate the salt from the saltKey and the domain,
-        // b) generate the proxy password from the salt and the password
-        // Create the new Thread object and start it.
-        new Thread(new Runnable () {
-            public void run() {
-                // Generate the salt
-                byte[] salt = Crypto.generateSalt(attributes.domain(),
-                                                  saltKey,
-                                                  attributes.iterations());
-                if (null == salt) {
-                    String errMsg = "Salt.Generation.Failure";
-                    Log.e(LOG_CATEGORY, errMsg);
-                    setPassword(view, errMsg);
-                    return;
-                }
-                try {
-                    Log.i(LOG_CATEGORY,
-                          "salt=" + (new String(Base64.encode(salt),
-                                                UTF8)));
-                } catch (UnsupportedEncodingException e) {
-                    Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
-                    e.printStackTrace();
-                }
-
-                // Generate the hash (the "proxy password")
-                String b64Hash =
-                    Crypto.generateHash(seedSHA,
-                                        salt,
-                                        attributes.iterations(),
-                                        attributes.specialCharsFlag());
-                if (null == b64Hash) {
-                    String errMsg = "Hash.Generation.Failure";
-                    Log.e(LOG_CATEGORY, errMsg);
-                    setPassword(view, errMsg);
-                    return;
-                }
-                Log.i(LOG_CATEGORY, "hash=" + b64Hash);
-                final String password =
-                    Crypto.getPasswdStr(b64Hash,
-                                        attributes.truncation(),
-                                        attributes.specialCharsFlag());
-                Log.i(LOG_CATEGORY, "password=" + password);
-
-                // Post the results to the UI thread for manipulation
-                // (using "runOnUiThread" from the "Activity" class)
-                getActivity().runOnUiThread(new Runnable() {
-                    public void run() {
-                        setPassword(view, password);
-                        checkAndSaveOverrides(attributes);
-                    }
-                });
-            }
-        }).start();
-    }
-
-    /**
      * @brief   A method to get an Attributes object created from
      *          the elements of the view after the user has potentially
      *          changed any elements and hit "Generate!" to generate the
      *          proxy password.
      * @return  An Attributes object initialized from elements of the view
      */
-    protected Attributes getAttributes(View view) {
+    private Attributes getAttributes(View view) {
+        final String FUNC = "getAttributes()";
+
         EditText domainField     =
             (EditText)getView().findViewById(R.id.domain);
         EditText iterationsField =
@@ -672,7 +762,8 @@ public abstract class WorkhorseFragment extends DialogFragment {
                  Attributes.DEFAULT_ITERATIONS :
                  Integer.parseInt(iterationsField.getText().toString()));
         } catch (ClassCastException e) {
-            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
+            Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                  "ERROR: Caught " + e);
             e.printStackTrace();
             iterations = Attributes.DEFAULT_ITERATIONS;
         }
@@ -684,7 +775,8 @@ public abstract class WorkhorseFragment extends DialogFragment {
                  Attributes.NO_TRUNCATION :
                  Integer.parseInt(truncationField.getText().toString()));
         } catch (ClassCastException e) {
-            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
+            Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                  "ERROR: Caught " + e);
             e.printStackTrace();
             truncation = Attributes.NO_TRUNCATION;
         }
@@ -712,25 +804,28 @@ public abstract class WorkhorseFragment extends DialogFragment {
      * @return  
      */
     protected void checkAndSaveOverrides(final Attributes attributes) {
+        final String FUNC = "checkAndSaveOverrides()";
         CheckBox saveOverridesBox =
             (CheckBox)getView().findViewById(R.id.saveOverrides);
         if (!saveOverridesBox.isChecked()) {
-            Log.i(LOG_CATEGORY, "checkAndSaveOverrides(): " +
+            Log.i(getLogCategory(), getLogPrefix(FUNC) +
                   "Not asked to save overrides. Nothing to do...");
             return;
         }
 
-        Log.i(LOG_CATEGORY, "checkAndSaveOverrides(): " +
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
               "Checking if modified attributes exist...");
         Attributes overridesToSave =
             AttributesCodec.getOverridesToSave(attributes,
                                                this.m_savedOverrides,
                                                this.m_proposedAttributes);
         String encodedOverrides = AttributesCodec.encode(overridesToSave);
-        Log.i(LOG_CATEGORY, "overridesToSave='" + encodedOverrides + "'");
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "overridesToSave='" + encodedOverrides + "'");
 
         if (!overridesToSave.attributesExist()) {
-            Log.i(LOG_CATEGORY, "No custom changes to save...");
+            Log.i(getLogCategory(), getLogPrefix(FUNC) +
+                  "No custom changes to save...");
             return;
         }
 
@@ -745,14 +840,15 @@ public abstract class WorkhorseFragment extends DialogFragment {
             m_customOverrides.put(attributes.domain(),
                                   encodedOverrides);
         } catch (JSONException e) {
-            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
+            Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                  "ERROR: Caught " + e);
             Toast.makeText(getActivity().getApplicationContext(),
                            ATTRIBUTES_SAVE_FAILURE_MESSAGE,
                            Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Log.i(LOG_CATEGORY, "checkAndSaveOverrides(): " +
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
               "new customOverrides=" + m_customOverrides.toString());
 
         // Stringify the JSON for saving in the default SharedPreferences
@@ -779,8 +875,9 @@ public abstract class WorkhorseFragment extends DialogFragment {
      *          clean up listeners and handlers
      * @return  Does not return a value
      */
-    protected void deconfigureElements() {
-        Log.i(LOG_CATEGORY, "deconfigureElements(): " +
+    private void deconfigureElements() {
+        final String FUNC = "deconfigureElements()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
               "Cleaning up listeners/handlers");
 
         // "Truncate" checkbox
@@ -813,7 +910,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
      *          "ingredients" that go into the "recipe", i.e.,
      *          the necessary input to generate passwords.
      */
-    protected class Ingredients {
+    private class Ingredients {
 
         // ================================================================
         // Creators
@@ -895,24 +992,24 @@ public abstract class WorkhorseFragment extends DialogFragment {
     // --------------------------------------------------------------------
     // DATA MEMBERS
 
-    protected boolean    m_showAsDialog;        /** @brief A parameter to
+    private boolean    m_showAsDialog;        /** @brief A parameter to
                                                   * indicate if this fragment
                                                   * should be shown
                                                   * as a dialog
                                                   */
-    protected String     m_url;                 /** @brief The url
+    private String     m_url;                 /** @brief The url
                                                   * being operated upon
                                                   */
-    protected String     m_saltKey;             /** @brief The salt key
+    private String     m_saltKey;             /** @brief The salt key
                                                   * retrieved from the
                                                   * default
                                                   * shared preferences/
                                                   * server
                                                   */
-    protected Attributes m_savedOverrides;      /** @brief Attributes saved
+    private Attributes m_savedOverrides;      /** @brief Attributes saved
                                                   * in the preferences system
                                                   */
-    protected Attributes m_proposedAttributes;  /** @brief Proposed
+    private Attributes m_proposedAttributes;  /** @brief Proposed
                                                   * attributes,
                                                   * after reading from the
                                                   * saved preferences
@@ -920,8 +1017,8 @@ public abstract class WorkhorseFragment extends DialogFragment {
                                                   * further unmodified
                                                   * by the user
                                                   */
-    protected JSONObject m_customOverrides;     /** @brief The saved JSON
+    private JSONObject m_customOverrides;  /** @brief The saved JSON
                                                   * of custom
-                                                  * website overrides
+                                                  * website attributes
                                                   */
 }

@@ -47,7 +47,9 @@ public abstract class HomeFragment extends Fragment {
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.i(LOG_CATEGORY, "onCreate(): Creating home activity...");
+        final String FUNC = "onCreate()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Creating home activity...");
         super.onCreate(savedInstanceState);
 
         // Nullify the private data members
@@ -86,7 +88,9 @@ public abstract class HomeFragment extends Fragment {
      */
     @Override
     public void onResume() {
-        Log.i(LOG_CATEGORY, "onResume(): Configuring elements...");
+        final String FUNC = "onResume()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Configuring elements...");
 
         super.onResume();
 
@@ -102,7 +106,9 @@ public abstract class HomeFragment extends Fragment {
     @Override
     public void onPause() {
         // Perform any cleanup here
-        Log.i(LOG_CATEGORY, "onPause(): Deconfiguring elements...");
+        final String FUNC = "onPause()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Deconfiguring elements...");
 
         this.deconfigureElements();
 
@@ -110,23 +116,99 @@ public abstract class HomeFragment extends Fragment {
     }
 
     // ====================================================================
+    // PROTECTED METHODS
+
+    /**
+     * @brief   An method to obtain the log category,
+     *          suitably overridden in the concrete implementation.
+     * @return  {String} The log category.
+     */
+    protected abstract String getLogCategory();
+
+    /**
+     * @brief   A method to get a prefix for the log.
+     * @return  {String} The log prefix
+     */
+    protected String getLogPrefix(String FUNC) {
+        final String LOG_TAG = "HOMEFRAGMENT";
+        return LOG_TAG + "." + FUNC + ": ";
+    }
+
+    /**
+     * @brief   Method to configure the floating action button.
+     *          Suitably overridden in the concrete implementations.
+     * @return  Does not return a value
+     */
+    protected abstract void configureFloatingActionButton();
+
+    /**
+     * @brief   A method to show the concrete implementation
+     *          of the WorkhorseFragment dialog.
+     * @return  {DialogFragment} The concrete implementation instance.
+     */
+    protected abstract DialogFragment
+    getWorkhorseFragment(final String url,
+                         final boolean showAsDialog);
+
+    /**
+     * @brief   A method to show the "Workhorse" dialog.
+     * @return  Does not even.
+     */
+    protected void showWorkhorseDialog() {
+        final String FUNC = "showWorkhorseDialog()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Creating Workhorse dialog...");
+        // Show the WorkhorseFragment as a Dialog
+        FragmentManager fragmentManager = getActivity().getFragmentManager();
+        FragmentTransaction fragmentTx = fragmentManager.beginTransaction();
+        Fragment prevInstance = fragmentManager.findFragmentByTag(
+                getString(R.string.tag_workhorseFragment));
+        if (null != prevInstance) {
+            fragmentTx.remove(prevInstance);
+        }
+        // Provide proper "back" navigation
+        fragmentTx.addToBackStack(null);
+
+        // Obtain the current WebView url to pass as input
+        // to the WorkhorseFragment dialog
+        String url = m_webView.getUrl();
+
+        // Instantiate the fragment
+        boolean showAsDialog = true;
+        DialogFragment workhorseDialog = getWorkhorseFragment(url,
+                                                              showAsDialog);
+
+        // "show" will commit the transaction as well
+        workhorseDialog.show(fragmentTx,
+                             getString(R.string.tag_workhorseFragment));
+    }
+
+    // ====================================================================
     // PRIVATE METHODS
-
-    // --------------------------------------------------------------------
-    // CONSTANTS
-
-    protected static final String LOG_CATEGORY  = "HOMEFRAGMENT";
-
-    protected static final String DEFAULT_URL   = "https://duckduckgo.com";
 
     // --------------------------------------------------------------------
     // METHODS
 
     /**
-     * @brief   
-     * @return  Does not return a value
+     * @brief   Method to configure the view elements.
+     * @return  Does not even.
      */
-    protected void configureWebView() {
+    private void configureElements() {
+        // Configure the WebView with a "safe" URL to start with
+        this.configureWebView();
+
+        // Configure the search bar
+        this.configureSearchView();
+
+        // Configure the Floating Action Button
+        this.configureFloatingActionButton();
+    }
+
+    /**
+     * @brief   Method to configure the WebView.
+     * @return  Does not return a value.
+     */
+    private void configureWebView() {
 
         // Enable JavaScript by default,
         // without which most websites will break anyway.
@@ -142,26 +224,46 @@ public abstract class HomeFragment extends Fragment {
         // (since we're logging into places).
         // TODO: discard them when the application exits
         CookieManager.getInstance().setAcceptCookie(true);
-    }
 
-    protected void configureElements() {
-        // Configure the WebView with a "safe" URL to start with
-        this.configureWebView();
         // Load the WebView with a "safe" URL to start with
-        this.loadWebView(DEFAULT_URL);
-
-        // Configure the search bar
-        configureSearchView();
-
-        // Configure the Floating Action Button
-        configureFloatingActionButton();
+        this.loadWebView(getString(R.string.default_url));
     }
 
     /**
-     * @brief   
-     * @return  
+     * @brief   Method to configure the search bar at the top.
+     * @return  Does not return a value
      */
-    protected void loadWebView(String url) {
+    private void configureSearchView() {
+        m_searchView
+            .setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextChange(String query) {
+                    // Do nothing
+                    // Handled by the listener, so return true
+                    return true;
+                }
+
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    final String FUNC = "onQueryTextSubmit()";
+
+                    String url = WebViewHelper.getUrlFromQuery(query);
+                    Log.i(getLogCategory(), getLogPrefix(FUNC) +
+                          "query='" + query + "', url='" + url + "'");
+                    // Update the WebView with the query as the URL
+                    // (we have access to the methods of the enclosing class)
+                    loadWebView(url);
+                    // Handled by the listener, so return true
+                    return true;
+                }
+            });
+    }
+
+    /**
+     * @brief   Method to load the WebView with a URL.
+     * @return  Does not even.
+     */
+    private void loadWebView(String url) {
         m_webView.loadUrl(url);
         // Request focus away from the SearchView
         m_webView.requestFocus();
@@ -175,81 +277,7 @@ public abstract class HomeFragment extends Fragment {
     }
 
     /**
-     * @brief   
-     * @return  Does not return a value
-     */
-    protected void configureSearchView() {
-        m_searchView
-            .setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                @Override
-                public boolean onQueryTextChange(String query) {
-                    // Do nothing
-                    // Handled by the listener, so return true
-                    return true;
-                }
-
-                @Override
-                public boolean onQueryTextSubmit(String query) {
-
-                    String url = WebViewHelper.getUrlFromQuery(query);
-                    Log.i(LOG_CATEGORY, "onQueryTextSubmit(): " +
-                          "query='" + query + "', url='" + url + "'");
-                    // Update the WebView with the query as the URL
-                    // (we have access to the methods of the enclosing class)
-                    loadWebView(url);
-                    // Handled by the listener, so return true
-                    return true;
-                }
-            });
-    }
-
-    /**
-     * @brief   
-     * @return  Does not return a value
-     */
-    protected void configureFloatingActionButton() {
-        m_floatingButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Log.i(LOG_CATEGORY,
-                      "onClick(): Creating Workhorse dialog...");
-
-                // Show the WorkhorseFragment as a Dialog
-                FragmentManager fragmentManager =
-                    getActivity().getFragmentManager();
-                FragmentTransaction fragmentTx =
-                    fragmentManager.beginTransaction();
-                Fragment prevInstance = fragmentManager.findFragmentByTag(
-                        getString(R.string.tag_workhorseFragment));
-                if (null != prevInstance) {
-                    fragmentTx.remove(prevInstance);
-                }
-                // Provide proper "back" navigation
-                fragmentTx.addToBackStack(null);
-
-                // Obtain the current WebView url to pass as input
-                // to the WorkhorseFragment dialog
-                String url = m_webView.getUrl();
-
-                // Show the dialog
-                showWorkhorseDialog(url,
-                                    fragmentTx);
-            }
-        });
-    }
-
-    /**
-     * @brief   
-     * @return  
-     */
-    protected void showWorkhorseDialog(String url,
-                                       FragmentTransaction fragmentTx) {
-        // Do nothing.
-        // The flavor classes will do the override appropriately.
-    }
-
-    /**
-     * @brief   
+     * @brief   A method to perform any cleanup (listeners etc).
      * @return  Does not return a value
      */
     protected void deconfigureElements() {
@@ -260,9 +288,23 @@ public abstract class HomeFragment extends Fragment {
     // --------------------------------------------------------------------
     // DATA
 
-    protected SearchView            m_searchView;
-    protected WebView               m_webView;
+    /**
+     * @brief   The FloatingActionButton.
+     *          This is an inheritable data member,
+     *          to which different actions will be assigned
+     *          in the concrete implementations.
+     */
     protected FloatingActionButton  m_floatingButton;
+
+    /**
+     * @brief   The search bar at the top of the fragment.
+     */
+    private SearchView              m_searchView;
+
+    /**
+     * @brief   The WebView to display.
+     */
+    private WebView                 m_webView;
 
     // --------------------------------------------------------------------
     // NESTED CLASSES
@@ -270,7 +312,7 @@ public abstract class HomeFragment extends Fragment {
     /**
      * @brief   
      */
-    protected static class WebViewHelper {
+    private static class WebViewHelper {
 
         /**
          * @brief   

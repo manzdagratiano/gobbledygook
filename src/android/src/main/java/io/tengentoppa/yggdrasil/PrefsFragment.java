@@ -26,12 +26,15 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+// Standard Java
+import java.lang.RuntimeException;
+
 // ==========================================================================
 
 /**
  * @brief   
  */
-public class PrefsFragment extends PreferenceFragment
+public abstract class PrefsFragment extends PreferenceFragment
     implements SharedPreferences.OnSharedPreferenceChangeListener{
 
     // ====================================================================
@@ -43,12 +46,17 @@ public class PrefsFragment extends PreferenceFragment
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.i(LOG_CATEGORY, "onCreate(): Creating PreferenceFragment...");
+        final String FUNC = "onCreate()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Creating PreferenceFragment...");
 
         super.onCreate(savedInstanceState);
 
         // Load the preferences from the xml resource
         addPreferencesFromResource(R.xml.preferences);
+
+        // Get a handle to the SharedPreferences
+        this.getSharedPreferencesHandle();
     }
 
     /**
@@ -70,7 +78,9 @@ public class PrefsFragment extends PreferenceFragment
      */
     @Override
     public void onResume() {
-        Log.i(LOG_CATEGORY, "onResume(): Configuring elements...");
+        final String FUNC = "onResume()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Configuring elements...");
 
         super.onResume();
 
@@ -87,7 +97,9 @@ public class PrefsFragment extends PreferenceFragment
      */
     @Override
     public void onPause() {
-        Log.i(LOG_CATEGORY, "onPause(): Cleaning up...");
+        final String FUNC = "onPause()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Cleaning up...");
         this.deconfigurePreferenceElements();
 
         super.onPause();
@@ -106,20 +118,21 @@ public class PrefsFragment extends PreferenceFragment
     // HANDLERS
 
     /**
-     * @brief   
+     * @brief   Handler called when any of the SharedPreference elements
+     *          are changed.
      * @return  Does not return a value.
      */
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
                                           String key) {
-        Log.i(LOG_CATEGORY,
-              "onSharedPreferencesChanged() handler called. " +
+        final String FUNC = "onSharedPreferencesChanged()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
               "key='" + key + "'");
 
         if (key.equals(
                     getString(R.string.pref_saltKey_key))) {
             String newSaltKey = sharedPreferences.getString(key, "");
-            Log.i(LOG_CATEGORY, "onSharedPreferencesChanged(): " +
+            Log.i(getLogCategory(), getLogPrefix(FUNC) +
                   "New saltKey='" + newSaltKey + "'");
 
             Preference saltKeyPref = (Preference)findPreference(key);
@@ -132,11 +145,75 @@ public class PrefsFragment extends PreferenceFragment
             String newDefaultIterationsStr =
                 sharedPreferences.getString(key, "");
             if (!newDefaultIterationsStr.isEmpty()) {
-                Log.i(LOG_CATEGORY, "onSharedPreferencesChanged(): " +
+                Log.i(getLogCategory(), getLogPrefix(FUNC) +
                       "New defaultIterations=" + newDefaultIterationsStr);
                 defaultIterationsPref.setSummary(newDefaultIterationsStr);
             }
         }
+    }
+
+    // ====================================================================
+    // PROTECTED METHODS
+
+    /**
+     * @brief   An method to obtain the log category,
+     *          suitably overridden in the concrete implementation.
+     * @return  {String} The log category.
+     */
+    protected abstract String getLogCategory();
+
+    /**
+     * @brief   A method to get a prefix for the log.
+     * @return  {String} The log prefix
+     */
+    protected String getLogPrefix(String FUNC) {
+        final String LOG_TAG = "PREFS";
+        return LOG_TAG + "." + FUNC + ": ";
+    }
+
+    /**
+     * @brief   Method to configure listeners for the preference elements.
+     * @return  Does not even.
+     */
+    protected void configurePreferenceElements() {
+        final String FUNC = "configurePreferenceElements()";
+
+        this.configureSaltKey();
+        this.configureDefaultIterations();
+        this.configureCustomAttributes();
+
+        // The OnSharedPreferenceChangedListener for all Preference changes
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Registering onSharedPreferenceChangedListeners...");
+        m_sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+    }
+
+    /**
+     * @brief   A method to return the implementation of the DialogFragment.
+     *          (must be overridden in derived classes).
+     * @return  {DialogFragment} The instance of the concrete implementation
+     *          of the DialogFragment
+     */
+    protected abstract DialogFragment
+    getSaltKeyActionsFragment(final boolean showAsDialog);
+
+    /**
+     * @brief   Method to perform any cleanup, such as freeing handlers
+     *          for garbage collection
+     * @return  Does not return a value
+     */
+    protected void deconfigurePreferenceElements() {
+        // Unregister the PreferenceChangeListener
+        final String FUNC = "deconfigurePreferenceElements()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Deregistering onSharedPreferenceChangedListeners...");
+        m_sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+
+        // Deregister the saltKey OnClick listener
+        Preference saltKeyPref =
+            (Preference)findPreference(
+                    getString(R.string.pref_saltKey_key));
+        saltKeyPref.setOnPreferenceClickListener(null);
     }
 
     // ====================================================================
@@ -145,165 +222,144 @@ public class PrefsFragment extends PreferenceFragment
     // --------------------------------------------------------------------
     // CONSTANTS
 
-    private static final String LOG_CATEGORY        = "YGGDRASIL.PREFS";
     private static final int    DEFAULT_ITERATIONS  = 10000;
     private static final String EMPTY_CUSTOM_ATTRS_INDICATOR
                                                     = "<null>";
 
-    /**
-     * @brief   
-     * @return  
-     */
-    private void configurePreferenceElements() {
+    // --------------------------------------------------------------------
+    // METHODS
 
-        class Configurator {
-
-            /**
-             * @brief   Function to configure the summary for the saltKey,
-             *          and to set it read-only
-             * @return  Does not return a value
-             */
-            public void
-            configureSaltKey(SharedPreferences sharedPreferences) {
-                Log.i(LOG_CATEGORY, "configureSaltKey(): Setting value...");
-
-                Preference saltKeyPref =
-                    (Preference)findPreference(
-                            getString(R.string.pref_saltKey_key));
-
-                // Set the summary with the value
-                String saltKey =
-                    sharedPreferences.getString(
-                            getString(R.string.pref_saltKey_key), "");
-                // The saltKey should never be empty,
-                // since it is generated on first start when it does not exist
-                saltKeyPref.setSummary(saltKey);
-
-                // Set an onClick listener to view/edit the salt key
-                saltKeyPref.setOnPreferenceClickListener(
-                        new Preference.OnPreferenceClickListener() {
-                    // @Override
-                    public boolean onPreferenceClick(Preference preference) {
-                        // Display the SaltKeyFragment as a dialog
-                        Log.i(LOG_CATEGORY,
-                              "onClick(): Creating SaltKeyActions dialog...");
-
-                        // Show the WorkhorseFragment as a Dialog
-                        FragmentManager fragmentManager =
-                            getActivity().getFragmentManager();
-                        FragmentTransaction fragmentTx =
-                            fragmentManager.beginTransaction();
-                        Fragment prevInstance =
-                            fragmentManager.findFragmentByTag(
-                                getString(R.string.tag_saltKeyActionsFragment));
-                        if (null != prevInstance) {
-                            fragmentTx.remove(prevInstance);
-                        }
-                        // Provide proper "back" navigation
-                        fragmentTx.addToBackStack(null);
-
-                        // Instantiate the fragment
-                        boolean showAsDialog = true;
-                        DialogFragment saltKeyActionsDialog =
-                            SaltKeyActionsFragment.newInstance(showAsDialog);
-
-                        // "show" will commit the transaction as well
-                        saltKeyActionsDialog.show(
-                                fragmentTx,
-                                getString(R.string.tag_saltKeyActionsFragment));
-
-                        // The click was handled, so return true
-                        return true;
-                    }
-                });
-            }
-
-            /**
-             * @brief   
-             * @return  
-             */
-            public void
-            configureDefaultIterations(SharedPreferences sharedPreferences) {
-                Log.i(LOG_CATEGORY,
-                      "configureDefaultIterations(): Setting value...");
-
-                Preference defaultIterationsPref =
-                    (Preference)findPreference(
-                            getString(R.string.pref_defaultIterations_key));
-
-                // Set the summary with the value
-                // defaultIterations needs to be retrieved as text
-                String defaultIterationsStr =
-                    sharedPreferences.getString(
-                        getString(R.string.pref_defaultIterations_key), "");
-                if (!defaultIterationsStr.isEmpty()) {
-                    Log.i(LOG_CATEGORY, "configureDefaultIterations(): " +
-                          "Found non-empty defaultIterations='" +
-                          defaultIterationsStr + "'");
-                    defaultIterationsPref.setSummary(defaultIterationsStr);
-                }
-            }
-
-            /**
-             * @brief   
-             * @return  
-             */
-            public void
-            configureCustomOverrides(SharedPreferences sharedPreferences) {
-                Log.i(LOG_CATEGORY, "configureCustomOverrides(): " +
-                      "Setting value...");
-
-                Preference customOverridesPref =
-                    (Preference)findPreference(
-                            getString(R.string.pref_customOverrides_key));
-
-                // Set the summary with the value
-                String customOverrides =
-                    sharedPreferences.getString(
-                            getString(R.string.pref_customOverrides_key), "");
-                if (customOverrides.isEmpty()) {
-                    Log.i(LOG_CATEGORY, "configureCustomOverrides(): " +
-                          "The list of custom attributes is empty");
-                    customOverridesPref.setSummary(EMPTY_CUSTOM_ATTRS_INDICATOR);
-                } else {
-                    Log.i(LOG_CATEGORY, "configureCustomOverrides(): " +
-                          "Found non-empty customOverrides='" +
-                          customOverrides + "'");
-                    customOverridesPref.setSummary(customOverrides);
-                }
-            }
-
-        };  // end class Configurator
-
-        // Get the SharedPreferences handle
-        SharedPreferences sharedPreferences =
+    private void getSharedPreferencesHandle() {
+        m_sharedPreferences =
             PreferenceManager.getDefaultSharedPreferences(
                                     getActivity().getApplicationContext());
-
-        Configurator configurator = new Configurator();
-
-        configurator.configureSaltKey(sharedPreferences);
-        configurator.configureDefaultIterations(sharedPreferences);
-        configurator.configureCustomOverrides(sharedPreferences);
-
-        // The OnSharedPreferenceChangedListener for all Preference changes
-        Log.i(LOG_CATEGORY, "configurePreferenceElements(): "+
-              "Registering onSharedPreferenceChangedListeners...");
-        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+        if (null == m_sharedPreferences) {
+            throw new RuntimeException("SharedPreferences.Null!");
+        }
     }
 
     /**
-     * @brief   Method to perform any cleanup, such as freeing handlers
-     *          for garbage collection
+     * @brief   Function to configure the summary for the saltKey,
+     *          and to set it read-only
      * @return  Does not return a value
      */
-    private void deconfigurePreferenceElements() {
-        // Unregister the PreferenceChangeListener
-        Log.i(LOG_CATEGORY, "deconfigurePreferenceElements(): " +
-              "Deregistering onSharedPreferenceChangedListeners...");
-        SharedPreferences sharedPreferences =
-            PreferenceManager.getDefaultSharedPreferences(
-                                    getActivity().getApplicationContext());
-        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+    private void configureSaltKey() {
+        final String FUNC = "configureSaltKey()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Setting value...");
+
+        Preference saltKeyPref =
+            (Preference)findPreference(
+                    getString(R.string.pref_saltKey_key));
+
+        // Set the summary with the value
+        String saltKey =
+            m_sharedPreferences.getString(
+                    getString(R.string.pref_saltKey_key), "");
+        // The saltKey should never be empty,
+        // since it is generated on first start when it does not exist
+        saltKeyPref.setSummary(saltKey);
+
+        // Set an onClick listener to view/edit the salt key
+        saltKeyPref.setOnPreferenceClickListener(
+                new Preference.OnPreferenceClickListener() {
+            // @Override
+            public boolean onPreferenceClick(Preference preference) {
+                final String FUNC = "onPreferenceClick()";
+                // Display the SaltKeyFragment as a dialog
+                Log.i(getLogCategory(), getLogPrefix(FUNC) +
+                      "Creating SaltKeyActions dialog...");
+
+                // Show the SaltKeyActionsFragment as a Dialog
+                FragmentManager fragmentManager =
+                    getActivity().getFragmentManager();
+                FragmentTransaction fragmentTx =
+                    fragmentManager.beginTransaction();
+                Fragment prevInstance =
+                    fragmentManager.findFragmentByTag(
+                        getString(R.string.tag_saltKeyActionsFragment));
+                if (null != prevInstance) {
+                    fragmentTx.remove(prevInstance);
+                }
+                // Provide proper "back" navigation
+                fragmentTx.addToBackStack(null);
+
+                // Instantiate the fragment
+                boolean showAsDialog = true;
+                DialogFragment saltKeyActionsDialog =
+                    getSaltKeyActionsFragment(showAsDialog);
+
+                // "show" will commit the transaction as well
+                saltKeyActionsDialog.show(
+                        fragmentTx,
+                        getString(R.string.tag_saltKeyActionsFragment));
+
+                // The click was handled, so return true
+                return true;
+            }
+        });
     }
+
+    /**
+     * @brief   
+     * @return  Does not even
+     */
+    private void configureDefaultIterations() {
+        final String FUNC = "configureDefaultIterations()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Setting value...");
+
+        Preference defaultIterationsPref =
+            (Preference)findPreference(
+                    getString(R.string.pref_defaultIterations_key));
+
+        // Set the summary with the value
+        // defaultIterations needs to be retrieved as text
+        String defaultIterationsStr =
+            m_sharedPreferences.getString(
+                getString(R.string.pref_defaultIterations_key), "");
+        if (!defaultIterationsStr.isEmpty()) {
+            Log.i(getLogCategory(), getLogPrefix(FUNC) +
+                  "Found non-empty defaultIterations='" +
+                  defaultIterationsStr + "'");
+            defaultIterationsPref.setSummary(defaultIterationsStr);
+        }
+    }
+
+    /**
+     * @brief   
+     * @return  Does not even
+     */
+    private void configureCustomAttributes() {
+        final String FUNC = "configureCustomAttributes()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Setting value...");
+
+        Preference customOverridesPref =
+            (Preference)findPreference(
+                    getString(R.string.pref_customOverrides_key));
+
+        // Set the summary with the value
+        String customOverrides =
+            m_sharedPreferences.getString(
+                    getString(R.string.pref_customOverrides_key), "");
+        if (customOverrides.isEmpty()) {
+            Log.i(getLogCategory(), getLogPrefix(FUNC) +
+                  "The list of custom attributes is empty");
+            customOverridesPref.setSummary(EMPTY_CUSTOM_ATTRS_INDICATOR);
+        } else {
+            Log.i(getLogCategory(), getLogPrefix(FUNC) +
+                  "Found non-empty customOverrides='" +
+                  customOverrides + "'");
+            customOverridesPref.setSummary(customOverrides);
+        }
+    }
+
+    // --------------------------------------------------------------------
+    // DATA MEMBERS
+
+    /** @brief A handle to the SharedPreferences for the application.
+     */
+    protected SharedPreferences m_sharedPreferences;
+
 }

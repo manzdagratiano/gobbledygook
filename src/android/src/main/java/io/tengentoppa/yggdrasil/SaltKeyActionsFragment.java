@@ -36,30 +36,22 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+// Standard Java
+import java.io.UnsupportedEncodingException;
+
 /**
  * @brief   
  */
-public class SaltKeyActionsFragment extends DialogFragment {
+public abstract class SaltKeyActionsFragment extends DialogFragment {
 
     // ===================================================================
     // PUBLIC METHODS
 
-    /**
-     * @brief   
-     * @return  {SaltKeyActionsFragment} Returns an instance of self
-     */
-    static SaltKeyActionsFragment newInstance(boolean showAsDialog) {
-        SaltKeyActionsFragment saltKeyActions = new SaltKeyActionsFragment();
-        Bundle args = new Bundle();
-        args.putBoolean(PARAM_DIALOG, showAsDialog);
-        saltKeyActions.setArguments(args);
-
-        return saltKeyActions;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.i(LOG_CATEGORY, "Creating SaltKeyActions fragment...");
+        final String FUNC = "onCreate()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Creating SaltKeyActions fragment...");
         super.onCreate(savedInstanceState);
 
         // Initialize private members
@@ -113,7 +105,9 @@ public class SaltKeyActionsFragment extends DialogFragment {
      */
     @Override
     public void onResume() {
-        Log.i(LOG_CATEGORY, "onResume(): Configuring elements...");
+        final String FUNC = "onResume()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Configuring elements...");
         super.onResume();
 
         // Set the layout properties of the dialog for the fragment.
@@ -127,7 +121,8 @@ public class SaltKeyActionsFragment extends DialogFragment {
                                  ViewGroup.LayoutParams.WRAP_CONTENT);
             } else {
                 // This should not happen
-                Log.e(LOG_CATEGORY, "getDialog() returned null!");
+                Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                      "getDialog() returned null!");
             }
         }
 
@@ -141,7 +136,9 @@ public class SaltKeyActionsFragment extends DialogFragment {
     @Override
     public void onPause() {
         // Clean-up listeners and handlers
-        Log.i(LOG_CATEGORY, "onPause(): Deconfiguring elements...");
+        final String FUNC = "onPause()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Deconfiguring elements...");
 
         this.deconfigureElements();
 
@@ -158,13 +155,39 @@ public class SaltKeyActionsFragment extends DialogFragment {
     }
 
     // ===================================================================
+    // PROTECTED METHODS
+
+    /**
+     * @brief   An method to obtain the log category,
+     *          suitably overridden in the concrete implementation.
+     * @return  {String} The log category.
+     */
+    protected abstract String getLogCategory();
+
+    /**
+     * @brief   A method to get a prefix for the log.
+     * @return  {String} The log prefix
+     */
+    protected String getLogPrefix(String FUNC) {
+        final String LOG_TAG = "SALTKEY";
+        return LOG_TAG + "." + FUNC + ": ";
+    }
+
+    /**
+     * @brief   Method to fill an argument bundle
+     *          with the necessary parameters.
+     * @return  Does not even.
+     */
+    protected static void fillBundle(Bundle args,
+                                     final boolean showAsDialog) {
+        args.putBoolean(PARAM_DIALOG, showAsDialog);
+    }
+
+    // ===================================================================
     // PRIVATE METHODS
 
     // --------------------------------------------------------------------
     // CONSTANTS
-
-    private static final String LOG_CATEGORY                        =
-        "YGGDRASIL.SALTKEY";
 
     // Parameter names
     private static final String PARAM_DIALOG                        =
@@ -176,6 +199,8 @@ public class SaltKeyActionsFragment extends DialogFragment {
         "(WARNING: This will irreversibly change all generated passwords!)";
     private static final String GENERATING_SALT_KEY_MESSAGE         =
         "Generating new salt key...";
+    private static final String SALT_KEY_FAILURE_MESSAGE            =
+        "Failed to generate salt key!";
 
     // --------------------------------------------------------------------
     // METHODS
@@ -193,7 +218,9 @@ public class SaltKeyActionsFragment extends DialogFragment {
              * @return  
              */
             public void configureSaltKey() {
-                Log.i(LOG_CATEGORY, "configureSaltKey(): Setting value...");
+                final String FUNC = "configureSaltKey()";
+                Log.i(getLogCategory(), getLogPrefix(FUNC) +
+                      "Setting value...");
 
                 EditText saltKeyBox =
                     (EditText)getView().findViewById(R.id.saltKey);
@@ -206,10 +233,10 @@ public class SaltKeyActionsFragment extends DialogFragment {
                 String saltKey = sharedPreferences.getString(
                                     getString(R.string.pref_saltKey_key), "");
                 if (saltKey.isEmpty()) {
-                    Log.i(LOG_CATEGORY, "configureSaltKey(): " +
+                    Log.i(getLogCategory(), getLogPrefix(FUNC) +
                           "The salt key is empty");
                 } else {
-                    Log.i(LOG_CATEGORY, "configureSaltKey(): " +
+                    Log.i(getLogCategory(), getLogPrefix(FUNC) +
                           "Found non-empty saltKey='" + saltKey + "'");
                     saltKeyBox.setText(saltKey, TextView.BufferType.EDITABLE);
                 }
@@ -227,7 +254,8 @@ public class SaltKeyActionsFragment extends DialogFragment {
              * @return  
              */
             public void configureEditSaltKey() {
-                Log.i(LOG_CATEGORY, "configureEditSaltKey(): " +
+                final String FUNC = "configureEditSaltKey()";
+                Log.i(getLogCategory(), getLogPrefix(FUNC) +
                       "Unchecking checkbox...");
 
                 CheckBox editSaltKeyBox =
@@ -237,7 +265,7 @@ public class SaltKeyActionsFragment extends DialogFragment {
                 // Attach an onCheckedChangeListener
                 // (as opposed to an onClickListener,
                 // since we'll be unchecking the checkBox from code)
-                Log.i(LOG_CATEGORY, "configureEditSaltKey(): " +
+                Log.i(getLogCategory(), getLogPrefix(FUNC) +
                       "Attaching onCheckedChangeListener...");
                 editSaltKeyBox.setOnCheckedChangeListener(
                                 new CompoundButton.OnCheckedChangeListener() {
@@ -301,17 +329,29 @@ public class SaltKeyActionsFragment extends DialogFragment {
      * @return  
      */
     private void generateSaltKey(final View view) {
-        Log.i(LOG_CATEGORY, "generateSaltKey() handler called...");
+        final String FUNC = "generateSaltKey()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) + ">>");
         Toast.makeText(getActivity().getApplicationContext(),
                        GENERATING_SALT_KEY_MESSAGE,
                        Toast.LENGTH_SHORT).show();
 
         // Generate the key
-        String saltKey = Crypto.generateSaltKey();
+        String saltKey = null;
+        try {
+            saltKey = Crypto.generateSaltKey();
+        } catch (UnsupportedEncodingException e) {
+            Log.e(getLogCategory(), FUNC +
+                  "ERROR: Caught " + e);
+            e.printStackTrace();
+            Toast.makeText(getActivity().getApplicationContext(),
+                           SALT_KEY_FAILURE_MESSAGE,
+                           Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         // Set the view with the saltKey
-        Log.i(LOG_CATEGORY, "generateSaltKey(): " +
-              "Setting the view with saltKey...");
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Setting the view with saltKey=" + saltKey);
         EditText saltKeyBox = (EditText)getView().findViewById(R.id.saltKey);
         saltKeyBox.setText(saltKey, TextView.BufferType.EDITABLE);
 
@@ -328,7 +368,8 @@ public class SaltKeyActionsFragment extends DialogFragment {
      * @return  Does not return a value
      */
     private void deconfigureElements() {
-        Log.i(LOG_CATEGORY, "deconfigureElements(): " +
+        final String FUNC = "deconfigureElements()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
               "Cleaning up listeners/handlers");
 
         // "Edit Salt Key" checkbox
@@ -350,8 +391,9 @@ public class SaltKeyActionsFragment extends DialogFragment {
      * @return  Does not return a value
      */
     private void saveSaltKeyToSharedPreferences(String saltKey) {
-        Log.i(LOG_CATEGORY, "saveSaltKeyToSharedPreferences(): " +
-                "Saving to SharedPreferences saltKey='" + saltKey + "'");
+        final String FUNC = "saveSaltKeyToSharedPreferences()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Saving to SharedPreferences saltKey='" + saltKey + "'");
         SharedPreferences preferences =
             PreferenceManager.getDefaultSharedPreferences(
                                     getActivity().getApplicationContext());
@@ -371,7 +413,9 @@ public class SaltKeyActionsFragment extends DialogFragment {
      * @return  Does not return a value
      */
     private void uncheckEditSaltKeyCheckBox() {
-        Log.i(LOG_CATEGORY, "Unchecking the editSaltKey checkBox...");
+        final String FUNC = "uncheckEditSaltKeyCheckBox()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Unchecking the editSaltKey checkBox...");
         CheckBox editSaltKeyBox =
             (CheckBox)getView().findViewById(R.id.editSaltKey);
         editSaltKeyBox.setChecked(false);

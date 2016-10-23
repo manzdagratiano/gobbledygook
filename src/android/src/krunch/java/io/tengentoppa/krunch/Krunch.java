@@ -19,12 +19,12 @@ import io.tengentoppa.yggdrasil.WorkhorseFragment;
 import io.tengentoppa.yggdrasil.Yggdrasil;
 
 // Android
-import android.app.Activity;
-import android.app.Fragment;
-import android.content.Intent;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.widget.Toast;
 
 /**
  * @brief  The Krunch class
@@ -33,47 +33,15 @@ import android.view.MenuItem;
  */
 public class Krunch extends Yggdrasil {
 
-    // ====================================================================
-    // PUBLIC METHODS
-
-    // --------------------------------------------------------------------
-    // ACTION BAR
-
-    /**
-     * @brief   Called to populate the action bar menu, if it is present.
-     * @return  Returns true on success and false on failure
-     */
+    /** Called when the activity is first created. */
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu items for use in the action bar
-        getMenuInflater().inflate(R.menu.krunch_actions,
-                                  menu);
-        return super.onCreateOptionsMenu(menu);
-    }
+    public void onCreate(Bundle savedInstanceState) {
+        // Call the method from the base class.
+        super.onCreate(savedInstanceState);
 
-    /**
-     * @brief   Called when an action bar menu item is selected
-     * @return  Returns true on success and false on failure
-     */
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        // The Action Bar home/up button should open/close the drawer;
-        // ActionBarDrawerToggle handles that
-        if (m_drawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-
-        Intent intent = null;
-        switch(item.getItemId()) {
-            case R.id.homePage:
-                this.onActivitySelection(R.id.drawerHome);
-                return true;
-            case R.id.settingsPage:
-                this.onActivitySelection(R.id.drawerSettings);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        // If there is no saved state, launch the "home" fragment.
+        if (null == savedInstanceState) {
+            this.onActivitySelection(R.id.drawerHome);
         }
     }
 
@@ -84,6 +52,15 @@ public class Krunch extends Yggdrasil {
     // METHODS
 
     /**
+     * @brief   Method to return the log category.
+     * @return  {String} The log category
+     */
+    @Override
+    protected String getLogCategory() {
+        return Logger.getCategory();
+    }
+
+    /**
      * @brief   A function to launch the activity selected in the
      *          navigation drawer.
      *          This is done by replacing the framelayout with the
@@ -91,7 +68,8 @@ public class Krunch extends Yggdrasil {
      * @return  Does not return a value
      */
     protected void onActivitySelection(int itemId) {
-        Log.i(LOG_CATEGORY, "onActivitySelection(): " +
+        final String FUNC =  "onActivitySelection(): ";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
               "Selecting activtity id=" + itemId);
 
         switch(itemId) {
@@ -102,24 +80,18 @@ public class Krunch extends Yggdrasil {
                 break;
             case R.id.drawerSettings:
                 // Settings
-                this.swapFragment(new PrefsFragment(),
+                this.swapFragment(new KrunchPrefsFragment(),
                                   getString(R.string.tag_prefsFragment));
-                break;
-            case R.id.drawerSettingsExport:
-                // Export settings
-                this.exportSettings();
-                break;
-            case R.id.drawerSettingsImport:
-                // Import settings
-                this.importSettings();
                 break;
             case R.id.drawerAbout:
                 // About
-                this.swapFragment(new AboutFragment(),
+                this.swapFragment(new KrunchAboutFragment(),
                                   getString(R.string.tag_aboutFragment));
                 break;
             default:
-                // Do nothing
+                // One of the other actions specified;
+                // call the "super" method.
+                super.onActivitySelection(itemId);
         }
 
         // Close the navigation drawer if it is open
@@ -127,4 +99,5 @@ public class Krunch extends Yggdrasil {
             m_drawerLayout.closeDrawer(m_drawerView);
         }
     }
+
 }

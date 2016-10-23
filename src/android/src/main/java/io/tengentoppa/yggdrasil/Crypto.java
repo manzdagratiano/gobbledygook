@@ -11,9 +11,6 @@
 
 package io.tengentoppa.yggdrasil;
 
-// Android
-import android.util.Log;
-
 // Standard Java
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -51,15 +48,16 @@ public class Crypto {
      *          for security, it is not even passed around.
      * @return  The SHA256 hash of the user's password
      */
-    public static byte[] getSeedSHA(final String seed) {
+    public static byte[] getSeedSHA(final String seed)
+        throws NoSuchAlgorithmException {
         byte[] seedSHA = null;
         MessageDigest hash = null;
         try {
             hash = MessageDigest.getInstance(SHA256);
             seedSHA = hash.digest(seed.getBytes());
         } catch (NoSuchAlgorithmException e) {
-            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
-            e.printStackTrace();
+            // Throw it to the caller
+            throw e;
         }
 
         return seedSHA;
@@ -69,7 +67,9 @@ public class Crypto {
      * @brief   Method to generate a new salt key
      * @return  {String} The newly generated salt key
      */
-    public static String generateSaltKey() {
+    public static String generateSaltKey()
+        throws UnsupportedEncodingException {
+
         SecureRandom csprng = new SecureRandom();
         byte[] saltKeyBytes = new byte[SALT_KEY_LENGTH];
         csprng.nextBytes(saltKeyBytes);
@@ -77,11 +77,9 @@ public class Crypto {
         try {
             saltKey = new String(Base64.encode(saltKeyBytes), UTF8);
         } catch (UnsupportedEncodingException e) {
-            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
-            e.printStackTrace();
+            // Throw it to the caller.
+            throw e;
         }
-        Log.i(LOG_CATEGORY, "generateSaltKey(): " +
-              "Generated saltKey='" + saltKey + "'");
         return saltKey;
     }
 
@@ -92,7 +90,8 @@ public class Crypto {
      */
     public static byte[] generateSalt(String domain,
                                       String saltKey,
-                                      Integer iterations) {
+                                      Integer iterations)
+        throws NoSuchAlgorithmException, UnsupportedEncodingException {
         byte[] salt = null;
         PKCS5S2ParametersGenerator generator =
             new PKCS5S2ParametersGenerator(new SHA256Digest());
@@ -107,11 +106,9 @@ public class Crypto {
             salt = ((KeyParameter)
                     generator.generateDerivedParameters(256)).getKey();
         } catch (NoSuchAlgorithmException e) {
-            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
-            e.printStackTrace();
+            throw e;
         } catch (UnsupportedEncodingException e) {
-            Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
-            e.printStackTrace();
+            throw e;
         }
 
         return salt;
@@ -125,7 +122,8 @@ public class Crypto {
     public static String generateHash(final byte[] seedSHA,
                                       final byte[] salt,
                                       final Integer iterations,
-                                      final Integer specialCharsFlag) {
+                                      final Integer specialCharsFlag)
+        throws UnsupportedEncodingException {
         byte[] hash = null;
         PKCS5S2ParametersGenerator generator =
             new PKCS5S2ParametersGenerator(new SHA256Digest());
@@ -144,8 +142,8 @@ public class Crypto {
             try {
                 encodedHash = new String(Base64.encode(hash), UTF8);
             } catch (UnsupportedEncodingException e) {
-                Log.e(LOG_CATEGORY, "ERROR: Caught " + e);
-                e.printStackTrace();
+                // Throw it to the caller
+                throw e;
             }
         }
 
@@ -192,7 +190,6 @@ public class Crypto {
     // --------------------------------------------------------------------
     // CONSTANTS
 
-    private static final String LOG_CATEGORY        = "YGGDRASIL.CRYPTO";
     private static final int    SALT_KEY_LENGTH     = 512;
     private static final String SHA256              = "SHA-256";
     private static final String UTF8                = "UTF-8";

@@ -29,8 +29,18 @@
     <string name="drawer_item_about">About&#8230;</string>
 
     <!-- ############# -->
-    <!-- Main activity -->
+    <!-- Fragment Tags -->
     <!-- ############# -->
+
+    <string name="tag_aboutFragment">AboutFragment</string>
+    <string name="tag_homeFragment">HomeFragment</string>
+    <string name="tag_prefsFragment">PrefsFragment</string>
+    <string name="tag_saltKeyActionsFragment">SaltKeyActionsFragment</string>
+    <string name="tag_workhorseFragment">WorkhorseFragment</string>
+
+    <!-- ################## -->
+    <!-- Workhorse Fragment -->
+    <!-- ################## -->
 
     <string name="label_domain">Domain</string>
     <string name="hint_domain">The foo.bar.baz.com part of the URL</string>
@@ -47,19 +57,10 @@
     <string name="button_generate">Generate!</string>
 
     <!-- ############# -->
-    <!-- Fragment Tags -->
-    <!-- ############# -->
-
-    <string name="tag_aboutFragment">AboutFragment</string>
-    <string name="tag_homeFragment">HomeFragment</string>
-    <string name="tag_prefsFragment">PrefsFragment</string>
-    <string name="tag_saltKeyActionsFragment">SaltKeyActionsFragment</string>
-    <string name="tag_workhorseFragment">WorkhorseFragment</string>
-
-    <!-- ############# -->
     <!-- Home Fragment -->
     <!-- ############# -->
 
+    <string name="default_url">https://duckduckgo.com</string>
     <string name="hint_search">Enter a URL</string>
 
     <!-- ######################### -->

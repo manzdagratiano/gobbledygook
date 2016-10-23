@@ -34,7 +34,7 @@ import android.view.ViewGroup;
  *          This class is derived from a PreferenceFragment
  *          with each of the preferences unmodifiable.
  */
-public class AboutFragment extends PreferenceFragment {
+public abstract class AboutFragment extends PreferenceFragment {
 
     // ====================================================================
     // PUBLIC METHODS
@@ -45,7 +45,9 @@ public class AboutFragment extends PreferenceFragment {
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.i(LOG_CATEGORY, "onCreate(): Creating AboutFragment...");
+        final String FUNC = "onCreate()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Creating AboutFragment...");
 
         super.onCreate(savedInstanceState);
 
@@ -69,7 +71,9 @@ public class AboutFragment extends PreferenceFragment {
      */
     @Override
     public void onResume() {
-        Log.i(LOG_CATEGORY, "onResume(): Configuring elements...");
+        final String FUNC = "onResume()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Configuring elements...");
 
         super.onResume();
 
@@ -85,7 +89,9 @@ public class AboutFragment extends PreferenceFragment {
     @Override
     public void onPause() {
         // Perform any cleanup here
-        Log.i(LOG_CATEGORY, "onPause(): Deconfiguring elements...");
+        final String FUNC = "onPause()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Deconfiguring elements...");
 
         this.deconfigureElements();
 
@@ -102,12 +108,26 @@ public class AboutFragment extends PreferenceFragment {
     }
 
     // ====================================================================
+    // PROTECTED METHODS
+
+    /**
+     * @brief   An method to obtain the log category,
+     *          suitably overridden in the concrete implementation.
+     * @return  {String} The log category.
+     */
+    protected abstract String getLogCategory();
+
+    /**
+     * @brief   A method to get a prefix for the log.
+     * @return  {String} The log prefix
+     */
+    protected String getLogPrefix(String FUNC) {
+        final String LOG_TAG = "ABOUT";
+        return LOG_TAG + "." + FUNC + ": ";
+    }
+
+    // ====================================================================
     // PRIVATE METHODS
-
-    // --------------------------------------------------------------------
-    // CONSTANTS
-
-    private static final String LOG_CATEGORY            = "YGGDRASIL.ABOUT";
 
     // --------------------------------------------------------------------
     // METHODS
@@ -117,6 +137,7 @@ public class AboutFragment extends PreferenceFragment {
      * @return  Does not return a value
      */
     private void configureElements() {
+        final String FUNC = "configureElements(): ";
 
         /**
          * @brief   A private class to configure individual view elements
@@ -144,6 +165,7 @@ public class AboutFragment extends PreferenceFragment {
              * @return  Does not return a value
              */
             public void configureVersionPreference() {
+                final String FUNC = "configureVersionPreference()";
                 Preference versionPref =
                     (Preference)findPreference(
                             getString(R.string.about_version_key));
@@ -157,7 +179,8 @@ public class AboutFragment extends PreferenceFragment {
                                                  0);
                     versionName = pkgInfo.versionName;
                 } catch(PackageManager.NameNotFoundException e) {
-                    Log.e(LOG_CATEGORY, "configureElements(): Caught " + e);
+                    Log.i(getLogCategory(), getLogPrefix(FUNC) +
+                          "Caught " + e);
                     e.printStackTrace();
                 }
                 versionPref.setSummary(versionName);

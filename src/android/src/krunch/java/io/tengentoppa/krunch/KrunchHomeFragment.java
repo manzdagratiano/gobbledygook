@@ -1,6 +1,6 @@
 /**
- * @file        GobbledygookHomeFragment.java
- * @brief       Source file for the GobbledygookHomeFragment class
+ * @file        KrunchHomeFragment.java
+ * @brief       Source file for the KrunchHomeFragment class
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
  * @date        June 20, 2015
@@ -9,7 +9,7 @@
  * @copyright   Manjul Apratim, 2015
  */
 
-package io.tengentoppa.gobbledygook;
+package io.tengentoppa.krunch;
 
 // Libraries
 import io.tengentoppa.yggdrasil.HomeFragment;
@@ -17,13 +17,26 @@ import io.tengentoppa.yggdrasil.R;
 
 // Android
 import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
+import android.util.Log;
 import android.view.View;
+
+// Standard Java
+import java.lang.RuntimeException;
 
 /**
  * @brief   
  */
-public class GobbledygookHomeFragment extends HomeFragment {
+public class KrunchHomeFragment extends HomeFragment {
+
+    // ====================================================================
+    // PROTECTED METHODS
 
     /**
      * @brief   Method to return the log category.
@@ -43,11 +56,6 @@ public class GobbledygookHomeFragment extends HomeFragment {
         m_floatingButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final String FUNC = "OnClickListener.onClick()";
-                // "Gobbledygook" is the no-frills version
-                // for the truly paranoid.
-                // Show the vanilla "Workhorse" dialog,
-                // where the user enters her password.
                 showWorkhorseDialog();
             }
         });
@@ -56,15 +64,14 @@ public class GobbledygookHomeFragment extends HomeFragment {
     /**
      * @brief   Method to return an instance of
      *          the concrete implementation of the WorkhorseFragment.
-     * @return  {DialogFragment} An instance of GobbledygookWorkhorseFragment
+     * @return  {DialogFragment} An instance of KrunchWorkhorseFragment
      */
-    @Override
     protected DialogFragment
     getWorkhorseFragment(final String url,
                          final boolean showAsDialog) {
         // Instantiate the fragment
-        return GobbledygookWorkhorseFragment.newInstance(url,
-                                                         showAsDialog);
+        return KrunchWorkhorseFragment.newInstance(url,
+                                                   showAsDialog);
     }
 
 }
