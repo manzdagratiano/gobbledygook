@@ -34,11 +34,13 @@ def computeVersionCode() {
   *        Major 2 to maintain compatibility with the browser version.
   */
 def computeVersionName() {
-    def gitCommand = "git rev-parse --short HEAD"
-    def proc = gitCommand.execute()
+    def gitCommitCommand = "git rev-parse --short HEAD"
+    def gitBranchCommand = "git rev-parse --abbrev-ref HEAD"
+    def gitCommit = gitCommitCommand.execute()
+    def gitBranch = gitBranchCommand.execute()
     def versionName = "2." + \
-                      Integer.toString(computeVersionCode()) + "." + \
-                      proc.text.trim()
+                      Integer.toString(computeVersionCode()) + ".0." + \
+                      gitBranch.text.trim() + "@" + gitCommit.text.trim()
     return versionName
 }
 

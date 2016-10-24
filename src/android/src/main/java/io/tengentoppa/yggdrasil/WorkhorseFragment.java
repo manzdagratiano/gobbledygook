@@ -35,6 +35,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 // Standard Java
@@ -236,20 +237,33 @@ public abstract class WorkhorseFragment extends DialogFragment {
      * @brief   Routine to generate the "proxy" password
      *          from the domain name using the user password
      *          and the salt key
+     * @param   {View} workhorseFragment - The workhorse fragment view.
      * @return  Does not return a value
      */
-    protected void generate(final View view) {
+    protected void generate(final View workhorseFragment) {
         final String FUNC = "generate()";
         Log.i(getLogCategory(), getLogPrefix(FUNC) +
               "Generating proxy password...");
-        final Attributes attributes = getAttributes(view);
+
+        // The salt key
+        final String saltKey = m_saltKey;
+        // Sanity check
+        if (saltKey.isEmpty()) {
+            Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                  "FATAL: saltKey=null");
+            // Crash and burn
+            throw new RuntimeException("SaltKey.NULL");
+        }
+
+        final Attributes attributes = getAttributes(workhorseFragment);
         Log.i(getLogCategory(), getLogPrefix(FUNC) +
               "attributes='" + AttributesCodec.encode(attributes) + "'");
 
         byte[] seedSHA = null;
         try {
             seedSHA = Crypto.getSeedSHA(
-                            ((EditText)view.findViewById(R.id.password))
+                            ((EditText)workhorseFragment.findViewById(
+                                R.id.password))
                                     .getText().toString());
             Log.d(getLogCategory(), getLogPrefix(FUNC) +
                   "seedSHA=" + (new String(Hex.encode(seedSHA),
@@ -264,16 +278,6 @@ public abstract class WorkhorseFragment extends DialogFragment {
                   "ERROR: Caught " + e);
             e.printStackTrace();
             // Continue; no need to quit on logging failure.
-        }
-
-        // The salt key
-        final String saltKey = m_saltKey;
-        // Sanity check
-        if (saltKey.isEmpty()) {
-            Log.e(getLogCategory(), getLogPrefix(FUNC) +
-                  "FATAL: saltKey=null");
-            // Crash and burn
-            throw new RuntimeException("SaltKey.NULL");
         }
 
         // Do the heavy lifting in a separate thread.
@@ -591,11 +595,37 @@ public abstract class WorkhorseFragment extends DialogFragment {
             }
 
             /**
+             * @brief   Method to configure the "Advanced..." checkbox.
+             * @return  Does not return a value.
+             */
+            public void configureShowAdvancedCheckBox() {
+                CheckBox showAdvancedBox =
+                    (CheckBox)getView().findViewById(R.id.showAdvanced);
+                final LinearLayout advancedPanel =
+                    (LinearLayout)getView().findViewById(R.id.advancedConfig);
+                showAdvancedBox.setOnClickListener(new
+                                                   View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        CheckBox showAdvancedBox = (CheckBox)view; 
+                        if (showAdvancedBox.isChecked()) {
+                            // Show the "Advanced" panel
+                            advancedPanel.setVisibility(View.VISIBLE);
+                        } else {
+                            // Hide the "Advanced" panel
+                            advancedPanel.setVisibility(View.GONE);
+                        }
+                    }
+                });
+            }
+
+            /**
              * @brief   Routine to configure the "Generate" button
              *          by attaching an "onClick" listener to it
              * @return  Does not return a value
              */
             public void configureGenerateButton() {
+                final View workhorseFragment = getView();
                 Button generateButton =
                     (Button)getView().findViewById(R.id.generate);
                 generateButton.setOnClickListener(
@@ -603,11 +633,13 @@ public abstract class WorkhorseFragment extends DialogFragment {
                     /**
                      * @brief   The "onClick" callback for
                      *          the "Generate" button
+                     * @param   {View} view - The button view element,
+                     *          which must be cast to a Button to use.
                      * @return  Does not return a value
                      */
                     @Override
                     public void onClick(View view) {
-                        generate(view);
+                        generate(workhorseFragment);
                     }
                 });
             }
@@ -672,6 +704,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
 
         configurator.configureHash();
         configurator.configureSaveCustomOverridesCheckBox();
+        configurator.configureShowAdvancedCheckBox();
         configurator.configureGenerateButton();
 
         // Save the saved and proposed attributes,
@@ -742,17 +775,18 @@ public abstract class WorkhorseFragment extends DialogFragment {
      *          the elements of the view after the user has potentially
      *          changed any elements and hit "Generate!" to generate the
      *          proxy password.
+     * @param   {View} workhorseFragment - The workhorse fragment view.
      * @return  An Attributes object initialized from elements of the view
      */
-    private Attributes getAttributes(View view) {
+    private Attributes getAttributes(View workhorseFragment) {
         final String FUNC = "getAttributes()";
 
         EditText domainField     =
-            (EditText)getView().findViewById(R.id.domain);
+            (EditText)workhorseFragment.findViewById(R.id.domain);
         EditText iterationsField =
-            (EditText)getView().findViewById(R.id.iterations);
+            (EditText)workhorseFragment.findViewById(R.id.iterations);
         EditText truncationField =
-            (EditText)getView().findViewById(R.id.truncation);
+            (EditText)workhorseFragment.findViewById(R.id.truncation);
 
         String domain = domainField.getText().toString();
         Integer iterations = null;

@@ -46,10 +46,11 @@
     <string name="hint_domain">The foo.bar.baz.com part of the URL</string>
     <string name="label_password">Password</string>
     <string name="hint_password">Your KillerPassword123456789 Here</string>
-    <string name="label_iterations">Iterations</string>
-    <string name="hint_iterations">10000</string>
     <string name="label_hash">Proxy Password</string>
     <string name="checkBox_showHash">Show</string>
+    <string name="checkBox_showAdvanced">Advanced...</string>
+    <string name="label_iterations">Iterations</string>
+    <string name="hint_iterations">10000</string>
     <string name="checkBox_truncate">Truncate</string>
     <string name="hint_truncation">-1</string>
     <string name="checkBox_noSpecialChars">No special characters</string>

@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- A ScrollView to encapsulate the layout.
+     The property "animateLayoutChanges" will allow adjusting the layout
+     automatically when child views are added/removed. -->
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     >
     <!-- In the following LinearLayout,
          the "layout_height" attribute needs to wrap_content
@@ -19,6 +23,7 @@
         android:paddingLeft="5dp"
         android:paddingRight="5dp"
         android:fitsSystemWindows="true"
+        android:animateLayoutChanges="true"
         >
 
         <Space
@@ -47,7 +52,7 @@
             android:layout_height="10dp"
             />
 
-        <!-- THE user password -->
+        <!-- The user's one true password -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -62,28 +67,6 @@
             android:layout_height="wrap_content"
             android:hint="@string/hint_password"
             android:inputType="textPassword"
-            />
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            />
-
-        <!-- The number of iterations -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/label_iterations"
-            android:fontFamily="@string/label_fontFamily"
-            android:textAllCaps="true"
-            android:textStyle="bold"
-            />
-        <EditText
-            android:id="@+id/iterations"
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:hint="@string/hint_iterations"
-            android:inputType="number"
             />
 
         <Space
@@ -121,47 +104,97 @@
             />
 
         <CheckBox
-            android:id="@+id/truncate"
+            android:id="@+id/showAdvanced"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/checkBox_truncate"
-            android:fontFamily="@string/label_fontFamily"
-            android:textAllCaps="true"
-            android:textStyle="bold"
-            />
-        <EditText
-            android:id="@+id/truncation"
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:hint="@string/hint_truncation"
-            android:inputType="number"
-            />
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            />
-
-        <CheckBox
-            android:id="@+id/noSpecialChars"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/checkBox_noSpecialChars"
+            android:text="@string/checkBox_showAdvanced"
             android:textStyle="italic"
             />
 
-        <Space
+        <!-- A LinearLayout to expose "Advanced" options,
+             hidden by default. -->
+        <LinearLayout
+            android:id="@+id/advancedConfig"
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="10dp"
-            />
-
-        <CheckBox
-            android:id="@+id/saveOverrides"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/checkBox_saveOverrides"
-            android:textStyle="italic"
-            />
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:animateLayoutChanges="true"
+            android:visibility="gone"
+            >
+
+            <!-- The number of iterations -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_iterations"
+                android:fontFamily="@string/label_fontFamily"
+                android:textAllCaps="true"
+                android:textStyle="bold"
+                />
+            <EditText
+                android:id="@+id/iterations"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:hint="@string/hint_iterations"
+                android:inputType="number"
+                />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                />
+
+            <CheckBox
+                android:id="@+id/truncate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/checkBox_truncate"
+                android:fontFamily="@string/label_fontFamily"
+                android:textAllCaps="true"
+                android:textStyle="bold"
+                />
+            <EditText
+                android:id="@+id/truncation"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:hint="@string/hint_truncation"
+                android:inputType="number"
+                />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                />
+
+            <CheckBox
+                android:id="@+id/noSpecialChars"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/checkBox_noSpecialChars"
+                android:textStyle="italic"
+                />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                />
+
+            <CheckBox
+                android:id="@+id/saveOverrides"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/checkBox_saveOverrides"
+                android:textStyle="italic"
+                />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                />
+
+        </LinearLayout>
 
         <Space
             android:layout_width="match_parent"

@@ -37,6 +37,11 @@
             />
     </RelativeLayout>
 
+    <!-- The Floating Action Button.
+         Note that starting with the support library version 23.2.0,
+         it is no longer allowed to anchor it to the CoordinatorLayout itself.
+         Rather, it must be anchored to a descendent view, which in this case
+         is the WebView. -->
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/floatingButton"
         android:src="@drawable/ic_menu_manage"
@@ -44,7 +49,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/floating_button_margin"
         android:layout_gravity="bottom|end"
-        app:layout_anchor="@id/loginFragmentFrame"
+        app:layout_anchor="@id/homeWebView"
         app:layout_anchorGravity="bottom|right|end"
         />
 
