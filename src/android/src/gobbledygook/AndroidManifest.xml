@@ -13,7 +13,7 @@
              the "stateHidden" property (until the user asks for it),
              and allow the scroll view to work properly with the
              "adjustResize" property -->
-        <activity android:name="Gobbledygook"
+        <activity android:name="io.tengentoppa.gobbledygook.Gobbledygook"
                   android:windowSoftInputMode="stateHidden|adjustResize"
                   android:label="@string/app_name"
                   >

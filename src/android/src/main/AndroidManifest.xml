@@ -24,6 +24,7 @@
                  android:theme="@style/TengenToppaTheme"
                  android:allowBackup="true"
                  android:fullBackupContent="true"
+                 android:supportsRtl="true"
                  >
                  <!-- The main activity will be declared in
                       the manifest for the respective flavor. -->

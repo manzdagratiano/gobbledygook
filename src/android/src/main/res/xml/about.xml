@@ -8,7 +8,7 @@
         android:key="@string/about_creator_key"
         android:title="@string/about_creator_name"
         android:summary="@string/about_creator_summary"
-        android:icon="@drawable/ic_action_person"
+        android:icon="@drawable/ic_person_black_48dp"
         android:editable="false"
         android:persistent="false"
         />
@@ -17,7 +17,7 @@
         android:key="@string/about_homepage_key"
         android:title="@string/about_homepage_name"
         android:summary="@string/about_homepage_summary"
-        android:icon="@drawable/ic_action_web_site"
+        android:icon="@drawable/ic_public_black_48dp"
         android:editable="false"
         android:persistent="false"
         />
@@ -26,7 +26,16 @@
     <Preference
         android:key="@string/about_version_key"
         android:title="@string/about_version_name"
-        android:icon="@drawable/perm_group_app_info"
+        android:icon="@drawable/ic_build_black_48dp"
+        android:editable="false"
+        android:persistent="false"
+        />
+    <!-- Changelog -->
+    <Preference
+        android:key="@string/about_changelog_key"
+        android:title="@string/about_changelog_name"
+        android:summary="@string/about_changelog_summary"
+        android:icon="@drawable/ic_new_releases_black_48dp"
         android:editable="false"
         android:persistent="false"
         />

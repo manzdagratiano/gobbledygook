@@ -13,21 +13,31 @@ package io.tengentoppa.yggdrasil;
 
 // Android
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
+import android.Manifest;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -76,6 +86,7 @@ import org.json.JSONObject;
  *         behavior.
  */
 public abstract class Yggdrasil extends AppCompatActivity
+    implements ActivityCompat.OnRequestPermissionsResultCallback
 {
     // ====================================================================
     // PUBLIC METHODS
@@ -250,7 +261,7 @@ public abstract class Yggdrasil extends AppCompatActivity
     public void onActivityResult(int requestCode,
                                  int resultCode,
                                  Intent resultData) {
-        final String FUNC = "onActivityResult(): ";
+        final String FUNC = "onActivityResult()";
         Log.i(getLogCategory(), FUNC);
         if (READ_SETTINGS_FILE_CODE == requestCode &&
             Activity.RESULT_OK == resultCode) {
@@ -260,6 +271,38 @@ public abstract class Yggdrasil extends AppCompatActivity
         }
 
         super.onActivityResult(requestCode, resultCode, resultData);
+    }
+
+    /**
+     * @brief   Called when a permission is requested.
+     * @return  Does not even.
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions,
+                                           int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode,
+                                         permissions,
+                                         grantResults);
+        final String FUNC = "onRequestPermissionsResult()";
+        switch(requestCode) {
+            case WRITE_PERMISSION_REQUEST_CODE:
+                if (grantResults.length > 0 &&
+                    (PackageManager.PERMISSION_GRANTED == grantResults[0])) {
+                    // Permission granted; go back to exporting the file.
+                    this.exportSettings();
+                } else {
+                    Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                          "Write.Permission.Denied!");
+                    Toast.makeText(this,
+                                   NO_WRITE_PERMISSION_MESSAGE,
+                                   Toast.LENGTH_SHORT).show();
+                }
+                break;
+            default:
+                Log.e(getLogCategory(), getLogPrefix(FUNC) +
+                      "Unknown requestCode=" + Integer.toString(requestCode));
+        }
     }
 
     // ====================================================================
@@ -283,41 +326,48 @@ public abstract class Yggdrasil extends AppCompatActivity
     // --------------------------------------------------------------------
     // CONSTANTS
 
+    private static final String FRAGMENT_DIALOG                         =
+        "dialog";
+
     // Output file constants
-    private static final String OUTPUT_DIRECTORY_NAME                     =
+    private static final String OUTPUT_DIRECTORY_NAME                   =
         "gobbledygook";
-    private static final String OUTPUT_PREFERENCES_FILENAME               =
+    private static final String OUTPUT_PREFERENCES_FILENAME             =
         "gobbledygook.json";
-    private static final int JSON_INDENT_FACTOR                           =
+    private static final int JSON_INDENT_FACTOR                         =
         8;
 
     // Toast messages
-    protected static final String DOPPELGANGER_FILE_ERROR                 =
+    private static final String DOPPELGANGER_FILE_ERROR                 =
         "ERROR exporting settings! " +
         "A file by the hijacked name 'gobbledygook' " +
         "already exists in the Documents folder :( " +
         "Please remove/rename it to continue";
-    protected static final String EXPORT_SETTINGS_MESSAGE                 =
+    private static final String EXPORT_SETTINGS_MESSAGE                 =
         "Successfully exported settings to file " +
         OUTPUT_PREFERENCES_FILENAME + " in the Documents/" +
         OUTPUT_DIRECTORY_NAME + " folder";
-    protected static final String EXPORT_SETTINGS_ERROR                   =
+    private static final String EXPORT_SETTINGS_ERROR                   =
         "ERROR exporting settings to file :(";
-    protected static final String EXTERNAL_STORAGE_ERROR                  =
+    private static final String EXTERNAL_STORAGE_ERROR                  =
         "ERROR exporting settings! External storage not mounted :(";
-    protected static final String FILE_MANAGER_MISSING_ERROR              =
+    private static final String FILE_MANAGER_MISSING_ERROR              =
         "ERROR importing file! Please install a file manager " +
         "to be able to browse to a file";
-    protected static final String IMPORT_SETTINGS_MESSAGE                 =
+    private static final String IMPORT_SETTINGS_MESSAGE                 =
         "Successfully imported settings...";
-    protected static final String IMPORT_SETTINGS_ERROR                   =
+    private static final String IMPORT_SETTINGS_ERROR                   =
         "ERROR! Found malformed file! Failed to import settings! :(";
-    protected static final String INIT_MESSAGE                            =
+    private static final String INIT_MESSAGE                            =
         "Initializing...";
+    private static final String NO_WRITE_PERMISSION_MESSAGE             =
+        "Exporting will not work until write permission is granted :(";
 
     // Request codes for spawning activities
-    protected static final int    READ_SETTINGS_FILE_CODE                 =
+    private static final int    READ_SETTINGS_FILE_CODE                 =
         8086;
+    private static final int    WRITE_PERMISSION_REQUEST_CODE         =
+        1337;
 
     // --------------------------------------------------------------------
     // METHODS
@@ -333,8 +383,8 @@ public abstract class Yggdrasil extends AppCompatActivity
     }
 
     /**
-     * @brief   
-     * @return  
+     * @brief   Method to configure the navigation drawer.
+     * @return  Does not even.
      */
     protected void createNavigationDrawer() {
         final String FUNC = "createNavigationDrawer(): ";
@@ -367,7 +417,6 @@ public abstract class Yggdrasil extends AppCompatActivity
         m_drawerToggle = new ActionBarDrawerToggle(
                                     this,
                                     m_drawerLayout,
-                                    R.drawable.ic_drawer,
                                     R.string.drawer_action_open,
                                     R.string.drawer_action_closed) {
 
@@ -496,16 +545,20 @@ public abstract class Yggdrasil extends AppCompatActivity
     protected void swapFragment(Fragment fragment,
                                 final String fragmentTag) {
         assert (null != fragment) : "Asked to swap in null fragment!!!";
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTx = fragmentManager.beginTransaction();
-        fragmentTx.replace(R.id.contentFrame,
-                           fragment,
-                           fragmentTag);
-        // Provide proper "back" navigation
-        fragmentTx.addToBackStack(null);
-        fragmentTx.setTransition(
-                FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-        fragmentTx.commit();
+        getFragmentManager().beginTransaction()
+            .replace(R.id.contentFrame,
+                     fragment,
+                     fragmentTag)
+            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+            .commit();
+        // We will NOT add the fragment to the back stack,
+        // fragmentTx.addToBackStack(null)
+        // since after having wandered across fragments,
+        // the "back" behavior does not make sense anymore,
+        // nor does it allow consistent highlighting in the navigation drawer.
+        // The only sensible place for the "back" behavior is the WebView.
+        // We will train the user to navigate using the navigation drawer,
+        // and the back button will exit the app.
     }
 
     /**
@@ -515,6 +568,22 @@ public abstract class Yggdrasil extends AppCompatActivity
     protected void exportSettings() {
         final String FUNC = "exportSettings(): ";
         Log.i(getLogCategory(), getLogPrefix(FUNC) + ">>");
+
+        // If running on Marshmallow or higher (API Level 23),
+        // we need to ask the user explicitly for write permission.
+        if ((android.os.Build.VERSION.SDK_INT >=
+                android.os.Build.VERSION_CODES.M) &&
+            (ContextCompat.checkSelfPermission(
+                                this,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+             != PackageManager.PERMISSION_GRANTED)) {
+            // Request permission
+            new ConfirmationDialog().show(this.getFragmentManager(),
+                                          FRAGMENT_DIALOG);
+            // If permission is granted, the permission handler will
+            // trigger exportSettings() again.
+            return;
+        }
 
         // Create a JSON object from the SharedPreferences
         JSONObject outputPrefs = constructSchema();
@@ -577,15 +646,9 @@ public abstract class Yggdrasil extends AppCompatActivity
             outputStream = new FileOutputStream(outputFile);
             outputStream.write(
                     outputPrefs.toString(JSON_INDENT_FACTOR).getBytes());
-        } catch (JSONException e) {
-            Log.e(getLogCategory(), getLogPrefix(FUNC) +
-                  "ERROR: Caught " + e);
-            Toast.makeText(this.getApplicationContext(),
-                           EXPORT_SETTINGS_ERROR,
-                           Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-            return;
-        } catch (IOException e) {
+        } catch (IOException | JSONException e) {
+            // IOException is a superclass of FileNotFoundException,
+            // and will catch that as well.
             Log.e(getLogCategory(), getLogPrefix(FUNC) +
                   "ERROR: Caught " + e);
             Toast.makeText(this.getApplicationContext(),
@@ -770,7 +833,7 @@ public abstract class Yggdrasil extends AppCompatActivity
             JSONObject inputPrefs =
                 this.validateAndReturnPreferences(schema);
 
-            if (null != inputPrefs) {
+            if (null == inputPrefs) {
                 Toast.makeText(this.getApplicationContext(),
                                IMPORT_SETTINGS_ERROR,
                                Toast.LENGTH_SHORT).show();
@@ -895,4 +958,50 @@ public abstract class Yggdrasil extends AppCompatActivity
                                                      * @brief The activity
                                                      * title
                                                      */
+
+    // --------------------------------------------------------------------
+    // INNER CLASSES
+
+    /**
+     * @brief   A class to encapsulate a confirmation dialog for
+     *          external storage permission checks.
+     *          This class, being a fragment, needs to be public so that
+     *          its constructor can be accessed while restoring the state
+     *          of the activity.
+     */
+    public static class ConfirmationDialog extends DialogFragment {
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            final Context context = getActivity().getApplicationContext();
+            return new AlertDialog.Builder(getActivity())
+                .setMessage(R.string.permissionRequest)
+                .setPositiveButton(android.R.string.ok,
+                                   new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog,
+                                            int which) {
+                            final String permission =
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE;
+                            ActivityCompat.requestPermissions(
+                                            getActivity(),
+                                            new String[]{permission},
+                                            WRITE_PERMISSION_REQUEST_CODE);
+                        }
+                    })
+                .setNegativeButton(android.R.string.cancel,
+                                   new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog,
+                                            int which) {
+                            Toast.makeText(context,
+                                           NO_WRITE_PERMISSION_MESSAGE,
+                                           Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                .create();
+        }
+
+    }
+
 }

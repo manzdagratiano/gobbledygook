@@ -44,27 +44,17 @@
          is the WebView. -->
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/floatingButton"
-        android:src="@drawable/ic_menu_manage"
+        android:src="@drawable/ic_enhanced_encryption_white_48dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/floating_button_margin"
         android:layout_gravity="bottom|end"
+        app:fabSize="normal"
+        app:elevation="@dimen/floating_button_elevation"
+        app:backgroundTint="@color/black"
+        app:rippleColor="@color/indigo"
         app:layout_anchor="@id/homeWebView"
         app:layout_anchorGravity="bottom|right|end"
         />
-
-    <!--ImageButton
-        android:id="@+id/mainFragmentButton"
-        android:layout_gravity="bottom|end"
-        android:layout_width="@dimen/floating_button_diameter"
-        android:layout_height="@dimen/floating_button_diameter"
-        android:layout_marginBottom="@dimen/floating_button_margin"
-        android:layout_marginEnd="@dimen/floating_button_margin"
-        android:elevation="@dimen/elevation_low"
-        android:src="@drawable/ic_menu_manage"
-        android:background="@drawable/oval_ripple"
-        android:tint="@android:color/white"
-        android:stateListAnimator="@anim/floating_button_elevation"
-        /-->
 
 </android.support.design.widget.CoordinatorLayout>

@@ -39,9 +39,10 @@
             android:fontFamily="@string/label_fontFamily"
             android:textAllCaps="true"
             android:textStyle="bold"
+            android:labelFor="@+id/domain"
             />
         <EditText
-            android:id="@+id/domain"
+            android:id="@id/domain"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/hint_domain"
@@ -60,9 +61,10 @@
             android:fontFamily="@string/label_fontFamily"
             android:textAllCaps="true"
             android:textStyle="bold"
+            android:labelFor="@+id/password"
             />
         <EditText
-            android:id="@+id/password"
+            android:id="@id/password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/hint_password"
@@ -83,13 +85,15 @@
             android:fontFamily="@string/label_fontFamily"
             android:textAllCaps="true"
             android:textStyle="bold"
+            android:labelFor="@+id/hash"
             />
         <EditText
-            android:id="@+id/hash"
+            android:id="@id/hash"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textPassword"
             />
+
         <CheckBox
             android:id="@+id/showHash"
             android:layout_width="wrap_content"
@@ -132,9 +136,10 @@
                 android:fontFamily="@string/label_fontFamily"
                 android:textAllCaps="true"
                 android:textStyle="bold"
+                android:labelFor="@+id/iterations"
                 />
             <EditText
-                android:id="@+id/iterations"
+                android:id="@id/iterations"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
                 android:hint="@string/hint_iterations"

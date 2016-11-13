@@ -21,12 +21,13 @@
     <string name="drawer_action_open">Abracadabra!</string>
     <string name="drawer_action_closed">Hasta la Vista, Baby!</string>
     <string name="drawer_header_settings">Settings</string>
-    <string name="drawer_header_text">B3c0m3.T3h.Unh4X4b13</string>
+    <string name="drawer_header_text">T3h.Unh4X4b13.P@$$w0rd.$01ut10n</string>
     <string name="drawer_item_home">Home</string>
     <string name="drawer_item_settings">View/Edit</string>
     <string name="drawer_item_import">Import&#8230;</string>
     <string name="drawer_item_export">Export&#8230;</string>
     <string name="drawer_item_about">About&#8230;</string>
+    <string name="permissionRequest">Requesting write permission&#8230;</string>
 
     <!-- ############# -->
     <!-- Fragment Tags -->
@@ -45,10 +46,10 @@
     <string name="label_domain">Domain</string>
     <string name="hint_domain">The foo.bar.baz.com part of the URL</string>
     <string name="label_password">Password</string>
-    <string name="hint_password">Your KillerPassword123456789 Here</string>
+    <string name="hint_password">&lt;Your One True Password&gt;</string>
     <string name="label_hash">Proxy Password</string>
     <string name="checkBox_showHash">Show</string>
-    <string name="checkBox_showAdvanced">Advanced...</string>
+    <string name="checkBox_showAdvanced">Advanced&#8230;</string>
     <string name="label_iterations">Iterations</string>
     <string name="hint_iterations">10000</string>
     <string name="checkBox_truncate">Truncate</string>
@@ -128,5 +129,12 @@
     <!-- Version -->
     <string name="about_version_key">version</string>
     <string name="about_version_name">Build Version</string>
+
+    <!-- Changelog -->
+    <string name="about_changelog_key">changelog</string>
+    <string name="about_changelog_name">Release Notes</string>
+    <string name="about_changelog_summary">
+        https://manzdagratiano.github.io/gobbledygook/release.html
+    </string>
 
 </resources>
