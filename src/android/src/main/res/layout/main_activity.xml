@@ -8,42 +8,24 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/navigationDrawerLayout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    >
 
-    <!-- The main layout of the activity,
-         which is comprised of the App bar above the
-         main content frame (using a RelativeLayout).
-         This must be the first child element due to
+    <!-- The main layout of the activity will be a navigation drawer
+         above a FrameLayout, which will host various fragments.
+         The App bar will be part of the fragments swapped into the
+         FrameLayout, since it facilitates it playing well with
+         other elements in the fragment if the view is, say,
+         a CoordinatorLayout.
+         The frame must be the first child element due to
          the Z-ordering implied by the XML, and the drawer
          must be above the frame. -->
-    <RelativeLayout
-        android:orientation="vertical"
+    <FrameLayout
+        android:id="@+id/contentFrame"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        >
-        <!-- Add a Toolbar, which will serve as the App bar
-             instead of the native ActionBar
-             (Material Design spec recommendation) -->
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/appBar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            android:elevation="@dimen/app_bar_elevation"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-            />
-
-        <!-- The main content view,
-             which will host various "Fragments"
-             once they are selected in the drawer. -->
-        <FrameLayout
-            android:id="@+id/contentFrame"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@id/appBar"
-            />
-    </RelativeLayout>
+        android:layout_height="match_parent"
+        />
 
     <!-- The navigation drawer -->
     <android.support.design.widget.NavigationView

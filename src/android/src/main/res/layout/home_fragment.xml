@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The topmost element is a CoordinatorLayout
+     (FrameLayout on steroids)
+     so that a floating action button can be placed
+     with the appropriate "gravity" (bottom|right) -->
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/homeFragment"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <!-- The App Bar - placed into an AppBarLayout to respond to
+         scroll events and the like.
+         The AppBarLayout should be the direct child of the CoordinatorLayout.
+         The scroll behavior is "enterAlways", which causes the AppBar
+         to disappear on downward scroll (of the view, i.e., finger upwards)
+         and appear on upward scroll.
+         The theme is Dark.ActionBar from ThemeOverlay to complement the app theme,
+         which in our case is Light.DarkActionBar with no ActionBar. -->
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/homeAppBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        >
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/homeAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:elevation="@dimen/app_bar_elevation"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+            app:layout_scrollFlags="scroll|enterAlways"
+            />
+    </android.support.design.widget.AppBarLayout>
+
+    <io.tengentoppa.yggdrasil.NestedWebView
+        android:id="@+id/homeWebView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        />
+
+    <!-- The Floating Action Button.
+         Note that starting with the support library version 23.2.0,
+         it is no longer allowed to anchor it to the CoordinatorLayout itself.
+         Rather, it must be anchored to a descendent view, which in this case
+         is the WebView. -->
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/floatingButton"
+        android:src="@drawable/ic_enhanced_encryption_white_48dp"
+        app:fabSize="normal"
+        app:elevation="@dimen/floating_button_elevation"
+        app:backgroundTint="@color/black"
+        app:rippleColor="@color/indigo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/floating_button_margin"
+        android:layout_gravity="bottom|end"
+        app:layout_anchor="@id/homeWebView"
+        app:layout_anchorGravity="bottom|end"
+        />
+
+</android.support.design.widget.CoordinatorLayout>

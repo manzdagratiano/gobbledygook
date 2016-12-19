@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- The theme below is a "NoActionBar" theme to prevent use
-         of the native ActionBar, since we would be using the ToolBar
-         class instead of the ActionBar class to provide the App bar -->
-    <style name="TengenToppaTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="colorPrimary">@color/primary_material_dark</item>
+    <style name="TengenToppaTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- No Action Bar, since we'll use a Toolbar as the AppBar.
+             This is preferable to just using the "NoActionBar" theme for
+             color consistency with the Toolbar. -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
     </style>
 </resources>

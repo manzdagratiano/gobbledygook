@@ -1,6 +1,6 @@
 /**
  * @file        Krunch.java
- * @brief       Source file for the Krunch class
+ * @summary     Source file for the Krunch class
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
  * @date        May 07, 2015
@@ -22,14 +22,14 @@ import io.tengentoppa.yggdrasil.Yggdrasil;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
 /**
- * @brief  The Krunch class
- *         This class extends the Yggdrasil class to provide
- *         an implementation of the main activity for the application.
+ * @summary The Krunch class
+ *          This class extends the Yggdrasil class to provide
+ *          an implementation of the main activity for the application.
  */
 public class Krunch extends Yggdrasil {
 
@@ -52,7 +52,7 @@ public class Krunch extends Yggdrasil {
     // METHODS
 
     /**
-     * @brief   Method to return the log category.
+     * @summary Method to return the log category.
      * @return  {String} The log category
      */
     @Override
@@ -61,7 +61,7 @@ public class Krunch extends Yggdrasil {
     }
 
     /**
-     * @brief   A function to launch the activity selected in the
+     * @summary A function to launch the activity selected in the
      *          navigation drawer.
      *          This is done by replacing the framelayout with the
      *          appropriate fragment.
@@ -75,18 +75,21 @@ public class Krunch extends Yggdrasil {
         switch(itemId) {
             case R.id.drawerHome:
                 // Home fragment
-                this.swapFragment(new KrunchWorkhorseFragment(),
-                                  getString(R.string.tag_workhorseFragment));
+                this.swapFragment(
+                        new KrunchWorkhorseFragment(),
+                        getString(R.string.tag_workhorseFragment));
                 break;
             case R.id.drawerSettings:
                 // Settings
-                this.swapFragment(new KrunchPrefsFragment(),
-                                  getString(R.string.tag_prefsFragment));
+                this.swapFragment(
+                        new KrunchPrefsFragmentContainer(),
+                        getString(R.string.tag_prefsFragmentContainer));
                 break;
             case R.id.drawerAbout:
                 // About
-                this.swapFragment(new KrunchAboutFragment(),
-                                  getString(R.string.tag_aboutFragment));
+                this.swapFragment(
+                        new KrunchAboutFragmentContainer(),
+                        getString(R.string.tag_aboutFragmentContainer));
                 break;
             default:
                 // One of the other actions specified;

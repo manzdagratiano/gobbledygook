@@ -1,6 +1,6 @@
 /**
  * @file        KrunchWorkhorseFragment.java
- * @brief       Source file for the KrunchWorkhorseFragment class
+ * @summary     Source file for the KrunchWorkhorseFragment class
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
  * @date        June 20, 2015
@@ -18,7 +18,7 @@ import io.tengentoppa.yggdrasil.WorkhorseFragment;
 import android.os.Bundle;
 
 /**
- * @brief   The KrunchWorkhorseFragment class
+ * @summary The KrunchWorkhorseFragment class
  *          This class extends the WorkhorseFragment class to
  *          provide specific implementations of the
  *          retrieveIngredients method.
@@ -26,7 +26,7 @@ import android.os.Bundle;
 public class KrunchWorkhorseFragment extends WorkhorseFragment {
 
     /**
-     * @brief   Method to return a new instance of the
+     * @summary Method to return a new instance of the
      *          concrete implementation of the workhorse fragment.
      * @return  {KrunchWorkhorseFragment} Returns an instance
      *          of the KrunchWorkhorseFragment class
@@ -50,7 +50,7 @@ public class KrunchWorkhorseFragment extends WorkhorseFragment {
     // PRIVATE MEMBERS
 
     /**
-     * @brief   Method to return the log category.
+     * @summary Method to return the log category.
      * @return  {String} The log category
      */
     @Override

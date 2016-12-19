@@ -4,15 +4,15 @@
     >
     <!-- Home -->
     <!-- "showAsAction" is used from the appcompat library. -->
-    <item android:id="@+id/homePage"
-          android:title="@string/action_home"
-          android:icon="@drawable/ic_home_white_48dp"
+    <item android:id="@+id/actionExportSettings"
+          android:title="@string/action_export_settings"
+          android:icon="@drawable/ic_file_download_white_48dp"
           app:showAsAction="ifRoom"
           />
     <!-- Settings -->
-    <item android:id="@+id/settingsPage"
-          android:title="@string/action_settings"
-          android:icon="@drawable/ic_settings_white_48dp"
+    <item android:id="@+id/actionImportSettings"
+          android:title="@string/action_import_settings"
+          android:icon="@drawable/ic_file_upload_white_48dp"
           app:showAsAction="ifRoom"
           />
 </menu>

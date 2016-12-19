@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     >
-    <!-- In the following LinearLayout,
-         the "layout_height" attribute needs to wrap_content
-         together with "fitsSystemWindows" set to true.
-         This, combined with "windowSoftInputMode" set to "adjustResize"
-         in the AndroidManifest, allows the window to correctly scroll
-         to a text field while resizing the activity window
-         so that the text field is not obscured by the soft keyboard.
-         -->
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"

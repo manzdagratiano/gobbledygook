@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The "About" page is a readonly informational list.
+     None of the items in the "About" page need be saved
+     to SharedPreferences -->
+<android.support.v7.preference.PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <android.support.v7.preference.PreferenceCategory
+        android:title="@string/about_info_header"
+        >
+        <!-- The Creator -->
+        <android.support.v7.preference.Preference
+            android:key="@string/about_creator_key"
+            android:title="@string/about_creator_name"
+            android:summary="@string/about_creator_summary"
+            android:icon="@drawable/ic_person_black_48dp"
+            android:editable="false"
+            android:persistent="false"
+            />
+        <!-- License -->
+        <android.support.v7.preference.Preference
+            android:key="@string/about_license_key"
+            android:title="@string/about_license_name"
+            android:summary="@string/about_license_summary"
+            android:icon="@drawable/ic_share_black_48dp"
+            android:editable="false"
+            android:persistent="false"
+            />
+        <!-- Home Page -->
+        <android.support.v7.preference.Preference
+            android:key="@string/about_homepage_key"
+            android:title="@string/about_homepage_name"
+            android:summary="@string/about_homepage_summary"
+            android:icon="@drawable/ic_public_black_48dp"
+            android:editable="false"
+            android:persistent="false"
+            />
+    </android.support.v7.preference.PreferenceCategory>
+
+    <android.support.v7.preference.PreferenceCategory
+        android:title="@string/about_version_header"
+        >
+        <!-- Version
+             The summary (version name) will be set programmatically -->
+        <android.support.v7.preference.Preference
+            android:key="@string/about_version_key"
+            android:title="@string/about_version_name"
+            android:icon="@drawable/ic_build_black_48dp"
+            android:editable="false"
+            android:persistent="false"
+            />
+        <!-- Changelog -->
+        <android.support.v7.preference.Preference
+            android:key="@string/about_changelog_key"
+            android:title="@string/about_changelog_name"
+            android:summary="@string/about_changelog_summary"
+            android:icon="@drawable/ic_new_releases_black_48dp"
+            android:editable="false"
+            android:persistent="false"
+            />
+    </android.support.v7.preference.PreferenceCategory>
+</android.support.v7.preference.PreferenceScreen>

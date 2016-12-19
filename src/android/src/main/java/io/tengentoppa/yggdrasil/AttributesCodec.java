@@ -1,6 +1,6 @@
 /**
  * @file        AttributesCodec.java
- * @brief       Source file for the AttributesCodec class.
+ * @summary     Source file for the AttributesCodec class.
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
  * @date        Sep 27, 2016
@@ -19,7 +19,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * @brief   The AttributesCodec class.
+ * @summary The AttributesCodec class.
  *          This class encapsulates methods for encoding/decoding
  *          objects of the Attributes class.
  */
@@ -29,7 +29,7 @@ public class AttributesCodec {
     // PUBLIC METHODS
 
     /**
-     * @brief   
+     * @summary 
      * @return  
      */
     public static String encode(Attributes attributes) {
@@ -52,7 +52,7 @@ public class AttributesCodec {
     }
 
     /**
-     * @brief   Method to decoded an encoded Attributes string.
+     * @summary Method to decoded an encoded Attributes string.
      * @return  {Attributes} The decoded object; default constructed
      *          on an error condition.
      */
@@ -109,7 +109,7 @@ public class AttributesCodec {
     }
 
     /**
-     * @brief   Function to read the saved JSON string of custom
+     * @summary Function to read the saved JSON string of custom
      *          website attributes into a JSON object.
      * @return  The decoded JSONObject if the encodedOverrides
      *          was a valid JSON string, else null
@@ -137,7 +137,7 @@ public class AttributesCodec {
     }
 
     /**
-     * @brief   Method to retrieve the saved overrides for a domain
+     * @summary Method to retrieve the saved overrides for a domain
      * @return  {Attributes} The retrieved object, (default constructed
      *          if no saved attributes exist)
      */
@@ -164,7 +164,7 @@ public class AttributesCodec {
     }
 
     /**
-     * @brief   
+     * @summary 
      * @return  A valid Attributes object,
      *          which can be default initialized
      */

@@ -1,6 +1,6 @@
 /**
  * @file        Logger.java
- * @brief       The Logger class.
+ * @summary     The Logger class.
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
  * @date        Apr 10, 2016
@@ -12,7 +12,7 @@
 package io.tengentoppa.gobbledygook;
 
 /**
- * @brief   The Logger class.
+ * @summary The Logger class.
  */
 public class Logger {
 
@@ -20,7 +20,7 @@ public class Logger {
     // PUBLIC METHODS
 
     /**
-     * @brief   Method to return the log category for the app.
+     * @summary Method to return the log category for the app.
      * @return  {String} The log category
      */
     public static String getCategory() {

@@ -1,6 +1,6 @@
 /**
  * @file        Gobbledygook.java
- * @brief       Source file for the Gobbledygook class
+ * @summary     Source file for the Gobbledygook class
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
  * @date        May 07, 2015
@@ -20,9 +20,9 @@ import android.os.Bundle;
 import android.util.Log;
 
 /**
- * @brief  The Gobbledygook class
- *         This class extends the Yggdrasil class to provide
- *         an implementation of the main activity for the application.
+ * @summary The Gobbledygook class
+ *          This class extends the Yggdrasil class to provide
+ *          an implementation of the main activity for the application.
  */
 public class Gobbledygook extends Yggdrasil {
 
@@ -42,7 +42,7 @@ public class Gobbledygook extends Yggdrasil {
     // PRIVATE METHODS
 
     /**
-     * @brief   Method to return the log category.
+     * @summary Method to return the log category.
      * @return  {String} The log category
      */
     @Override
@@ -51,7 +51,7 @@ public class Gobbledygook extends Yggdrasil {
     }
 
     /**
-     * @brief   A function to launch the activity selected in the
+     * @summary A function to launch the activity selected in the
      *          navigation drawer.
      *          This is done by replacing the framelayout with the
      *          appropriate fragment.
@@ -67,18 +67,21 @@ public class Gobbledygook extends Yggdrasil {
         switch(itemId) {
             case R.id.drawerHome:
                 // Home fragment
-                this.swapFragment(new GobbledygookHomeFragment(),
-                                  getString(R.string.tag_homeFragment));
+                this.swapFragment(
+                        new GobbledygookHomeFragment(),
+                        getString(R.string.tag_homeFragment));
                 break;
             case R.id.drawerSettings:
                 // Settings
-                this.swapFragment(new GobbledygookPrefsFragment(),
-                                  getString(R.string.tag_prefsFragment));
+                this.swapFragment(
+                        new GobbledygookPrefsFragmentContainer(),
+                        getString(R.string.tag_prefsFragmentContainer));
                 break;
             case R.id.drawerAbout:
                 // About
-                this.swapFragment(new GobbledygookAboutFragment(),
-                                  getString(R.string.tag_aboutFragment));
+                this.swapFragment(
+                        new GobbledygookAboutFragmentContainer(),
+                        getString(R.string.tag_aboutFragmentContainer));
                 break;
             default:
                 // One of the other actions specified;

@@ -1,6 +1,6 @@
 /**
  * @file        KrunchHomeFragment.java
- * @brief       Source file for the KrunchHomeFragment class
+ * @summary     Source file for the KrunchHomeFragment class
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
  * @date        June 20, 2015
@@ -16,14 +16,14 @@ import io.tengentoppa.yggdrasil.HomeFragment;
 import io.tengentoppa.yggdrasil.R;
 
 // Android
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.View;
 
@@ -31,7 +31,7 @@ import android.view.View;
 import java.lang.RuntimeException;
 
 /**
- * @brief   
+ * @summary 
  */
 public class KrunchHomeFragment extends HomeFragment {
 
@@ -39,7 +39,7 @@ public class KrunchHomeFragment extends HomeFragment {
     // PROTECTED METHODS
 
     /**
-     * @brief   Method to return the log category.
+     * @summary Method to return the log category.
      * @return  {String} The log category
      */
     @Override
@@ -48,7 +48,7 @@ public class KrunchHomeFragment extends HomeFragment {
     }
 
     /**
-     * @brief   Method to configure the floating action button.
+     * @summary Method to configure the floating action button.
      * @return  Does not return a value.
      */
     @Override
@@ -62,7 +62,7 @@ public class KrunchHomeFragment extends HomeFragment {
     }
 
     /**
-     * @brief   Method to return an instance of
+     * @summary Method to return an instance of
      *          the concrete implementation of the WorkhorseFragment.
      * @return  {DialogFragment} An instance of KrunchWorkhorseFragment
      */

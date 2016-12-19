@@ -1,6 +1,6 @@
 /**
  * @file        Crypto.java
- * @brief       Source file for the Crypto class
+ * @summary     Source file for the Crypto class
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
  * @date        June 20, 2015
@@ -30,7 +30,7 @@ import org.spongycastle.util.encoders.Base64;
 import org.zeromq.codec.Z85;
 
 /**
- * @brief   The crypto workhorse, which does all the crypto magic
+ * @summary The crypto workhorse, which does all the crypto magic
  */
 public class Crypto {
 
@@ -42,7 +42,7 @@ public class Crypto {
     // PUBLIC METHODS
 
     /**
-     * @brief   A routine to calculate the SHA256 hash of the user's
+     * @summary A routine to calculate the SHA256 hash of the user's
      *          one true password.
      *          This is the only routine that sees the user's password;
      *          for security, it is not even passed around.
@@ -64,7 +64,7 @@ public class Crypto {
     }
 
     /**
-     * @brief   Method to generate a new salt key
+     * @summary Method to generate a new salt key
      * @return  {String} The newly generated salt key
      */
     public static String generateSaltKey()
@@ -84,7 +84,7 @@ public class Crypto {
     }
 
     /**
-     * @brief   Method to generate a salt using a domain name
+     * @summary Method to generate a salt using a domain name
      *          and the salt key.
      * @return  {byte[]} The byte sequence for the generated salt
      */
@@ -115,7 +115,7 @@ public class Crypto {
     }
 
     /**
-     * @brief   Method to generate a key-stretched password from
+     * @summary Method to generate a key-stretched password from
      *          a seed password (hashed) and a salt.
      * @return  {String} The encoded generated key-stretched password.
      */
@@ -151,7 +151,7 @@ public class Crypto {
     }
 
     /**
-     * @brief   Method to generate the final password string from
+     * @summary Method to generate the final password string from
      *          an encoded key-stretched hash.
      * @return  {String} The final password string to use.
      */

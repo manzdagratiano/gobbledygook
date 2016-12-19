@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<android.support.v7.preference.PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- The salt "key"
          This is a read-only preference,
          in the sense it is not editable like an EditTextPreference
          (its value is modified by other interfaces, just not directly). -->
-    <Preference
+    <android.support.v7.preference.Preference
         android:key="@string/pref_saltKey_key"
         android:title="@string/pref_saltKey_name"
         android:summary="@string/pref_saltKey_summary"
@@ -16,7 +17,7 @@
          has inputType number, it will be saved as a string
          owing to it being an EditTextPreference.
          Therefore, when reading, it must be retrieved as such. -->
-    <EditTextPreference
+    <android.support.v7.preference.EditTextPreference
         android:key="@string/pref_defaultIterations_key"
         android:inputType="number"
         android:numeric="integer"
@@ -27,11 +28,11 @@
          This is a read-only preference,
          in the sense it is not editable like an EditTextPreference
          (its value is modified by other interfaces, just not directly). -->
-    <Preference
+    <android.support.v7.preference.Preference
         android:key="@string/pref_customOverrides_key"
         android:title="@string/pref_customOverrides_name"
         android:summary="@string/pref_customOverrides_summary"
         android:editable="false"
         android:ellipsize="end"
         />
-</PreferenceScreen>
+</android.support.v7.preference.PreferenceScreen>

@@ -1,6 +1,6 @@
 /**
  * @file        GobbledygookHomeFragment.java
- * @brief       Source file for the GobbledygookHomeFragment class
+ * @summary     Source file for the GobbledygookHomeFragment class
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
  * @date        June 20, 2015
@@ -16,17 +16,17 @@ import io.tengentoppa.yggdrasil.HomeFragment;
 import io.tengentoppa.yggdrasil.R;
 
 // Android
-import android.app.DialogFragment;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.DialogFragment;
 import android.view.View;
 
 /**
- * @brief   
+ * @summary 
  */
 public class GobbledygookHomeFragment extends HomeFragment {
 
     /**
-     * @brief   Method to return the log category.
+     * @summary Method to return the log category.
      * @return  {String} The log category
      */
     @Override
@@ -35,7 +35,7 @@ public class GobbledygookHomeFragment extends HomeFragment {
     }
 
     /**
-     * @brief   Method to configure the floating action button.
+     * @summary Method to configure the floating action button.
      * @return  Does not return a value.
      */
     @Override
@@ -54,7 +54,7 @@ public class GobbledygookHomeFragment extends HomeFragment {
     }
 
     /**
-     * @brief   Method to return an instance of
+     * @summary Method to return an instance of
      *          the concrete implementation of the WorkhorseFragment.
      * @return  {DialogFragment} An instance of GobbledygookWorkhorseFragment
      */

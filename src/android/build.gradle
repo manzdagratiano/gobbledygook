@@ -69,7 +69,7 @@ android {
     buildToolsVersion '25.0.0'
 
     defaultConfig {
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 23
         versionCode computeVersionCode()
         versionName computeVersionName()
@@ -112,6 +112,8 @@ dependencies {
       * the "sdk.dir" property in the "local.properties" file
       */
     compile "com.android.support:appcompat-v7:${supportLibVersion}"
+    compile "com.android.support:preference-v7:${supportLibVersion}"
+    compile "com.android.support:preference-v14:${supportLibVersion}"
     compile "com.android.support:support-v4:${supportLibVersion}"
     compile "com.android.support:design:${supportLibVersion}"
     /**

@@ -1,6 +1,6 @@
 /**
  * @file        PrefsFragment.java
- * @brief       Source file for the PrefsFragment class
+ * @summary     Source file for the PrefsFragment class
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
  * @date        May 07, 2015
@@ -12,19 +12,25 @@
 package io.tengentoppa.yggdrasil;
 
 // Android
-import android.app.Activity;
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
+import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 
 // Standard Java
 import java.lang.RuntimeException;
@@ -32,44 +38,44 @@ import java.lang.RuntimeException;
 // ==========================================================================
 
 /**
- * @brief   
+ * @summary 
  */
-public abstract class PrefsFragment extends PreferenceFragment
+public abstract class PrefsFragment extends PreferenceFragmentCompat
     implements SharedPreferences.OnSharedPreferenceChangeListener{
 
     // ====================================================================
     // PUBLIC METHODS
 
     /**
-     * @brief   
+     * @summary Called when the fragment is created.
      * @return  Does not return a value.
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        final String FUNC = "onCreate()";
-        Log.i(getLogCategory(), getLogPrefix(FUNC) +
-              "Creating PreferenceFragment...");
-
         super.onCreate(savedInstanceState);
-
-        // Load the preferences from the xml resource
-        addPreferencesFromResource(R.xml.preferences);
 
         // Get a handle to the SharedPreferences
         this.getSharedPreferencesHandle();
     }
 
     /**
-     * @brief   
-     * @return  
+     * @summary Called when the preference hierarchy is created.
+     * @return  Does not return a value
      */
     @Override
-    public void onStart() {
-        super.onStart();
+    public void onCreatePreferences(Bundle savedInstanceState,
+                                    String rootKey) {
+        final String FUNC = "onCreatePreferences()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Creating PrefsFragment...");
+
+        // Load the preferences from the xml resource
+        setPreferencesFromResource(R.xml.preferences,
+                                   rootKey);
     }
 
     /**
-     * @brief   This lifecycle function is called after onStart(),
+     * @summary This lifecycle function is called after onStart(),
      *          and also when the activity comes back to the foreground.
      *          Perform any configuration here,
      *          to pick up any changes made in other fragments if
@@ -89,7 +95,7 @@ public abstract class PrefsFragment extends PreferenceFragment
     }
 
     /**
-     * @brief   This lifecycle function is called when the activity is
+     * @summary This lifecycle function is called when the activity is
      *          sent to the background, such as when
      *          partially covered by another activity, and before onStop().
      *          Perform any cleanup here, symmetric with onResume().
@@ -105,20 +111,11 @@ public abstract class PrefsFragment extends PreferenceFragment
         super.onPause();
     }
 
-    /**
-     * @brief   
-     * @return  Does not return a value
-     */
-    @Override
-    public void onStop() {
-        super.onStop();
-    }
-
     // --------------------------------------------------------------------
     // HANDLERS
 
     /**
-     * @brief   Handler called when any of the SharedPreference elements
+     * @summary Handler called when any of the SharedPreference elements
      *          are changed.
      * @return  Does not return a value.
      */
@@ -156,14 +153,14 @@ public abstract class PrefsFragment extends PreferenceFragment
     // PROTECTED METHODS
 
     /**
-     * @brief   An method to obtain the log category,
+     * @summary An method to obtain the log category,
      *          suitably overridden in the concrete implementation.
      * @return  {String} The log category.
      */
     protected abstract String getLogCategory();
 
     /**
-     * @brief   A method to get a prefix for the log.
+     * @summary A method to get a prefix for the log.
      * @return  {String} The log prefix
      */
     protected String getLogPrefix(String FUNC) {
@@ -172,7 +169,7 @@ public abstract class PrefsFragment extends PreferenceFragment
     }
 
     /**
-     * @brief   Method to configure listeners for the preference elements.
+     * @summary Method to configure listeners for the preference elements.
      * @return  Does not even.
      */
     protected void configurePreferenceElements() {
@@ -189,7 +186,7 @@ public abstract class PrefsFragment extends PreferenceFragment
     }
 
     /**
-     * @brief   A method to return the implementation of the DialogFragment.
+     * @summary A method to return the implementation of the DialogFragment.
      *          (must be overridden in derived classes).
      * @return  {DialogFragment} The instance of the concrete implementation
      *          of the DialogFragment
@@ -198,7 +195,7 @@ public abstract class PrefsFragment extends PreferenceFragment
     getSaltKeyActionsFragment(final boolean showAsDialog);
 
     /**
-     * @brief   Method to perform any cleanup, such as freeing handlers
+     * @summary Method to perform any cleanup, such as freeing handlers
      *          for garbage collection
      * @return  Does not return a value
      */
@@ -239,7 +236,7 @@ public abstract class PrefsFragment extends PreferenceFragment
     }
 
     /**
-     * @brief   Function to configure the summary for the saltKey,
+     * @summary Function to configure the summary for the saltKey,
      *          and to set it read-only
      * @return  Does not return a value
      */
@@ -271,18 +268,10 @@ public abstract class PrefsFragment extends PreferenceFragment
                       "Creating SaltKeyActions dialog...");
 
                 // Show the SaltKeyActionsFragment as a Dialog
-                FragmentManager fragmentManager =
-                    getActivity().getFragmentManager();
                 FragmentTransaction fragmentTx =
-                    fragmentManager.beginTransaction();
-                Fragment prevInstance =
-                    fragmentManager.findFragmentByTag(
-                        getString(R.string.tag_saltKeyActionsFragment));
-                if (null != prevInstance) {
-                    fragmentTx.remove(prevInstance);
-                }
-                // Provide proper "back" navigation
-                fragmentTx.addToBackStack(null);
+                    ((AppCompatActivity)getActivity())
+                        .getSupportFragmentManager()
+                        .beginTransaction();
 
                 // Instantiate the fragment
                 boolean showAsDialog = true;
@@ -290,9 +279,9 @@ public abstract class PrefsFragment extends PreferenceFragment
                     getSaltKeyActionsFragment(showAsDialog);
 
                 // "show" will commit the transaction as well
-                saltKeyActionsDialog.show(
-                        fragmentTx,
-                        getString(R.string.tag_saltKeyActionsFragment));
+                saltKeyActionsDialog
+                    .show(fragmentTx,
+                          getString(R.string.tag_saltKeyActionsFragment));
 
                 // The click was handled, so return true
                 return true;
@@ -301,7 +290,7 @@ public abstract class PrefsFragment extends PreferenceFragment
     }
 
     /**
-     * @brief   
+     * @summary 
      * @return  Does not even
      */
     private void configureDefaultIterations() {
@@ -327,7 +316,7 @@ public abstract class PrefsFragment extends PreferenceFragment
     }
 
     /**
-     * @brief   
+     * @summary 
      * @return  Does not even
      */
     private void configureCustomAttributes() {
@@ -358,8 +347,9 @@ public abstract class PrefsFragment extends PreferenceFragment
     // --------------------------------------------------------------------
     // DATA MEMBERS
 
-    /** @brief A handle to the SharedPreferences for the application.
+    /**
+     * @brief A handle to the SharedPreferences for the application.
      */
-    protected SharedPreferences m_sharedPreferences;
+    private SharedPreferences   m_sharedPreferences;
 
 }

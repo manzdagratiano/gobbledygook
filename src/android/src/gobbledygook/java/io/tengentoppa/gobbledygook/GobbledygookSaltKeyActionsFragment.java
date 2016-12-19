@@ -1,6 +1,6 @@
 /**
  * @file        GobbledygookSaltKeyActionsFragment.java
- * @brief       Source file for the Gobbledygook implementation of
+ * @summary     Source file for the Gobbledygook implementation of
  *              the SaltKeyActionsFragment class.
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
@@ -20,13 +20,13 @@ import io.tengentoppa.yggdrasil.SaltKeyActionsFragment;
 import android.os.Bundle;
 
 /**
- * @brief  The GobbledygookSaltKeyActionsFragment class
+ * @summary The GobbledygookSaltKeyActionsFragment class
  */
 public class GobbledygookSaltKeyActionsFragment
     extends SaltKeyActionsFragment {
 
     /**
-     * @brief   Static method to return a new instance of self
+     * @summary Static method to return a new instance of self
      * @return  {SaltKeyActionsFragment} Returns an instance of self
      */
     protected static
@@ -45,7 +45,7 @@ public class GobbledygookSaltKeyActionsFragment
     // PRIVATE METHODS
 
     /**
-     * @brief   Method to return the log category.
+     * @summary Method to return the log category.
      * @return  {String} The log category
      */
     @Override

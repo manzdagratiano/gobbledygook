@@ -1,6 +1,6 @@
 /**
  * @file        KrunchPrefsFragment.java
- * @brief       Source file for the KrunchPrefsFragment class
+ * @summary     Source file for the KrunchPrefsFragment class
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
  * @date        Apr 05, 2016
@@ -16,17 +16,17 @@ import io.tengentoppa.yggdrasil.R;
 import io.tengentoppa.yggdrasil.PrefsFragment;
 
 // Android
-import android.app.DialogFragment;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.Preference;
-import android.preference.PreferenceManager;
+import android.support.v4.app.DialogFragment;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 
 // =======================================================================
 
 /**
- * @brief   
+ * @summary 
  */
 public class KrunchPrefsFragment extends PrefsFragment {
 
@@ -34,7 +34,7 @@ public class KrunchPrefsFragment extends PrefsFragment {
     // HANDLERS
 
     /**
-     * @brief   Handler called when any of the SharedPreference elements
+     * @summary Handler called when any of the SharedPreference elements
      *          are changed.
      * @return  Does not return a value.
      */
@@ -57,7 +57,7 @@ public class KrunchPrefsFragment extends PrefsFragment {
     // INHERITED METHODS
 
     /**
-     * @brief   Method to return the log category.
+     * @summary Method to return the log category.
      * @return  {String} The log category
      */
     @Override
@@ -66,7 +66,7 @@ public class KrunchPrefsFragment extends PrefsFragment {
     }
 
     /**
-     * @brief   Overridden method from the superclass
+     * @summary Overridden method from the superclass
      *          to configure all the elements of the list.
      * @return  Does not even.
      */
@@ -78,7 +78,7 @@ public class KrunchPrefsFragment extends PrefsFragment {
     }
 
     /**
-     * @brief   Method to return an instance of the specific implementation
+     * @summary Method to return an instance of the specific implementation
      *          of the SaltKeyActionsFragment class.
      * @return  {DialogFragment} An instance of
      *          the KrunchSaltKeyActionsFragment class.
@@ -90,7 +90,7 @@ public class KrunchPrefsFragment extends PrefsFragment {
     }
 
     /**
-     * @brief   Method to perform any cleanup, such as freeing handlers
+     * @summary Method to perform any cleanup, such as freeing handlers
      *          for garbage collection
      * @return  Does not return a value
      */

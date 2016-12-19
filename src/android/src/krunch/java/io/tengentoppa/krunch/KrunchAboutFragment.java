@@ -1,6 +1,6 @@
 /**
  * @file        KrunchAbout.java
- * @brief       Source file for the Krunch! implementation of
+ * @summary     Source file for the Krunch! implementation of
  *              the AboutFragment class.
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
@@ -17,7 +17,7 @@ import io.tengentoppa.yggdrasil.R;
 import io.tengentoppa.yggdrasil.AboutFragment;
 
 /**
- * @brief  The KrunchAboutFragment class
+ * @summary The KrunchAboutFragment class
  */
 public class KrunchAboutFragment extends AboutFragment {
 
@@ -25,7 +25,7 @@ public class KrunchAboutFragment extends AboutFragment {
     // PRIVATE METHODS
 
     /**
-     * @brief   Method to return the log category.
+     * @summary Method to return the log category.
      * @return  {String} The log category
      */
     @Override

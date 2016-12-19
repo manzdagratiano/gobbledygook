@@ -1,6 +1,6 @@
 /**
  * @file        GobbledygookWorkhorseFragment.java
- * @brief       Source file for the GobbledygookWorkhorseFragment class
+ * @summary     Source file for the GobbledygookWorkhorseFragment class
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
  * @date        June 20, 2015
@@ -19,13 +19,13 @@ import io.tengentoppa.yggdrasil.WorkhorseFragment;
 import android.os.Bundle;
 
 /**
- * @brief   The GobbledygookWorkhorseFragment class
+ * @summary The GobbledygookWorkhorseFragment class
  *          This class extends the WorkhorseFragment class.
  */
 public class GobbledygookWorkhorseFragment extends WorkhorseFragment {
 
     /**
-     * @brief   Method to return a new instance of the
+     * @summary Method to return a new instance of the
      *          concrete implementation of the workhorse fragment.
      * @return  {GobbledygookWorkhorseFragment} Returns an instance
      *          of the GobbledygookWorkhorseFragment class
@@ -48,7 +48,7 @@ public class GobbledygookWorkhorseFragment extends WorkhorseFragment {
     // PRIVATE MEMBERS
 
     /**
-     * @brief   Method to return the log category.
+     * @summary Method to return the log category.
      * @return  {String} The log category
      */
     @Override

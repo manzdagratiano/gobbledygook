@@ -26,6 +26,10 @@
                  android:fullBackupContent="true"
                  android:supportsRtl="true"
                  >
+                 <!-- Opt-out of anonymous WebView stats upload to Google. -->
+                 <meta-data android:name="android.webkit.WebView.MetricsOptOut"
+                            android:value="true"
+                            />
                  <!-- The main activity will be declared in
                       the manifest for the respective flavor. -->
     </application>

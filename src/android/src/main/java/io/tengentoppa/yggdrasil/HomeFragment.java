@@ -1,6 +1,6 @@
 /**
  * @file        HomeFragment.java
- * @brief       Source file for the HomeFragment class
+ * @summary     Source file for the HomeFragment class
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
  * @date        June 20, 2015
@@ -12,25 +12,37 @@
 package io.tengentoppa.yggdrasil;
 
 // Android
-import android.app.Activity;
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.inputmethod.InputMethodManager;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnKeyListener;
+import android.view.View.OnScrollChangeListener;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
+import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.SearchView;
 
 /**
- * @brief   The HomeFragment class
+ * @summary The HomeFragment class
  *          This class is abstract since it needs to display
  *          the appropriate flavor of the "Workhorse" fragment
  *          in the dialog upon pressing the FloatingActionButton.
@@ -42,7 +54,7 @@ public abstract class HomeFragment extends Fragment {
     // PUBLIC METHODS
 
     /**
-     * @brief   Called when the fragment is created.
+     * @summary Called when the fragment is created.
      * @return  Does not return a value
      */
     @Override
@@ -52,6 +64,11 @@ public abstract class HomeFragment extends Fragment {
               "Creating home activity...");
         super.onCreate(savedInstanceState);
 
+        // Indicate that this fragment would like to
+        // contribute to the options menu
+        // (i.e., receive the onCreateOptionsMenu() call).
+        this.setHasOptionsMenu(true);
+
         // Nullify the private data members
         this.m_searchView = null;
         this.m_webView = null;
@@ -59,30 +76,34 @@ public abstract class HomeFragment extends Fragment {
     }
 
     /**
-     * @brief   Called when the fragment is ready to display its UI
+     * @summary Called when the fragment is ready to display its UI
      * @return  The View representing the root of the fragment layout
      */
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container,
                              Bundle savedInstanceState) {
-
-        View view = inflater.inflate(R.layout.home,
+        // Inflate the view.
+        View view = inflater.inflate(R.layout.home_fragment,
                                      container,
                                      false);
 
-        m_searchView =
-            (SearchView)view.findViewById(R.id.homeSearchView);
+        // Obtain handles to the view elements.
         m_webView =
-            (WebView)view.findViewById(R.id.homeWebView);
+            (NestedWebView)view.findViewById(R.id.homeWebView);
         m_floatingButton =
             (FloatingActionButton)view.findViewById(R.id.floatingButton);
+
+        // Configure the Navigation Drawer toggle behavior.
+        NavigationDrawerToggler.configureToggler(
+                (AppCompatActivity)this.getActivity(),
+                (Toolbar)view.findViewById(R.id.homeAppBar));
 
         return view;
     }
 
     /**
-     * @brief   Called after onCreate() (and onStart(),
+     * @summary Called after onCreate() (and onStart(),
      *          when the activity begins interacting with the user)
      * @return  Does not return a value
      */
@@ -99,7 +120,7 @@ public abstract class HomeFragment extends Fragment {
     }
 
     /**
-     * @brief   Called when the activity is partially covered by another.
+     * @summary Called when the activity is partially covered by another.
      *          Perform any cleanup here - symmetric to onResume
      * @return  Does not return a value
      */
@@ -115,18 +136,58 @@ public abstract class HomeFragment extends Fragment {
         super.onPause();
     }
 
+    // --------------------------------------------------------------------
+    // ACTION BAR
+
+    /**
+     * @summary Called to populate the action bar menu, if it is present
+     * @return  Returns true on success and false on failure
+     */
+    @Override
+    public void onCreateOptionsMenu(Menu menu,
+                                    MenuInflater inflater) {
+        // Inflate the menu items for use in the action bar
+        inflater.inflate(R.menu.app_bar_home,
+                         menu);
+        // Not checking for malformed menu,
+        // which will and should crash the app.
+        m_searchView =
+            (SearchView)(menu.findItem(R.id.homeSearchView).getActionView());
+        this.configureSearchView();
+
+        super.onCreateOptionsMenu(menu,
+                                  inflater);
+    }
+
+    /**
+     * @summary Called when an action bar menu item is selected.
+     * @return  True on success and false on failure.
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()) {
+            case R.id.homeSearchView:
+                // No implementation here,
+                // since the OnQueryTextListener has been attached
+                // to the SearchView.
+                return false;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     // ====================================================================
     // PROTECTED METHODS
 
     /**
-     * @brief   An method to obtain the log category,
+     * @summary An method to obtain the log category,
      *          suitably overridden in the concrete implementation.
      * @return  {String} The log category.
      */
     protected abstract String getLogCategory();
 
     /**
-     * @brief   A method to get a prefix for the log.
+     * @summary A method to get a prefix for the log.
      * @return  {String} The log prefix
      */
     protected String getLogPrefix(String FUNC) {
@@ -135,14 +196,18 @@ public abstract class HomeFragment extends Fragment {
     }
 
     /**
-     * @brief   Method to configure the floating action button.
+     * @summary Method to configure the floating action button.
      *          Suitably overridden in the concrete implementations.
-     * @return  Does not return a value
+     *          NOTE: Allowing drag and drop for the floating action button
+     *          is a recipe for a host of unanticipated UI bugs.
+     *          The only "hiding" of the button will be on scrolling in the
+     *          WebView using the tricks of the CoordinatorLayout.
+     * @return  Does not return a value.
      */
     protected abstract void configureFloatingActionButton();
 
     /**
-     * @brief   A method to show the concrete implementation
+     * @summary A method to show the concrete implementation
      *          of the WorkhorseFragment dialog.
      * @return  {DialogFragment} The concrete implementation instance.
      */
@@ -151,36 +216,26 @@ public abstract class HomeFragment extends Fragment {
                          final boolean showAsDialog);
 
     /**
-     * @brief   A method to show the "Workhorse" dialog.
+     * @summary A method to show the "Workhorse" dialog.
      * @return  Does not even.
      */
     protected void showWorkhorseDialog() {
         final String FUNC = "showWorkhorseDialog()";
         Log.i(getLogCategory(), getLogPrefix(FUNC) +
               "Creating Workhorse dialog...");
-        // Show the WorkhorseFragment as a Dialog
-        FragmentManager fragmentManager = getActivity().getFragmentManager();
-        FragmentTransaction fragmentTx = fragmentManager.beginTransaction();
-        Fragment prevInstance = fragmentManager.findFragmentByTag(
-                getString(R.string.tag_workhorseFragment));
-        if (null != prevInstance) {
-            fragmentTx.remove(prevInstance);
-        }
-        // Provide proper "back" navigation
-        fragmentTx.addToBackStack(null);
 
-        // Obtain the current WebView url to pass as input
-        // to the WorkhorseFragment dialog
-        String url = m_webView.getUrl();
-
-        // Instantiate the fragment
+        // Instantiate the WorkhorseFragment;
+        // pass the current WebView url as input to the fragment.
         boolean showAsDialog = true;
-        DialogFragment workhorseDialog = getWorkhorseFragment(url,
-                                                              showAsDialog);
+        DialogFragment workhorseDialog =
+            getWorkhorseFragment(m_webView.getUrl(),
+                                 showAsDialog);
 
+        // Call "show" on the DialogFragment with a FragmentTransaction.
         // "show" will commit the transaction as well
-        workhorseDialog.show(fragmentTx,
-                             getString(R.string.tag_workhorseFragment));
+        workhorseDialog.show(
+                getActivity().getSupportFragmentManager().beginTransaction(),
+                getString(R.string.tag_workhorseFragment));
     }
 
     // ====================================================================
@@ -190,25 +245,29 @@ public abstract class HomeFragment extends Fragment {
     // METHODS
 
     /**
-     * @brief   Method to configure the view elements.
+     * @summary Method to configure the view elements.
      * @return  Does not even.
      */
     private void configureElements() {
         // Configure the WebView with a "safe" URL to start with
         this.configureWebView();
 
-        // Configure the search bar
-        this.configureSearchView();
-
         // Configure the Floating Action Button
         this.configureFloatingActionButton();
     }
 
     /**
-     * @brief   Method to configure the WebView.
+     * @summary Method to configure the WebView.
      * @return  Does not return a value.
      */
     private void configureWebView() {
+        // Enable built-in zoom controls
+        // (needs to have height/width set to MATCH_PARENT,
+        // not WRAP_CONTEXT).
+        m_webView.getSettings().setBuiltInZoomControls(true);
+        // However, hide the on-screen zoom control display,
+        // while still allowing pinch to zoom.
+        m_webView.getSettings().setDisplayZoomControls(false);
 
         // Enable JavaScript by default,
         // without which most websites will break anyway.
@@ -218,28 +277,104 @@ public abstract class HomeFragment extends Fragment {
         m_webView.getSettings().setJavaScriptEnabled(true);
 
         // Load all links internally
-        m_webView.setWebViewClient(new WebViewClient());
+        m_webView.setWebViewClient(new WebViewClient() {
+            /**
+             * @summary Method to handle specific errors while loading
+             *          the requested URL.
+             *          Since the URL is guessed from the query, we may
+             *          end up in a situation where the URL is not valid
+             *          and fails to load. In such a case, we will attempt
+             *          to turn to Google instead.
+             *          It is theoretically possible that this becomes a
+             *          feedback loop when loading the same URL again
+             *          with the same error; however, given that the reload
+             *          attempt performs a Google search, which URL is known
+             *          in advance to be valid, this cannot happen.
+             * @return  Does not even.
+             */
+            @Override
+            public void onReceivedError(WebView webView,
+                                        WebResourceRequest request,
+                                        WebResourceError error) {
+                final String FUNC = "onReceivedError()";
+                Log.i(getLogCategory(), getLogPrefix(FUNC) +
+                      "error=" + error.getDescription());
+                switch(error.getErrorCode()) {
+                    case WebViewClient.ERROR_BAD_URL:
+                        // Load a Google search with the bad URL.
+                        webView.loadUrl(WebHelper.getGoogleSearchUrl(
+                                            request.getUrl().toString()));
+                        break;
+                    default:
+                        // Do nothing
+                        ;
+                }
+            }
+        });
+        m_webView.setWebChromeClient(new WebChromeClient());
 
-        // Set the WebView to accept cookies
-        // (since we're logging into places).
-        // TODO: discard them when the application exits
-        CookieManager.getInstance().setAcceptCookie(true);
+        // No need to accept third-party cookies.
+        // (Accepting cookies is already enabled).
+        CookieManager.getInstance()
+            .setAcceptThirdPartyCookies(m_webView,
+                                        false);
+
+        // Provide "back" navigation in the webview
+        m_webView.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int keyCode, KeyEvent event) {
+                if (KeyEvent.KEYCODE_BACK == keyCode &&
+                    m_webView.canGoBack()) {
+                    m_webView.goBack();
+                    return true;
+                }
+                // There is no "super" method, since it is abstract.
+                return false;
+            }
+        });
+
+        // Set an onScrollChangeListener for the WebView
+        // to manipulate the FloatingActionButton.
+        // It is preferable to do this here as opposed to
+        // in the NestedWebView class itself from a design perspective,
+        // since the class itself need not be aware of the existence
+        // of a FloatingActionButton.
+        m_webView.setOnScrollChangeListener(new View.OnScrollChangeListener() {
+            @Override
+            public void onScrollChange(View view,
+                                       int scrollX,
+                                       int scrollY,
+                                       int oldScrollX,
+                                       int oldScrollY) {
+                if (scrollY > oldScrollY && oldScrollY > 0) {
+                    m_floatingButton.hide();
+                } else {
+                    m_floatingButton.show();
+                }
+            }
+        });
 
         // Load the WebView with a "safe" URL to start with
         this.loadWebView(getString(R.string.default_url));
     }
 
     /**
-     * @brief   Method to configure the search bar at the top.
+     * @summary Method to configure the search bar at the top.
      * @return  Does not return a value
      */
     private void configureSearchView() {
+        // We do not need to associate the SearchView with
+        // a Search Interface, since we will directly use the text
+        // to load a URL.
+
+        m_searchView.setQueryHint(getString(R.string.search_hint));
+
         m_searchView
             .setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextChange(String query) {
-                    // Do nothing
-                    // Handled by the listener, so return true
+                    // Do nothing.
+                    // Handled by the listener, so return true.
                     return true;
                 }
 
@@ -247,7 +382,7 @@ public abstract class HomeFragment extends Fragment {
                 public boolean onQueryTextSubmit(String query) {
                     final String FUNC = "onQueryTextSubmit()";
 
-                    String url = WebViewHelper.getUrlFromQuery(query);
+                    String url = WebHelper.getUrl(query);
                     Log.i(getLogCategory(), getLogPrefix(FUNC) +
                           "query='" + query + "', url='" + url + "'");
                     // Update the WebView with the query as the URL
@@ -260,7 +395,7 @@ public abstract class HomeFragment extends Fragment {
     }
 
     /**
-     * @brief   Method to load the WebView with a URL.
+     * @summary Method to load the WebView with a URL.
      * @return  Does not even.
      */
     private void loadWebView(String url) {
@@ -270,26 +405,28 @@ public abstract class HomeFragment extends Fragment {
         // Hide the soft keyboard if it is visible
         InputMethodManager inputMethodManager =
             (InputMethodManager)getActivity().getSystemService(
-                    Activity.INPUT_METHOD_SERVICE);
+                    getActivity()
+                        .getApplicationContext().INPUT_METHOD_SERVICE);
         inputMethodManager
             .hideSoftInputFromWindow(m_webView.getWindowToken(),
                                      0);
     }
 
     /**
-     * @brief   A method to perform any cleanup (listeners etc).
+     * @summary A method to perform any cleanup (listeners etc).
      * @return  Does not return a value
      */
     protected void deconfigureElements() {
         m_searchView.setOnQueryTextListener(null);
         m_floatingButton.setOnClickListener(null);
+        m_webView.setOnKeyListener(null);
     }
 
     // --------------------------------------------------------------------
-    // DATA
+    // DATA MEMBERS
 
     /**
-     * @brief   The FloatingActionButton.
+     * @summary The FloatingActionButton.
      *          This is an inheritable data member,
      *          to which different actions will be assigned
      *          in the concrete implementations.
@@ -297,46 +434,14 @@ public abstract class HomeFragment extends Fragment {
     protected FloatingActionButton  m_floatingButton;
 
     /**
-     * @brief   The search bar at the top of the fragment.
+     * @summary The search bar at the top of the fragment.
      */
     private SearchView              m_searchView;
 
     /**
-     * @brief   The WebView to display.
+     * @summary The WebView to display.
+     *          This is an instance of our special "NestedWebView".
      */
-    private WebView                 m_webView;
-
-    // --------------------------------------------------------------------
-    // NESTED CLASSES
-
-    /**
-     * @brief   A utility class to encapsulate methods for manipulating
-     *          the Webview.
-     *          For some reason, Android freaks out if this class is
-     *          declared private, with a static public method.
-     *          "Uncaught translation error:
-     *           com.android.dex.util.ExceptionWithContext"
-     */
-    public static class WebViewHelper {
-
-        /**
-         * @brief   
-         * @return  
-         */
-        public static String getUrlFromQuery(String query) {
-            if (query.startsWith("https://")) {
-                return query;
-            } else if (query.startsWith("http://")) {
-                // Force https://
-                // Websites that do not support https and require a login
-                // are beneath us and not supported
-                return query.replace("http://", "https://");
-            } else {
-                // Will be optimized to StringBuilder
-                return "https://" + query;
-            }
-        }
-
-    }   // end class WebViewHelper
+    private NestedWebView           m_webView;
 
 }

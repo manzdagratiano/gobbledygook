@@ -10,11 +10,6 @@
             android:checked="true"
             />
         <item
-            android:id="@+id/drawerAbout"
-            android:icon="@drawable/ic_info_black_48dp"
-            android:title="@string/drawer_item_about"
-            />
-        <item
             android:id="@+id/drawerSettingsHeader"
             android:title="@string/drawer_header_settings"
             >
@@ -34,6 +29,25 @@
                         android:id="@+id/drawerSettingsImport"
                         android:icon="@drawable/ic_file_upload_black_48dp"
                         android:title="@string/drawer_item_import"
+                        />
+                </group>
+            </menu>
+        </item>
+        <item
+            android:id="@+id/drawerAboutHeader"
+            android:title="@string/drawer_header_about"
+            >
+            <menu>
+                <group android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/drawerAbout"
+                        android:icon="@drawable/ic_info_black_48dp"
+                        android:title="@string/drawer_item_about"
+                        />
+                    <item
+                        android:id="@+id/drawerHelp"
+                        android:icon="@drawable/ic_help_black_48dp"
+                        android:title="@string/drawer_item_help"
                         />
                 </group>
             </menu>

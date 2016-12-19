@@ -1,6 +1,6 @@
 /**
  * @file        Attributes.java
- * @brief       Source file for the Attributes class.
+ * @summary     Source file for the Attributes class.
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
  * @date        Sep 27, 2016
@@ -18,7 +18,7 @@ import android.util.Log;
 import java.util.Objects;
 
 /**
- * @brief   The Attributes class.
+ * @summary The Attributes class.
  */
 public class Attributes {
 
@@ -35,7 +35,7 @@ public class Attributes {
     // CONSTRUCTORS
 
     /**
-     * @brief   The no-argument constructor.
+     * @summary The no-argument constructor.
      * @return  Does not even.
      */
     public Attributes() {
@@ -46,7 +46,7 @@ public class Attributes {
     }
 
     /**
-     * @brief   The variable argument constructor.
+     * @summary The variable argument constructor.
      *          The members m_domain and m_iterations are
      *          allowed to be null. However, the other two aren't. 
      * @return  Does not even.
@@ -68,7 +68,7 @@ public class Attributes {
     // ACCESSORS
 
     /**
-     * @brief   Domain accessor
+     * @summary Domain accessor
      * @return  {String}
      */
     public String domain() {
@@ -76,7 +76,7 @@ public class Attributes {
     }
 
     /**
-     * @brief   Iterations accessor
+     * @summary Iterations accessor
      * @return  {Integer}
      */
     public Integer iterations() {
@@ -84,7 +84,7 @@ public class Attributes {
     }
 
     /**
-     * @brief   Truncation accessor
+     * @summary Truncation accessor
      * @return  {Integer}
      */
     public Integer truncation() {
@@ -92,7 +92,7 @@ public class Attributes {
     }
 
     /**
-     * @brief   Special Characters Flag accessor
+     * @summary Special Characters Flag accessor
      * @return  {Integer}
      */
     public Integer specialCharsFlag() {
@@ -103,7 +103,7 @@ public class Attributes {
     // MUTATORS
 
     /**
-     * @brief   Domain modifier
+     * @summary Domain modifier
      * @return  {null}
      */
     public void setDomain(String domain) {
@@ -111,7 +111,7 @@ public class Attributes {
     }
 
     /**
-     * @brief   Iterations modifier
+     * @summary Iterations modifier
      * @return  {null}
      */
     public void setIterations(Integer iterations) {
@@ -119,7 +119,7 @@ public class Attributes {
     }
 
     /**
-     * @brief   Truncation modifier
+     * @summary Truncation modifier
      * @return  {null}
      */
     public void setTruncation(Integer truncation) {
@@ -133,7 +133,7 @@ public class Attributes {
     }
 
     /**
-     * @brief   Special Characters Flag modifier
+     * @summary Special Characters Flag modifier
      * @return  {null}
      */
     public void setSpecialCharsFlag(Integer specialCharsFlag) {
@@ -150,7 +150,7 @@ public class Attributes {
     // EQUALITY
 
     /**
-     * @brief   Method to provide an equality comparison for the Attributes
+     * @summary Method to provide an equality comparison for the Attributes
      *          class.
      * @return  {boolean} True or False.
      */
@@ -175,7 +175,7 @@ public class Attributes {
     }
 
     /**
-     * @brief   Method to provide a custom hashCode() operator in line with
+     * @summary Method to provide a custom hashCode() operator in line with
      *          the custom "equals" operator.
      * @return  {int} The computed hashCode.
      */
@@ -191,7 +191,7 @@ public class Attributes {
     // UTILITIES
 
     /**
-     * @brief   A method to check if this Attributes object is not the
+     * @summary A method to check if this Attributes object is not the
      *          default initialized object
      * @return  Returns true or false
      */

@@ -1,6 +1,6 @@
 /**
  * @file        SaltKeyActionsFragment.java
- * @brief       Source file for the SaltKeyActionsFragment class
+ * @summary     Source file for the SaltKeyActionsFragment class
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
  * @date        Jun 08, 2015
@@ -13,16 +13,15 @@ package io.tengentoppa.yggdrasil;
 
 // Android
 import android.app.ActionBar;
-import android.app.Activity;
 import android.app.Dialog;
-import android.app.DialogFragment;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v7.preference.PreferenceManager;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -40,7 +39,7 @@ import android.widget.Toast;
 import java.io.UnsupportedEncodingException;
 
 /**
- * @brief   
+ * @summary 
  */
 public abstract class SaltKeyActionsFragment extends DialogFragment {
 
@@ -65,7 +64,7 @@ public abstract class SaltKeyActionsFragment extends DialogFragment {
     }
 
     /**
-     * @brief   Called when the fragment is ready to display its UI
+     * @summary Called when the fragment is ready to display its UI
      * @return  The View representing the root of the fragment layout
      */
     @Override
@@ -73,13 +72,13 @@ public abstract class SaltKeyActionsFragment extends DialogFragment {
                              ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the main layout
-        return inflater.inflate(R.layout.saltkey_actions,
+        return inflater.inflate(R.layout.saltkey_actions_fragment,
                                 container,
                                 false);
     }
 
     /**
-     * @brief   Called after onCreateView() to do final initializations.
+     * @summary Called after onCreateView() to do final initializations.
      *          This is where the "Dialog" of the DialogFragment is created.
      *          Hence, the setShowsDialog() property must be set before
      *          this method in the lifecycle.
@@ -91,7 +90,7 @@ public abstract class SaltKeyActionsFragment extends DialogFragment {
     }
 
     /**
-     * @brief   
+     * @summary 
      * @return  
      */
     @Override
@@ -100,7 +99,7 @@ public abstract class SaltKeyActionsFragment extends DialogFragment {
     }
 
     /**
-     * @brief   
+     * @summary 
      * @return  
      */
     @Override
@@ -130,7 +129,7 @@ public abstract class SaltKeyActionsFragment extends DialogFragment {
     }
 
     /**
-     * @brief   
+     * @summary 
      * @return  
      */
     @Override
@@ -146,7 +145,7 @@ public abstract class SaltKeyActionsFragment extends DialogFragment {
     }
 
     /**
-     * @brief   
+     * @summary 
      * @return  
      */
     @Override
@@ -158,14 +157,14 @@ public abstract class SaltKeyActionsFragment extends DialogFragment {
     // PROTECTED METHODS
 
     /**
-     * @brief   An method to obtain the log category,
+     * @summary An method to obtain the log category,
      *          suitably overridden in the concrete implementation.
      * @return  {String} The log category.
      */
     protected abstract String getLogCategory();
 
     /**
-     * @brief   A method to get a prefix for the log.
+     * @summary A method to get a prefix for the log.
      * @return  {String} The log prefix
      */
     protected String getLogPrefix(String FUNC) {
@@ -174,7 +173,7 @@ public abstract class SaltKeyActionsFragment extends DialogFragment {
     }
 
     /**
-     * @brief   Method to fill an argument bundle
+     * @summary Method to fill an argument bundle
      *          with the necessary parameters.
      * @return  Does not even.
      */
@@ -206,7 +205,7 @@ public abstract class SaltKeyActionsFragment extends DialogFragment {
     // METHODS
 
     /**
-     * @brief   
+     * @summary 
      * @return  
      */
     private void configureElements() {
@@ -214,7 +213,7 @@ public abstract class SaltKeyActionsFragment extends DialogFragment {
         class Configurator {
 
             /**
-             * @brief   
+             * @summary 
              * @return  
              */
             public void configureSaltKey() {
@@ -250,7 +249,7 @@ public abstract class SaltKeyActionsFragment extends DialogFragment {
             }
 
             /**
-             * @brief   
+             * @summary 
              * @return  
              */
             public void configureEditSaltKey() {
@@ -292,7 +291,7 @@ public abstract class SaltKeyActionsFragment extends DialogFragment {
             }
 
             /**
-             * @brief   
+             * @summary 
              * @return  
              */
             public void configureGenerateSaltKey() {
@@ -301,7 +300,7 @@ public abstract class SaltKeyActionsFragment extends DialogFragment {
                 generateSaltKeyButton.setOnClickListener(
                                         new View.OnClickListener() {
                     /**
-                     * @brief   The "onClick" callback for
+                     * @summary The "onClick" callback for
                      *          the "Generate Salt Key" button
                      * @return  Does not return a value
                      */
@@ -325,7 +324,7 @@ public abstract class SaltKeyActionsFragment extends DialogFragment {
     }
 
     /**
-     * @brief   
+     * @summary 
      * @return  
      */
     private void generateSaltKey(final View view) {
@@ -363,7 +362,7 @@ public abstract class SaltKeyActionsFragment extends DialogFragment {
     }
 
     /**
-     * @brief   A method to "deconfigure elements", i.e.,
+     * @summary A method to "deconfigure elements", i.e.,
      *          clean up listeners and handlers
      * @return  Does not return a value
      */
@@ -387,7 +386,7 @@ public abstract class SaltKeyActionsFragment extends DialogFragment {
     // UTILITIES
 
     /**
-     * @brief   
+     * @summary 
      * @return  Does not return a value
      */
     private void saveSaltKeyToSharedPreferences(String saltKey) {
@@ -401,7 +400,7 @@ public abstract class SaltKeyActionsFragment extends DialogFragment {
         preferenceEditor.putString(getString(R.string.pref_saltKey_key),
                                    saltKey);
         preferenceEditor.apply();
-        // On this commit,
+        // On this commit (apply() is an async commit),
         // the onSharedPreferenceChanged handler will be called
         // This may happen AFTER onStart() and onResume(),
         // if the Activity is currently stopped
@@ -409,7 +408,7 @@ public abstract class SaltKeyActionsFragment extends DialogFragment {
     }
 
     /**
-     * @brief   
+     * @summary 
      * @return  Does not return a value
      */
     private void uncheckEditSaltKeyCheckBox() {

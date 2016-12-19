@@ -1,6 +1,6 @@
 /**
  * @file        GobbledygookAbout.java
- * @brief       Source file for the Gobbledygook implementation of
+ * @summary     Source file for the Gobbledygook implementation of
  *              the AboutFragment class.
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
@@ -17,7 +17,7 @@ import io.tengentoppa.yggdrasil.R;
 import io.tengentoppa.yggdrasil.AboutFragment;
 
 /**
- * @brief  The GobbledygookAboutFragment class
+ * @summary The GobbledygookAboutFragment class
  */
 public class GobbledygookAboutFragment extends AboutFragment {
 
@@ -25,7 +25,7 @@ public class GobbledygookAboutFragment extends AboutFragment {
     // PRIVATE METHODS
 
     /**
-     * @brief   Method to return the log category.
+     * @summary Method to return the log category.
      * @return  {String} The log category
      */
     @Override

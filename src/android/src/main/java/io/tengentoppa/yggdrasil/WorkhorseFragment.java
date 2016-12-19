@@ -1,6 +1,6 @@
 /**
  * @file        WorkhorseFragment.java
- * @brief       Source file for the WorkhorseFragment class
+ * @summary     Source file for the WorkhorseFragment class
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
  * @date        June 20, 2015
@@ -12,16 +12,15 @@
 package io.tengentoppa.yggdrasil;
 
 // Android
-import android.app.Activity;
 import android.app.Dialog;
-import android.app.DialogFragment;
-import android.app.Fragment;
 import android.content.ClipboardManager;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v7.preference.PreferenceManager;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -58,7 +57,7 @@ import org.spongycastle.util.encoders.Hex;
 import org.spongycastle.util.encoders.Base64;
 
 /**
- * @brief   The WorkhorseFragment class.
+ * @summary The WorkhorseFragment class.
  *          This is the "main" fragment of the application,
  *          where all the magic happens.
  */
@@ -72,7 +71,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
     // PUBLIC METHODS
 
     /**
-     * @brief   Called when the fragment is created.
+     * @summary Called when the fragment is created.
      * @return  Does not return a value
      */
     @Override
@@ -103,7 +102,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
     }
 
     /**
-     * @brief   Called when the fragment is ready to display its UI
+     * @summary Called when the fragment is ready to display its UI
      * @return  The View representing the root of the fragment layout
      */
     @Override
@@ -114,13 +113,13 @@ public abstract class WorkhorseFragment extends DialogFragment {
                            container,
                            savedInstanceState);
         // Inflate the workhorse layout
-        return inflater.inflate(R.layout.workhorse,
+        return inflater.inflate(R.layout.workhorse_fragment,
                                 container,
                                 false);
     }
 
     /**
-     * @brief   Called after onCreateView() to do final initializations.
+     * @summary Called after onCreateView() to do final initializations.
      *          This is where the "Dialog" of the DialogFragment is created.
      *          Hence, the setShowsDialog() property must be set before
      *          this method in the lifecycle.
@@ -132,7 +131,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
     }
 
     /**
-     * @brief   Called after onCreate()
+     * @summary Called after onCreate()
      * @return  Does not return a value
      */
     @Override
@@ -141,7 +140,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
     }
 
     /**
-     * @brief   Called after onCreate() (and onStart(),
+     * @summary Called after onCreate() (and onStart(),
      *          when the activity begins interacting with the user)
      * @return  Does not return a value
      */
@@ -178,7 +177,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
     }
 
     /**
-     * @brief   Called when the activity is partially covered by another.
+     * @summary Called when the activity is partially covered by another.
      *          Perform any cleanup here - symmetric to onResume
      * @return  Does not return a value
      */
@@ -195,7 +194,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
     }
 
     /**
-     * @brief   
+     * @summary 
      * @return  
      */
     @Override
@@ -207,14 +206,14 @@ public abstract class WorkhorseFragment extends DialogFragment {
     // PROTECTED METHODS
 
     /**
-     * @brief   An method to obtain the log category,
+     * @summary An method to obtain the log category,
      *          suitably overridden in the concrete implementation.
      * @return  {String} The log category.
      */
     protected abstract String getLogCategory();
 
     /**
-     * @brief   A method to get a prefix for the log.
+     * @summary A method to get a prefix for the log.
      * @return  {String} The log prefix
      */
     protected String getLogPrefix(String FUNC) {
@@ -223,7 +222,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
     }
 
     /**
-     * @brief   Method to fill an argument bundle.
+     * @summary Method to fill an argument bundle.
      * @return  Does not even
      */
     protected static void fillBundle(Bundle args,
@@ -234,7 +233,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
     }
 
     /**
-     * @brief   Routine to generate the "proxy" password
+     * @summary Routine to generate the "proxy" password
      *          from the domain name using the user password
      *          and the salt key
      * @param   {View} workhorseFragment - The workhorse fragment view.
@@ -403,7 +402,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
     // METHODS
 
     /**
-     * @brief   
+     * @summary 
      * @return  
      */
     private void configureElements() {
@@ -413,13 +412,13 @@ public abstract class WorkhorseFragment extends DialogFragment {
         // The Configurator class
 
         /**
-         * @brief   The Configurator class, which reads the saved preferences
+         * @summary The Configurator class, which reads the saved preferences
          * and configures the UI elements upon load.
          */
         class Configurator {
 
             /**
-             * @brief   Method to extract the URL from the clipboard.
+             * @summary Method to extract the URL from the clipboard.
              *          Currently, this method is not called,
              *          since our application now integrates the browser
              *          within itself rather than having to come back from
@@ -445,7 +444,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
              */
 
             /**
-             * @brief   
+             * @summary 
              * @return  
              */
             public String extractDomain(String url) {
@@ -475,7 +474,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
             }
 
             /**
-             * @brief   
+             * @summary 
              * @return  Does not return a value
              */
             public String configureDomain(String domain,
@@ -489,7 +488,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
             }
 
             /**
-             * @brief   
+             * @summary 
              * @return  Does not return a value
              */
             public Integer configureIterations(Integer defaultIterations,
@@ -505,7 +504,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
             }
 
             /**
-             * @brief   
+             * @summary 
              * @return  Does not return a value
              */
             public Integer configureTruncation(Integer truncation) {
@@ -539,7 +538,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
             }
 
             /**
-             * @brief   
+             * @summary 
              * @return  Does not return a value
              */
             public void configureHash() {
@@ -573,7 +572,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
             }
 
             /**
-             * @brief   
+             * @summary 
              * @return  Does not return a value
              */
             public void configureSaveCustomOverridesCheckBox() {
@@ -595,7 +594,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
             }
 
             /**
-             * @brief   Method to configure the "Advanced..." checkbox.
+             * @summary Method to configure the "Advanced..." checkbox.
              * @return  Does not return a value.
              */
             public void configureShowAdvancedCheckBox() {
@@ -620,7 +619,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
             }
 
             /**
-             * @brief   Routine to configure the "Generate" button
+             * @summary Routine to configure the "Generate" button
              *          by attaching an "onClick" listener to it
              * @return  Does not return a value
              */
@@ -631,7 +630,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
                 generateButton.setOnClickListener(
                                     new View.OnClickListener() {
                     /**
-                     * @brief   The "onClick" callback for
+                     * @summary The "onClick" callback for
                      *          the "Generate" button
                      * @param   {View} view - The button view element,
                      *          which must be cast to a Button to use.
@@ -719,7 +718,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
     }
 
     /**
-     * @brief   Method to retrieve the saved "ingredients"
+     * @summary Method to retrieve the saved "ingredients"
      *          for the recipe from the SharedPreferences.
      * @return  {Ingredients} The retrieved ingredients.
      */
@@ -771,7 +770,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
     }
 
     /**
-     * @brief   A method to get an Attributes object created from
+     * @summary A method to get an Attributes object created from
      *          the elements of the view after the user has potentially
      *          changed any elements and hit "Generate!" to generate the
      *          proxy password.
@@ -823,7 +822,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
     }
 
     /**
-     * @brief   
+     * @summary 
      * @return  
      */
     protected void setPassword(View view,
@@ -834,7 +833,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
     }
 
     /**
-     * @brief   
+     * @summary 
      * @return  
      */
     protected void checkAndSaveOverrides(final Attributes attributes) {
@@ -905,7 +904,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
     }
 
     /**
-     * @brief   A method to "deconfigure elements", i.e.,
+     * @summary A method to "deconfigure elements", i.e.,
      *          clean up listeners and handlers
      * @return  Does not return a value
      */
@@ -939,7 +938,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
     // INNER CLASSES
 
     /**
-     * @brief   The Ingredients class
+     * @summary The Ingredients class
      *          This class is used to retrieve/pass around the
      *          "ingredients" that go into the "recipe", i.e.,
      *          the necessary input to generate passwords.
@@ -950,7 +949,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
         // Creators
 
         /**
-         * @brief   The constructor.
+         * @summary The constructor.
          * @return  Does not return a value.
          */
         public Ingredients() {
@@ -983,7 +982,7 @@ public abstract class WorkhorseFragment extends DialogFragment {
         }
 
         /**
-         * @brief   Method to return a textual representation of the
+         * @summary Method to return a textual representation of the
          *          Ingredients object.
          *          This method cannot return a "final" type, since it
          *          needs to override the toString() method in the

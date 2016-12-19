@@ -1,6 +1,6 @@
 /**
  * @file        GobbledygookPrefsFragment.java
- * @brief       Source file for the Gobbledygook implementation of
+ * @summary     Source file for the Gobbledygook implementation of
  *              the PrefsFragment class.
  *
  * @author      Manjul Apratim (manjul.apratim@gmail.com)
@@ -17,11 +17,11 @@ import io.tengentoppa.yggdrasil.R;
 import io.tengentoppa.yggdrasil.PrefsFragment;
 
 // Android
-import android.app.DialogFragment;
+import android.support.v4.app.DialogFragment;
 import android.util.Log;
 
 /**
- * @brief  The GobbledygookPrefsFragment class
+ * @summary The GobbledygookPrefsFragment class
  */
 public class GobbledygookPrefsFragment extends PrefsFragment {
 
@@ -29,7 +29,7 @@ public class GobbledygookPrefsFragment extends PrefsFragment {
     // PRIVATE METHODS
 
     /**
-     * @brief   Method to return the log category.
+     * @summary Method to return the log category.
      * @return  {String} The log category
      */
     @Override
@@ -38,7 +38,7 @@ public class GobbledygookPrefsFragment extends PrefsFragment {
     }
 
     /**
-     * @brief   Method to return an instance of the specific implementation
+     * @summary Method to return an instance of the specific implementation
      *          of the SaltKeyActionsFragment class.
      * @return  {DialogFragment} An instance of
      *          the GobbledygookSaltKeyActionsFragment class.
