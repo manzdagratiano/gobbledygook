@@ -49,6 +49,7 @@
     <!-- Workhorse Fragment -->
     <!-- ################## -->
 
+    <string name="workhorse_dialog_title">Workhorse</string>
     <string name="label_domain">Domain</string>
     <string name="hint_domain">The foo.bar.baz.com part of the URL</string>
     <string name="label_password">Password</string>

@@ -40,7 +40,7 @@ public class GobbledygookHomeFragment extends HomeFragment {
      */
     @Override
     protected void configureFloatingActionButton() {
-        m_floatingButton.setOnClickListener(new View.OnClickListener() {
+        m_floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 final String FUNC = "OnClickListener.onClick()";

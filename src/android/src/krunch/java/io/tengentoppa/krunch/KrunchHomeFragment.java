@@ -53,7 +53,7 @@ public class KrunchHomeFragment extends HomeFragment {
      */
     @Override
     protected void configureFloatingActionButton() {
-        m_floatingButton.setOnClickListener(new View.OnClickListener() {
+        m_floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 showWorkhorseDialog();

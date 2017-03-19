@@ -1,149 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A ScrollView to encapsulate the layout.
-     The property "animateLayoutChanges" will allow adjusting the layout
-     automatically when child views are added/removed. -->
-<ScrollView
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:animateLayoutChanges="true"
     >
-    <!-- In the following LinearLayout,
-         the "layout_height" attribute needs to wrap_content
-         together with "fitsSystemWindows" set to true.
-         This, combined with "windowSoftInputMode" set to "adjustResize"
-         in the AndroidManifest, allows the window to correctly scroll
-         to a text field while resizing the activity window
-         so that the text field is not obscured by the soft keyboard.
-         -->
-    <LinearLayout
-        android:orientation="vertical"
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/workhorseToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:elevation="@dimen/app_bar_elevation"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:contentInsetLeft="0dp"
+        app:contentInsetStart="10dp"
+        app:contentInsetStartWithNavigation="10dp"
+        />
+
+    <!-- A ScrollView to encapsulate the layout.
+         The property "animateLayoutChanges" will allow adjusting the layout
+         automatically when child views are added/removed. -->
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingLeft="5dp"
-        android:paddingRight="5dp"
-        android:fitsSystemWindows="true"
+        android:layout_below="@id/workhorseToolbar"
         android:animateLayoutChanges="true"
         >
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            />
-
-        <!-- The domain -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/label_domain"
-            android:fontFamily="@string/label_fontFamily"
-            android:textAllCaps="true"
-            android:textStyle="bold"
-            android:labelFor="@+id/domain"
-            />
-        <EditText
-            android:id="@id/domain"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/hint_domain"
-            />
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            />
-
-        <!-- The user's one true password -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/label_password"
-            android:fontFamily="@string/label_fontFamily"
-            android:textAllCaps="true"
-            android:textStyle="bold"
-            android:labelFor="@+id/password"
-            />
-        <EditText
-            android:id="@id/password"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/hint_password"
-            android:inputType="textPassword"
-            />
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            />
-
-        <!-- The Proxy Password
-             No hint; greyed on wake -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/label_hash"
-            android:fontFamily="@string/label_fontFamily"
-            android:textAllCaps="true"
-            android:textStyle="bold"
-            android:labelFor="@+id/hash"
-            />
-        <EditText
-            android:id="@id/hash"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textPassword"
-            />
-
-        <CheckBox
-            android:id="@+id/showHash"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/checkBox_showHash"
-            android:textStyle="italic"
-            />
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            />
-
-        <CheckBox
-            android:id="@+id/showAdvanced"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/checkBox_showAdvanced"
-            android:textStyle="italic"
-            />
-
-        <!-- A LinearLayout to expose "Advanced" options,
-             hidden by default. -->
+        <!-- In the following LinearLayout,
+             the "layout_height" attribute needs to wrap_content
+             together with "fitsSystemWindows" set to true.
+             This, combined with "windowSoftInputMode" set to "adjustResize"
+             in the AndroidManifest, allows the window to correctly scroll
+             to a text field while resizing the activity window
+             so that the text field is not obscured by the soft keyboard.
+             -->
         <LinearLayout
-            android:id="@+id/advancedConfig"
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingLeft="5dp"
             android:paddingRight="5dp"
+            android:fitsSystemWindows="true"
             android:animateLayoutChanges="true"
-            android:visibility="gone"
             >
 
-            <!-- The number of iterations -->
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                />
+
+            <!-- The domain -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/label_iterations"
+                android:text="@string/label_domain"
                 android:fontFamily="@string/label_fontFamily"
                 android:textAllCaps="true"
                 android:textStyle="bold"
-                android:labelFor="@+id/iterations"
+                android:labelFor="@+id/domain"
                 />
             <EditText
-                android:id="@id/iterations"
-                android:layout_width="100dp"
+                android:id="@id/domain"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/hint_iterations"
-                android:inputType="number"
+                android:hint="@string/hint_domain"
                 />
 
             <Space
@@ -151,21 +72,22 @@
                 android:layout_height="10dp"
                 />
 
-            <CheckBox
-                android:id="@+id/truncate"
+            <!-- The user's one true password -->
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/checkBox_truncate"
+                android:text="@string/label_password"
                 android:fontFamily="@string/label_fontFamily"
                 android:textAllCaps="true"
                 android:textStyle="bold"
+                android:labelFor="@+id/password"
                 />
             <EditText
-                android:id="@+id/truncation"
-                android:layout_width="100dp"
+                android:id="@id/password"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/hint_truncation"
-                android:inputType="number"
+                android:hint="@string/hint_password"
+                android:inputType="textPassword"
                 />
 
             <Space
@@ -173,11 +95,29 @@
                 android:layout_height="10dp"
                 />
 
-            <CheckBox
-                android:id="@+id/noSpecialChars"
+            <!-- The Proxy Password
+                 No hint; greyed on wake -->
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/checkBox_noSpecialChars"
+                android:text="@string/label_hash"
+                android:fontFamily="@string/label_fontFamily"
+                android:textAllCaps="true"
+                android:textStyle="bold"
+                android:labelFor="@+id/hash"
+                />
+            <EditText
+                android:id="@id/hash"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                />
+
+            <CheckBox
+                android:id="@+id/showHash"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/checkBox_showHash"
                 android:textStyle="italic"
                 />
 
@@ -187,11 +127,117 @@
                 />
 
             <CheckBox
-                android:id="@+id/saveOverrides"
+                android:id="@+id/showAdvanced"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/checkBox_saveOverrides"
+                android:text="@string/checkBox_showAdvanced"
                 android:textStyle="italic"
+                />
+
+            <!-- A LinearLayout to expose "Advanced" options,
+                 hidden by default. -->
+            <LinearLayout
+                android:id="@+id/advancedConfig"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:animateLayoutChanges="true"
+                android:visibility="gone"
+                >
+
+                <!-- The number of iterations -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_iterations"
+                    android:fontFamily="@string/label_fontFamily"
+                    android:textAllCaps="true"
+                    android:textStyle="bold"
+                    android:labelFor="@+id/iterations"
+                    />
+                <EditText
+                    android:id="@id/iterations"
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/hint_iterations"
+                    android:inputType="number"
+                    />
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"
+                    />
+
+                <CheckBox
+                    android:id="@+id/truncate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/checkBox_truncate"
+                    android:fontFamily="@string/label_fontFamily"
+                    android:textAllCaps="true"
+                    android:textStyle="bold"
+                    />
+                <EditText
+                    android:id="@+id/truncation"
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/hint_truncation"
+                    android:inputType="number"
+                    />
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"
+                    />
+
+                <CheckBox
+                    android:id="@+id/noSpecialChars"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/checkBox_noSpecialChars"
+                    android:textStyle="italic"
+                    />
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"
+                    />
+
+                <CheckBox
+                    android:id="@+id/saveOverrides"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/checkBox_saveOverrides"
+                    android:textStyle="italic"
+                    />
+
+                <Space
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"
+                    />
+
+            </LinearLayout>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                />
+
+            <!-- The "Generate" button.
+                 An "onClick" attribute defined here will
+                 expect the corresponding callback to be defined
+                 within the main enacpsulating activity,
+                 not the fragment for which we are defining this layout.
+                 Hence, for the purposes of design, we will declare
+                 the callback in teh codez instead. -->
+            <Button
+                android:id="@+id/generate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/button_generate"
+                android:fontFamily="@string/button_fontFamily"
                 />
 
             <Space
@@ -200,25 +246,5 @@
                 />
 
         </LinearLayout>
-
-        <Space
-            android:layout_width="match_parent"
-            android:layout_height="10dp"
-            />
-
-        <!-- The "Generate" button.
-             An "onClick" attribute defined here will
-             expect the corresponding callback to be defined
-             within the main enacpsulating activity,
-             not the fragment for which we are defining this layout.
-             Hence, for the purposes of design, we will declare
-             the callback in teh codez instead. -->
-        <Button
-            android:id="@+id/generate"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/button_generate"
-            android:fontFamily="@string/button_fontFamily"
-            />
-    </LinearLayout>
-</ScrollView>
+    </ScrollView>
+</RelativeLayout>

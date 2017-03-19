@@ -33,23 +33,33 @@
             android:background="?attr/colorPrimary"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
             app:layout_scrollFlags="scroll|enterAlways"
+            app:contentInsetLeft="0dp"
+            app:contentInsetStart="0dp"
+            app:contentInsetStartWithNavigation="0dp"
             />
     </android.support.design.widget.AppBarLayout>
 
+    <!-- Add the layout_behavior parameter ("appbar_scrolling_view_behavior"
+         is a standard available resource) to play well with the AppBarLayout. -->
     <io.tengentoppa.yggdrasil.NestedWebView
         android:id="@+id/homeWebView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         />
 
     <!-- The Floating Action Button.
          Note that starting with the support library version 23.2.0,
          it is no longer allowed to anchor it to the CoordinatorLayout itself.
          Rather, it must be anchored to a descendent view, which in this case
-         is the WebView. -->
+         is the WebView.
+         android:layout_anchor and android:layout_anchorGravity need not be
+         used here - they're unnecessary and moreover seem to,
+         from time to time, anchor the FAB to the top|start rather than
+         bottom|end. android:layout_gravity is sufficient. -->
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/floatingButton"
-        android:src="@drawable/ic_enhanced_encryption_white_48dp"
+        android:src="@drawable/ic_vpn_key_white_48dp"
         app:fabSize="normal"
         app:elevation="@dimen/floating_button_elevation"
         app:backgroundTint="@color/black"
@@ -58,8 +68,6 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/floating_button_margin"
         android:layout_gravity="bottom|end"
-        app:layout_anchor="@id/homeWebView"
-        app:layout_anchorGravity="bottom|end"
         />
 
 </android.support.design.widget.CoordinatorLayout>

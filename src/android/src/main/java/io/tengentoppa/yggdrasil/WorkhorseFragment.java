@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v7.preference.PreferenceManager;
+import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -112,10 +113,17 @@ public abstract class WorkhorseFragment extends DialogFragment {
         super.onCreateView(inflater,
                            container,
                            savedInstanceState);
+
         // Inflate the workhorse layout
-        return inflater.inflate(R.layout.workhorse_fragment,
-                                container,
-                                false);
+        View view = inflater.inflate(R.layout.workhorse_fragment,
+                                     container,
+                                     false);
+
+        Toolbar toolbar = (Toolbar)view.findViewById(R.id.workhorseToolbar);
+        toolbar.setTitle(getString(R.string.workhorse_dialog_title));
+        toolbar.setLogo(R.drawable.ic_launcher);
+
+        return view;
     }
 
     /**
@@ -157,15 +165,16 @@ public abstract class WorkhorseFragment extends DialogFragment {
         // in the lifecycle, else will not take effect.
         if (this.m_showAsDialog) {
             Dialog dialog = this.getDialog();
-            if (null != dialog) {
-                Window window = dialog.getWindow();
-                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT,
-                                 ViewGroup.LayoutParams.WRAP_CONTENT);
-            } else {
+            if (null == dialog) {
                 // This should not happen
                 Log.e(getLogCategory(), getLogPrefix(FUNC) +
                       "getDialog() returned null!");
+                throw new RuntimeException("Null.Workhorse.Dialog");
             }
+
+            Window window = dialog.getWindow();
+            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT,
+                             ViewGroup.LayoutParams.WRAP_CONTENT);
         }
 
         // Configure elements here;

@@ -267,21 +267,29 @@ public abstract class PrefsFragment extends PreferenceFragmentCompat
                 Log.i(getLogCategory(), getLogPrefix(FUNC) +
                       "Creating SaltKeyActions dialog...");
 
-                // Show the SaltKeyActionsFragment as a Dialog
-                FragmentTransaction fragmentTx =
-                    ((AppCompatActivity)getActivity())
-                        .getSupportFragmentManager()
-                        .beginTransaction();
-
                 // Instantiate the fragment
                 boolean showAsDialog = true;
                 DialogFragment saltKeyActionsDialog =
                     getSaltKeyActionsFragment(showAsDialog);
 
+                // Show the SaltKeyActionsFragment as a Dialog
+                final String fragmentTag =
+                          getString(R.string.tag_saltKeyActionsFragment);
+                FragmentManager fragmentManager =
+                    ((AppCompatActivity)getActivity())
+                        .getSupportFragmentManager();
+                FragmentTransaction fragmentTx =
+                    fragmentManager.beginTransaction();
+                Fragment prevInstance =
+                    fragmentManager.findFragmentByTag(fragmentTag);
+                if (null != prevInstance) {
+                    fragmentTx.remove(prevInstance);
+                }
+                fragmentTx.addToBackStack(null);
+
                 // "show" will commit the transaction as well
-                saltKeyActionsDialog
-                    .show(fragmentTx,
-                          getString(R.string.tag_saltKeyActionsFragment));
+                saltKeyActionsDialog.show(fragmentTx,
+                                          fragmentTag);
 
                 // The click was handled, so return true
                 return true;

@@ -72,7 +72,7 @@ public abstract class HomeFragment extends Fragment {
         // Nullify the private data members
         this.m_searchView = null;
         this.m_webView = null;
-        this.m_floatingButton = null;
+        this.m_floatingActionButton = null;
     }
 
     /**
@@ -83,6 +83,10 @@ public abstract class HomeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container,
                              Bundle savedInstanceState) {
+        final String FUNC = "onCreateView()";
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Inflating View...");
+
         // Inflate the view.
         View view = inflater.inflate(R.layout.home_fragment,
                                      container,
@@ -91,7 +95,7 @@ public abstract class HomeFragment extends Fragment {
         // Obtain handles to the view elements.
         m_webView =
             (NestedWebView)view.findViewById(R.id.homeWebView);
-        m_floatingButton =
+        m_floatingActionButton =
             (FloatingActionButton)view.findViewById(R.id.floatingButton);
 
         // Configure the Navigation Drawer toggle behavior.
@@ -99,41 +103,67 @@ public abstract class HomeFragment extends Fragment {
                 (AppCompatActivity)this.getActivity(),
                 (Toolbar)view.findViewById(R.id.homeAppBar));
 
+        // Configure elements here,
+        // as opposed to onStart()/onResume(), since we do not want
+        // activity pauses to reload the WebView etc.
+        Log.i(getLogCategory(), getLogPrefix(FUNC) +
+              "Configuring elements...");
+        this.configureElements();
+
         return view;
     }
 
     /**
-     * @summary Called after onCreate() (and onStart(),
-     *          when the activity begins interacting with the user)
-     * @return  Does not return a value
+     * @summary Called after onCreate().
+     * @return  Does not return a value.
+     */
+    @Override
+    public void onStart() {
+        super.onStart();
+    }
+
+    /**
+     * @summary Called after onStart(),
+     *          when the activity begins interacting with the user.
+     * @return  Does not return a value.
      */
     @Override
     public void onResume() {
-        final String FUNC = "onResume()";
-        Log.i(getLogCategory(), getLogPrefix(FUNC) +
-              "Configuring elements...");
-
         super.onResume();
-
-        // Configure elements here
-        this.configureElements();
     }
 
     /**
      * @summary Called when the activity is partially covered by another.
-     *          Perform any cleanup here - symmetric to onResume
-     * @return  Does not return a value
+     * @return  Does not return a value.
      */
     @Override
     public void onPause() {
+        super.onPause();
+    }
+
+    /**
+     * @summary Called when the activity is stopped.
+     * @return  Does not return a value.
+     */
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    /**
+     * @summary Called when the fragment is being destroyed.
+     *          Perform any cleanup here - symmetric to onCreate().
+     * @return  Does not return a value.
+     */
+    public void onDestroy() {
         // Perform any cleanup here
-        final String FUNC = "onPause()";
+        final String FUNC = "onDestroy()";
         Log.i(getLogCategory(), getLogPrefix(FUNC) +
               "Deconfiguring elements...");
 
         this.deconfigureElements();
 
-        super.onPause();
+        super.onDestroy();
     }
 
     // --------------------------------------------------------------------
@@ -231,11 +261,20 @@ public abstract class HomeFragment extends Fragment {
             getWorkhorseFragment(m_webView.getUrl(),
                                  showAsDialog);
 
+        final String fragmentTag = getString(R.string.tag_workhorseFragment);
+        FragmentManager fragmentManager =
+            getActivity().getSupportFragmentManager();
+        FragmentTransaction fragmentTx = fragmentManager.beginTransaction();
+        Fragment prevInstance = fragmentManager.findFragmentByTag(fragmentTag);
+        if (null != prevInstance) {
+            fragmentTx.remove(prevInstance);
+        }
+        fragmentTx.addToBackStack(null);
+
         // Call "show" on the DialogFragment with a FragmentTransaction.
         // "show" will commit the transaction as well
-        workhorseDialog.show(
-                getActivity().getSupportFragmentManager().beginTransaction(),
-                getString(R.string.tag_workhorseFragment));
+        workhorseDialog.show(fragmentTx,
+                             fragmentTag);
     }
 
     // ====================================================================
@@ -335,21 +374,30 @@ public abstract class HomeFragment extends Fragment {
 
         // Set an onScrollChangeListener for the WebView
         // to manipulate the FloatingActionButton.
-        // It is preferable to do this here as opposed to
-        // in the NestedWebView class itself from a design perspective,
-        // since the class itself need not be aware of the existence
-        // of a FloatingActionButton.
+        // This is being done in lieu of a FloatingActionButton.Behavior
+        // implementation, since the "onNestedScroll" method of that behavior
+        // does not seem to be triggered with a custom NestedScrollingChild
+        // implementation in the NestedWebView, even when
+        // "onStartNestedScroll" returns true.
         m_webView.setOnScrollChangeListener(new View.OnScrollChangeListener() {
+            /**
+             * @summary Hides the FloatingActionButton if we're scrolling down
+             *          (content scrolls up), else shows it.
+             *          No need to make this logic overly complicated,
+             *          since that may impact performance (e.g., make the scroll
+             *          jittery) without any perceivable gain.
+             * @return  Does not even.
+             */
             @Override
             public void onScrollChange(View view,
                                        int scrollX,
                                        int scrollY,
                                        int oldScrollX,
                                        int oldScrollY) {
-                if (scrollY > oldScrollY && oldScrollY > 0) {
-                    m_floatingButton.hide();
+                if ((scrollY > oldScrollY) && (oldScrollY > 0)) {
+                    m_floatingActionButton.hide();
                 } else {
-                    m_floatingButton.show();
+                    m_floatingActionButton.show();
                 }
             }
         });
@@ -418,8 +466,9 @@ public abstract class HomeFragment extends Fragment {
      */
     protected void deconfigureElements() {
         m_searchView.setOnQueryTextListener(null);
-        m_floatingButton.setOnClickListener(null);
+        m_floatingActionButton.setOnClickListener(null);
         m_webView.setOnKeyListener(null);
+        m_webView.setOnScrollChangeListener(null);
     }
 
     // --------------------------------------------------------------------
@@ -431,7 +480,7 @@ public abstract class HomeFragment extends Fragment {
      *          to which different actions will be assigned
      *          in the concrete implementations.
      */
-    protected FloatingActionButton  m_floatingButton;
+    protected FloatingActionButton  m_floatingActionButton;
 
     /**
      * @summary The search bar at the top of the fragment.

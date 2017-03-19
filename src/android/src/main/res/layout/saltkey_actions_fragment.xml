@@ -29,9 +29,8 @@
             android:id="@+id/saltKey"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:lines="5"
-            android:minLines="5"
-            android:maxLines="10"
+            android:minLines="10"
+            android:maxLines="20"
             android:gravity="top|start"
             android:scrollbars="vertical"
             android:hint="@string/hint_saltKey"
@@ -61,5 +60,11 @@
             android:text="@string/button_generateSaltKey"
             android:fontFamily="@string/button_fontFamily"
             />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            />
+
     </LinearLayout>
 </ScrollView>

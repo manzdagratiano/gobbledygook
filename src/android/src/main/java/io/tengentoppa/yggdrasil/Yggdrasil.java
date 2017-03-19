@@ -345,24 +345,16 @@ public abstract class Yggdrasil extends AppCompatActivity {
         assert (null != fragment) : "Asked to swap in null fragment!!!";
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTx = fragmentManager.beginTransaction();
-        if (!(fragment instanceof HomeFragment)) {
-            Fragment prevInstance =
-                fragmentManager.findFragmentByTag(fragmentTag);
-            if (null != prevInstance) {
-                fragmentTx.remove(prevInstance);
-            }
+        Fragment prevInstance = fragmentManager.findFragmentByTag(fragmentTag);
+        if (null != prevInstance) {
+            fragmentTx.remove(prevInstance);
+        }
+        // Only add to back stack if there are existing fragments,
+        // i.e., don't add the first (home) fragment to the back stack,
+        // else the back button will result in an empty activity.
+        if (null != fragmentManager.getFragments()) {
             fragmentTx.addToBackStack(null);
         }
-        // We will ONLY add the transaction to the back stack
-        // if we're swapping out from the "home" fragment,
-        // so that "back" always returns us to the home screen.
-        // After having wandered across other fragments,
-        // the "back" behavior does not make sense anymore,
-        // unless returning to the home screen.
-        // nor does it allow consistent highlighting in the navigation drawer.
-        // The only sensible place for the "back" behavior is the WebView.
-        // We will train the user to navigate using the navigation drawer,
-        // and the back button will just go back to the home page.
 
         fragmentTx.replace(R.id.contentFrame,
                            fragment,
