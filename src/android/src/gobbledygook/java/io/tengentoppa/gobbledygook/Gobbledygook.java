@@ -26,18 +26,6 @@ import android.util.Log;
  */
 public class Gobbledygook extends Yggdrasil {
 
-    /** Called when the activity is first created. */
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        // Select the default state
-        // If there is no saved state, launch the "home" fragment.
-        if (null == savedInstanceState) {
-                this.onActivitySelection(R.id.drawerHome);
-        }
-    }
-
     // ====================================================================
     // PRIVATE METHODS
 
@@ -59,7 +47,8 @@ public class Gobbledygook extends Yggdrasil {
      * @return  Does not return a value.
      */
     @Override
-    protected void onActivitySelection(int itemId) {
+    protected void onActivitySelection(final int itemId,
+                                       final String intentData) {
         final String FUNC =  "onActivitySelection(): ";
         Log.i(getLogCategory(), getLogPrefix(FUNC) +
               "Selecting activity id=" + itemId);
@@ -83,10 +72,25 @@ public class Gobbledygook extends Yggdrasil {
                         new GobbledygookAboutFragmentContainer(),
                         getString(R.string.tag_aboutFragmentContainer));
                 break;
+            case R.id.workhorseFragment:
+                // Workhorse.
+                // If launched directly, this is due to
+                // an intent from a browser.
+                // The Workhorse fragment should be swapped in as a
+                // "regular" fragment (i.e., not as a dialog).
+                // For this selection, the "intentData",
+                // which will be the "url" should not be null.
+                assert (null != intentData) : "Null url supplied from intent!";
+                this.swapFragment(
+                        GobbledygookWorkhorseFragment.newInstance(intentData,
+                                                                  false),
+                        getString(R.string.tag_workhorseFragment));
+                break;
             default:
                 // One of the other actions specified;
                 // call the "super" method.
-                super.onActivitySelection(itemId);
+                super.onActivitySelection(itemId,
+                                          intentData);
         }
 
         // Close the navigation drawer if it is open

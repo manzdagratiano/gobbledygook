@@ -33,18 +33,6 @@ import android.widget.Toast;
  */
 public class Krunch extends Yggdrasil {
 
-    /** Called when the activity is first created. */
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        // Call the method from the base class.
-        super.onCreate(savedInstanceState);
-
-        // If there is no saved state, launch the "home" fragment.
-        if (null == savedInstanceState) {
-            this.onActivitySelection(R.id.drawerHome);
-        }
-    }
-
     // ====================================================================
     // PRIVATE METHODS
 
@@ -67,7 +55,8 @@ public class Krunch extends Yggdrasil {
      *          appropriate fragment.
      * @return  Does not return a value
      */
-    protected void onActivitySelection(int itemId) {
+    protected void onActivitySelection(final int itemId,
+                                       final String intentData) {
         final String FUNC =  "onActivitySelection(): ";
         Log.i(getLogCategory(), getLogPrefix(FUNC) +
               "Selecting activtity id=" + itemId);
@@ -76,8 +65,8 @@ public class Krunch extends Yggdrasil {
             case R.id.drawerHome:
                 // Home fragment
                 this.swapFragment(
-                        new KrunchWorkhorseFragment(),
-                        getString(R.string.tag_workhorseFragment));
+                        new KrunchHomeFragment(),
+                        getString(R.string.tag_homeFragment));
                 break;
             case R.id.drawerSettings:
                 // Settings
@@ -91,10 +80,19 @@ public class Krunch extends Yggdrasil {
                         new KrunchAboutFragmentContainer(),
                         getString(R.string.tag_aboutFragmentContainer));
                 break;
+            case R.id.workhorseFragment:
+                // Workhorse.
+                assert (null != intentData) : "Null url supplied from intent!";
+                this.swapFragment(
+                        KrunchWorkhorseFragment.newInstance(intentData,
+                                                            false),
+                        getString(R.string.tag_workhorseFragment));
+                break;
             default:
                 // One of the other actions specified;
                 // call the "super" method.
-                super.onActivitySelection(itemId);
+                super.onActivitySelection(itemId,
+                                          intentData);
         }
 
         // Close the navigation drawer if it is open

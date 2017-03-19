@@ -91,8 +91,28 @@ public abstract class Yggdrasil extends AppCompatActivity {
         // Allow the application to accept cookies in WebViews.
         CookieManager.getInstance().setAcceptCookie(true);
 
-        // Selecting a default state should be left
-        // to the concrete implementations.
+        // Check how this activity was started -
+        // from the launcher, or another application (a browser).
+        Intent intent = this.getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
+
+        if (Intent.ACTION_SEND.equals(action) && (null != type) &&
+            MIMETYPE_TEXT.equals(type)) {
+            // Launched from a browser.
+            // Launch the "workhorse" fragment
+            this.onActivitySelection(R.id.workhorseFragment,
+                                     intent.getStringExtra(Intent.EXTRA_TEXT));
+        } else {
+            // Launched from the launcher.
+            // Select the default state.
+            // If there is no saved state, launch the "home" fragment.
+            if (null == savedInstanceState) {
+                this.onActivitySelection(R.id.drawerHome,
+                                         null);
+            }
+            // else TODO
+        }
     }
 
     /**
@@ -308,9 +328,14 @@ public abstract class Yggdrasil extends AppCompatActivity {
      *          This is done by replacing the framelayout with the
      *          appropriate fragment.
      *          This method may be overridden in the concrete derived classes.
+     * @param   {int} itemId - The "R" ID of the selection. 
+     * @param   {String} intentData - An optional string passed in
+     *          from the intent.
+     *          Will be null unless the intent is from another application.
      * @return  Does not return a value.
      */
-    protected void onActivitySelection(int itemId) {
+    protected void onActivitySelection(final int itemId,
+                                       final String intentData) {
         final String FUNC =  "onActivitySelection()";
         Log.i(getLogCategory(), getLogPrefix(FUNC) +
               "Selecting activity id=" + itemId);
@@ -369,6 +394,9 @@ public abstract class Yggdrasil extends AppCompatActivity {
     // --------------------------------------------------------------------
     // CONSTANTS
 
+    private static final String MIMETYPE_TEXT                           =
+        "text/plain";
+
     // Toast Messages
     private static final String INIT_MESSAGE                            =
         "Initializing...";
@@ -395,7 +423,8 @@ public abstract class Yggdrasil extends AppCompatActivity {
                     public boolean
                     onNavigationItemSelected(MenuItem menuItem) {
                         menuItem.setChecked(true);
-                        onActivitySelection(menuItem.getItemId());
+                        onActivitySelection(menuItem.getItemId(),
+                                            null);
                         return true;
                     }
                 });
